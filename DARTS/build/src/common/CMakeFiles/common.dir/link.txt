@@ -1,2 +1,0 @@
-/usr/bin/ar cr libcommon.a  CMakeFiles/common.dir/Atomics.cpp.o CMakeFiles/common.dir/Thread.cpp.o CMakeFiles/common.dir/getClock.cpp.o
-/usr/bin/ranlib libcommon.a

@@ -1,2 +1,0 @@
-/usr/bin/ar cr libthreadlocal.a  CMakeFiles/threadlocal.dir/threadlocal.cpp.o
-/usr/bin/ranlib libthreadlocal.a
