@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/abstractmachine/AbstractMachine.h
+cassert
+-
+stdint.h
+-
+hwloc.h
+-
+Unit.h
+-
+Cluster.h
+-
+
+../include/abstractmachine/Affinity.h
+string.h
+-
+iostream
+-
+papi.h
+-
+
+../include/abstractmachine/Cluster.h
+Unit.h
+-
+
+../include/abstractmachine/Unit.h
+
+/home/parallella/svn/darts-parallella/DARTS/src/abstractmachine/AbstractMachine.cpp
+AbstractMachine.h
+-
+
+/home/parallella/svn/darts-parallella/DARTS/src/abstractmachine/Affinity.cpp
+Affinity.h
+/home/parallella/svn/darts-parallella/DARTS/src/abstractmachine/Affinity.h
+AbstractMachine.h
+/home/parallella/svn/darts-parallella/DARTS/src/abstractmachine/AbstractMachine.h
+iostream
+-
+
