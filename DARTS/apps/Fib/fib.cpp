@@ -131,7 +131,7 @@ main(int argc, char *argv[])
 
     fibnum = atoi(argv[1]);
 
-    ThreadAffinity affin(3U, 1U, COMPACT, TPDYNAMIC, MCDYNAMIC);
+    ThreadAffinity affin(1U, 1U, COMPACT, TPDYNAMIC, MCDYNAMIC);
     if (affin.generateMask())
     {
         std::cout << "fib(" << fibnum << ")" << std::endl;
