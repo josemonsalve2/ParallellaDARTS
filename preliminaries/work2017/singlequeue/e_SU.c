@@ -44,7 +44,7 @@ int main(void)
 
     for (i = 0 ; i < 1000000; i++)
     {
-        while ( pushCodeletQueue(codeletQueue,0,0,(unsigned) ( *suAddress + ((unsigned) &sum))) == 1);
+        while ( pushCodeletQueue(codeletQueue,0,1,(unsigned) ( *suAddress + ((unsigned) &sum))) == 1);
     }
 
     while(codeletQueue->curNumElements!=0);

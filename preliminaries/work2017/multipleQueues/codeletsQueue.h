@@ -130,7 +130,7 @@ unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned popRow, unsigned pop
     if (queue->curNumElements == 0)
     {
         e_mutex_unlock(popRow, popCol, &(queue->lockMutex));
-        popCodeletQueue = 0;
+        popedCodelet = 0;
         return 1;
     }
     //Pop from head

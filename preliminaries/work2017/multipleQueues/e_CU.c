@@ -9,16 +9,16 @@
 typedef struct CU_states_s
 {
     unsigned done;
-    codeletsQueue_t codeletQueue;
+    PACKED codeletsQueue_t codeletQueue;
 } CU_states_t;
 
-void init_CU_states(CU_states_t* states)
+void init_CU_states(CU_states_t** states)
 {
-    states = (unsigned *) CU_STATES_BASE_ADDR; // I am starting here because there is some reserve memory before and bank 2
+    *states = (CU_states_t *) CU_STATES_BASE_ADDR; // I am starting here because there is some reserve memory before and bank 2
     
     // e_group_config and e_emem_config are structures defined
     // in e-lib that contain core values.
-    initCodeletsQueue(&(states->codeletQueue), 100, (unsigned *)(CU_BASE_ADDR + CU_QUEUEHEAD_ADDR));
+    initCodeletsQueue(&((*states)->codeletQueue), 100, (unsigned *)(CU_BASE_ADDR + CU_QUEUEHEAD_ADDR));
 
 }
 
@@ -26,27 +26,38 @@ int main(void)
 {
     //Runtime variables
     CU_states_t* states;
-    init_CU_states(states);
+    init_CU_states(&states);
     
-    unsigned *value;
-    unsigned codelet_to_exec; 
+    unsigned *value,*startSignal;
+    unsigned popedCodelet; 
 
     codelet toExecute;
      
     value = (unsigned *) 0x2228;
-
+    
+    unsigned suAddress;
+    suAddress = (unsigned)  e_get_global_address( SU_ROW , SU_COL , 0x0000 );
+    
     //Init the queue
     states->done = 0;
     *value = 0;
+
+    // RT Barrier
+    startSignal = (unsigned *)  (RT_START_SIGNAL);
+    while(*startSignal != 0);
     
+    //signal SU
+    unsigned * su_signal;
+    su_signal = (unsigned *) (suAddress + SU_STATES_BASE + MY_CU_NUM*sizeof(unsigned));
+    *su_signal = 0;
+
     // This happens forever until the runtime is stopped
-    while( states->done == 0 )
+    while( states->done == 0 || queueEmpty(&states->codeletQueue)  != 0)
     {
-	      //      //flag to check if there is work to do.
-            if ( popCodeletQueue(&(states->codeletQueue),CU_COL,CU_ROW, &codelet_to_exec) == 0 ) // Assuming core(0,0)
-            
-                  
-               toExecute = (codelet) codelet_to_exec;
+            //flag to check if there is work to do.
+            if ( popCodeletQueue(&(states->codeletQueue),CU_MY_COL,CU_MY_ROW, &popedCodelet) == 0 )
+            {
+               toExecute = (codelet) popedCodelet;
                toExecute();
             }
     }
