@@ -51,7 +51,6 @@ int main(void)
     su_signal = (unsigned *) (suAddress + SU_CU_SIGNALS + MY_CU_NUM*sizeof(unsigned));
     *su_signal = 0;
 
-    int count = 0;
     // This happens forever until the runtime is stopped
     while( states->done == 0 || queueEmpty(&states->codeletQueue)  != 0)
     {
@@ -60,10 +59,8 @@ int main(void)
             {
                toExecute = (codelet) popedCodelet;
                toExecute();
-               count++;
             }
     }
-    *value = count;
     return 0;
 }
 
