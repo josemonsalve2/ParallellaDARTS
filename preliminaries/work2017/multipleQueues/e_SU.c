@@ -15,46 +15,78 @@ void sum()
 
 typedef struct SU_states_s
 {
+    unsigned startSignal;
+    unsigned done;
+    unsigned suBaseAddress;
     unsigned signal[NUM_CU];
+    unsigned cuBaseAddress[NUM_CU];
 } SU_states_t;
+
+void init_SU_states(SU_states_t ** states)
+{
+    int i;
+    *states = (SU_states_t *) SU_STATES_BASE;
+    (*states)->done = 0;
+    (*states)->suBaseAddress = (unsigned) e_get_global_address( SU_ROW , SU_COL , 0x0000 );
+    for ( i = 0; i < NUM_CU; ++i )
+    {
+        (*states)->cuBaseAddress[i] = (unsigned) e_get_global_address( (i+1) / 4 , (i+1) % 4  , 0x0000 );
+    }
+}
+
+void set_CU_DONE(SU_states_t * states, unsigned int cu_num)
+{
+    unsigned *cuDone;
+    cuDone = (unsigned *) (states->cuBaseAddress[cu_num] + (unsigned) CU_DONE_ADDR);
+    *cuDone=1;
+}
 
 int main(void)
 {
-    SU_states_t * states;
-    states = (SU_states_t *) SU_STATES_BASE;
+    SU_states_t *states;
     
-    int i=0;
+    init_SU_states(&states);
+    
+    int i,j;
    
     //for global memory of the CUs
-    unsigned *cuDone, *startSignal;
     codeletsQueue_t * codeletQueue;
-    unsigned cuAddress, suAddress, cuCodeletQueueAddr;
+    unsigned cuCodeletQueueAddr;
     
-    cuAddress = (unsigned) e_get_global_address( 0 , 1 , 0x0000 );
-    suAddress = (unsigned)  e_get_global_address( SU_ROW , SU_COL , 0x0000 );
-    cuDone =    (unsigned *)  (cuAddress + (unsigned) CU_DONE_ADDR);
-    
-    cuCodeletQueueAddr = ((unsigned)(cuAddress + CU_CODQUEUE_ADDR));
-    codeletQueue =(codeletsQueue_t *) (cuCodeletQueueAddr);
-    
-    //wait for host
-    startSignal = (unsigned *)  (RT_START_SIGNAL);
-    while(*startSignal != 0);
+    //Wait for host
+    while(states->startSignal != 0);
 
     //Wait for CUs to be ready
-    for ( i = 0; i < NUM_CU; ++i)
+    for (i = 0; i < NUM_CU; ++i)
     {
         while (states->signal[i] != 0);
     }
     
-    for (i = 0 ; i < 10; i++)
+    for (i = 0; i < NUM_CU; ++i)
     {
-        while ( pushCodeletQueue(codeletQueue,0, 1, (unsigned) ( suAddress + ((unsigned) &sum))) == 1);
+        cuCodeletQueueAddr = ((unsigned)(states->cuBaseAddress[i] + CU_CODQUEUE_ADDR));
+        codeletQueue = (codeletsQueue_t *) (cuCodeletQueueAddr);
+        for ( j = 0; j < 100; ++j )
+        {
+            
+            while ( pushCodeletQueue(codeletQueue, (unsigned) ( states->suBaseAddress + ((unsigned) &sum))) == 1);
+        }
     }
 
-    while( queueEmpty(codeletQueue) != 0);
-    *cuDone=1;
+    //set CUs done
+    for (i = 0; i < NUM_CU; ++i)
+    {
+        cuCodeletQueueAddr = ((unsigned)(states->cuBaseAddress[i] + CU_CODQUEUE_ADDR));
+        codeletQueue = (codeletsQueue_t *) (cuCodeletQueueAddr);
+        while( queueEmpty(codeletQueue) != 0);
+    }
 
+    //set CUs done
+    for (i = 0; i < NUM_CU; ++i)
+    {
+        set_CU_DONE(states, i);
+    }
+    states->done = 1;
     return 0;
 }
 

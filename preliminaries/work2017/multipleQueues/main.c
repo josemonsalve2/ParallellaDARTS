@@ -8,23 +8,30 @@ void init_rt (e_epiphany_t* dev, e_platform_t* platform)
     e_init(NULL);
     e_reset_system();//reset Epiphany
     e_get_platform_info(platform);
-    e_open(dev, 0, 0, 2, 2);
+    e_open(dev, 0, 0, 4, 4);
 }
 
 void load_rt (e_epiphany_t* dev)
 {
+    int i;
     //Load program to cores and run
-    e_load("e_SU.elf", dev, 0, 0, E_FALSE);
-    e_load("e_CU.elf", dev, 0, 1, E_FALSE);
+    //Load SU
+    e_load("e_SU.elf", dev, SU_ROW, SU_COL, E_FALSE);
+    //Load CUs
+    for ( i = 0; i < NUM_CU; ++i)
+    {
+        e_load("e_CU.elf", dev, (i+1)/4, (i+1)%4, E_FALSE);
+    }
+    
 }
 
-void signal_cores_rt (e_epiphany_t *dev, unsigned int value)
+void signal_all_cores_rt (e_epiphany_t *dev, unsigned int value)
 {
     int i;
     //Hold the start
-    for ( i = 0; i < 2; ++i)
+    for ( i = 0; i < NUM_CU + 1; ++i)
     {
-        e_write(dev,0,i,RT_START_SIGNAL,&value,sizeof(value));
+        e_write(dev, i/4, i%4, RT_START_SIGNAL, &value, sizeof(value));
     }
 }
 
@@ -35,11 +42,11 @@ void signal_cores_rt (e_epiphany_t *dev, unsigned int value)
 void config_rt (e_epiphany_t* dev)
 {
     int i, value = 1;
-    signal_cores_rt(dev, 1);
-    //Set SU flags;
+    signal_all_cores_rt(dev, 1);
+    //Set CU flags inside the SU;
     for ( i = 0; i < NUM_CU; ++i)
     {
-         e_write(dev,0,0,SU_STATES_BASE+i*sizeof(unsigned),&value,sizeof(value));
+         e_write(dev, SU_COL, SU_ROW, SU_CU_SIGNALS + i*sizeof(unsigned), &value, sizeof(value));
     }
     
 }
@@ -48,11 +55,11 @@ void start_rt (e_epiphany_t *dev)
 {
     int i;
     //start all the cores
-    for ( i = 0; i < 2; ++i)
+    for ( i = 0; i < NUM_CU + 1; ++i)
     {
-        e_start(dev,0,i);
+        e_start(dev, i/4, i%4);
     }
-    signal_cores_rt(dev,0);
+    signal_all_cores_rt(dev, 0);
 }
 
 void end_rt (e_epiphany_t *dev)
@@ -66,7 +73,7 @@ int main(int argc, char *argv[]){
     
     //Variables
     unsigned int val = 0;
-    int done;
+    int done,i;
     
     //RT
     e_epiphany_t dev;
@@ -82,13 +89,15 @@ int main(int argc, char *argv[]){
     //Check if all cores are done
     while(done == 0){
         //val = 0;
-        e_read(&dev, 0, 1, CU_DONE_ADDR, &done, sizeof(done));
+        e_read(&dev, SU_COL, SU_ROW, SU_DONE_ADDR, &done, sizeof(done));
     }
     
     // Get result. this is temp
-    e_read(&dev, 0, 1, 0x2228, &val, sizeof(int));
-    unsigned int doneVal;
-    printf("Sum: %u!\n",val);
+    for( i = 0; i < NUM_CU; ++i)
+    {
+        e_read(&dev, (i+1)/4, (i+1)%4, 0x2228, &val, sizeof(val));
+        printf("Sum(%d): %u!\n",i,val);
+    }
     fflush(stdout);
 
     end_rt (&dev);

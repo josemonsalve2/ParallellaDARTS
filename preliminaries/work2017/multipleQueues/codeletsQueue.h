@@ -33,11 +33,13 @@
  * 
  */
 
-typedef struct codeletsQueue_s {
+typedef struct PACKED codeletsQueue_s {
     unsigned * headAddress;
     unsigned int size;
     unsigned int curNumElements;
     unsigned int currentTail;
+    unsigned int row;
+    unsigned int col;
     e_mutex_t lockMutex; // e_mutex_t is an int.
 } codeletsQueue_t;
 
@@ -67,6 +69,8 @@ void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned 
     queue->size = newSize;
     queue->currentTail=0;
     queue->curNumElements=0;
+    queue->row = e_group_config.core_row;
+    queue->col = e_group_config.core_col;
     queue->lockMutex = MUTEX_NULL;
 }
 
@@ -82,19 +86,17 @@ void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned 
  * return 1, otherwise, the codelet will be inserted and the function will return 0
  * 
  * @p queue Codelet Queue
- * @p pusherRow core row from pusher to lock the mutex
- * @p pusherCol core col from pusher to lock the mutex
  * @p newCodelet codelet to insert
  * @return 
  */
 
-unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned pusherRow, unsigned pusherCol, unsigned newCodelet)
+unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet)
 {
-    while ( !e_mutex_trylock(pusherRow, pusherCol, &(queue->lockMutex)) );
+    e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
     //check if full
     if (queue->curNumElements == queue->size)
     {
-        e_mutex_unlock(pusherRow, pusherCol, &(queue->lockMutex));
+        e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
         return 1;
     }
     //Insert in the current Tail
@@ -102,7 +104,7 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned pusherRow, unsigned
     queue->currentTail = (queue->currentTail + 1) % queue->size;
     queue->curNumElements++;
     
-    e_mutex_unlock(pusherRow, pusherCol, &(queue->lockMutex));
+    e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
     return 0;
 }
 
@@ -119,17 +121,15 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned pusherRow, unsigned
  * otherwise, the codelet will be returned in the pointer and the function will return 0
  * 
  * @p queue Codelet Queue
- * @p popRow core row that pops the codelet. This is to lock the mutex
- * @p popCol core col that pops the codelet. This is to lock the mutex
  * @p popedCodelet codelet that was taken from the queue
  */
-unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned popRow, unsigned popCol, unsigned * popedCodelet)
+unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet)
 {
-    while ( !e_mutex_trylock(popRow, popCol, &(queue->lockMutex)) );
+    e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
     //check if empty
     if (queue->curNumElements == 0)
     {
-        e_mutex_unlock(popRow, popCol, &(queue->lockMutex));
+        e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
         popedCodelet = 0;
         return 1;
     }
@@ -137,7 +137,7 @@ unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned popRow, unsigned pop
     *popedCodelet = (queue->currentTail >= queue->curNumElements)? queue->headAddress[queue->currentTail - queue->curNumElements] : queue->headAddress[queue->currentTail - queue->curNumElements + queue->size];
     queue->curNumElements--;
     
-    e_mutex_unlock(popRow, popCol, &(queue->lockMutex));
+    e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
     return 0;
 }
 
