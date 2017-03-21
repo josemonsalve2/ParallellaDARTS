@@ -10,17 +10,17 @@ typedef struct PACKED CU_states_s
 {
     unsigned startSignal;
     unsigned done;
+    unsigned suBaseAddr;
     codeletsQueue_t codeletQueue;
 } CU_states_t;
 
 void init_CU_states(CU_states_t** states)
 {
     *states = (CU_states_t *) CU_STATES_BASE_ADDR;
-    
+    (*states)->suBaseAddr = (unsigned) e_get_global_address( SU_ROW , SU_COL , 0x0000 );
     // e_group_config and e_emem_config are structures defined
     // in e-lib that contain core values.
     initCodeletsQueue(&((*states)->codeletQueue), 100, (unsigned *)(CU_MY_GLOBAL_BASE_ADDR + CU_QUEUEHEAD_ADDR));
-
 }
 
 int main(void)
@@ -50,7 +50,8 @@ int main(void)
     unsigned * su_signal;
     su_signal = (unsigned *) (suAddress + SU_CU_SIGNALS + MY_CU_NUM*sizeof(unsigned));
     *su_signal = 0;
-
+    
+    
     // This happens forever until the runtime is stopped
     while( states->done == 0 || queueEmpty(&states->codeletQueue)  != 0)
     {

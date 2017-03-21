@@ -13,13 +13,24 @@ void sum()
     (*value) ++;
 }
 
-typedef struct SU_states_s
+void end_rt()
+{
+    unsigned *cuDone,*suDone;
+    cuDone = (unsigned *) CU_DONE_ADDR;
+    *cuDone = 1;
+    suDone = (unsigned *) (*((unsigned *)CU_SU_BASE_ADDR) + SU_CU_DONE+ 4*MY_CU_NUM);
+    *suDone = 1;
+    
+}
+
+typedef struct PACKED SU_states_s
 {
     unsigned startSignal;
     unsigned done;
     unsigned suBaseAddress;
     unsigned signal[NUM_CU];
     unsigned cuBaseAddress[NUM_CU];
+    unsigned cuDone[NUM_CU];
 } SU_states_t;
 
 void init_SU_states(SU_states_t ** states)
@@ -31,14 +42,8 @@ void init_SU_states(SU_states_t ** states)
     for ( i = 0; i < NUM_CU; ++i )
     {
         (*states)->cuBaseAddress[i] = (unsigned) e_get_global_address( (i+1) / 4 , (i+1) % 4  , 0x0000 );
+        (*states)->cuDone[i] = 0;
     }
-}
-
-void set_CU_DONE(SU_states_t * states, unsigned int cu_num)
-{
-    unsigned *cuDone;
-    cuDone = (unsigned *) (states->cuBaseAddress[cu_num] + (unsigned) CU_DONE_ADDR);
-    *cuDone=1;
 }
 
 int main(void)
@@ -66,26 +71,19 @@ int main(void)
     {
         cuCodeletQueueAddr = ((unsigned)(states->cuBaseAddress[i] + CU_CODQUEUE_ADDR));
         codeletQueue = (codeletsQueue_t *) (cuCodeletQueueAddr);
-        for ( j = 0; j < 100; ++j )
+        for ( j = 0; j < 10000; ++j )
         {
-            
             while ( pushCodeletQueue(codeletQueue, (unsigned) ( states->suBaseAddress + ((unsigned) &sum))) == 1);
         }
+        //Send final codelet
+        while ( pushCodeletQueue(codeletQueue, (unsigned) ( states->suBaseAddress + ((unsigned) &end_rt))) == 1);
     }
-
-    //set CUs done
-    for (i = 0; i < NUM_CU; ++i)
+    
+    for (i = 0; i < NUM_CU; i++)
     {
-        cuCodeletQueueAddr = ((unsigned)(states->cuBaseAddress[i] + CU_CODQUEUE_ADDR));
-        codeletQueue = (codeletsQueue_t *) (cuCodeletQueueAddr);
-        while( queueEmpty(codeletQueue) != 0);
+        while ( states->cuDone[i] == 0);
     }
-
-    //set CUs done
-    for (i = 0; i < NUM_CU; ++i)
-    {
-        set_CU_DONE(states, i);
-    }
+    
     states->done = 1;
     return 0;
 }

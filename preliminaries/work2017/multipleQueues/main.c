@@ -92,6 +92,10 @@ int main(int argc, char *argv[]){
         e_read(&dev, SU_COL, SU_ROW, SU_DONE_ADDR, &done, sizeof(done));
     }
     
+    // Get SU value result 
+    e_read(&dev, 0,0, 0x2228, &val, sizeof(val));
+    printf("Sum(SU): %u!\n",val);
+
     // Get result. this is temp
     for( i = 0; i < NUM_CU; ++i)
     {
