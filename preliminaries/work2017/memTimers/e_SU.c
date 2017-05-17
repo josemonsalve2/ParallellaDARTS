@@ -12,6 +12,7 @@ void sum()
     value = (unsigned *) 0x2228;
     unsigned initialTimerValue = 0xffffffff;
     unsigned configReg = 0, countResult;
+    unsigned useless=2;
     //Stop the timer
     for (j = 0; j < 100; j++)
     {
@@ -35,7 +36,16 @@ void sum()
             : // No outputs
             : [configValue] "r" (configReg) 
             );
-        for (i = 0; i < COUNT_TO; ++i);
+        for (i = 0; i < COUNT_TO; ++i)
+        {
+            for (i = 0; i < COUNT_TO; ++i)
+            {
+                asm("fmul %[uselessValRes], %[uselessVal], %[uselessVal]"
+                : [uselessValRes] "=r" (useless) 
+                : [uselessVal] "r" (useless) 
+                );
+            }
+        }
 
         // Stop the timer and get value
         configReg = configReg & 0xffffff0f;// Set timer to count clock
@@ -115,15 +125,13 @@ int main(void)
         //Send final codelet
         while ( pushCodeletQueue(codeletQueue, (unsigned) ( states->suBaseAddress + ((unsigned) &end_rt))) == 1);
         
-        //We want to execute one by one with as little NOC interfeerance as possible
-        while ( states->cuDone[i] == 0);
 
     }
     
-//     for (i = 0; i < NUM_CU; i++)
-//     {
-// 
-//     }
+    for (i = 0; i < NUM_CU; i++)
+    {
+        while ( states->cuDone[i] == 0); 
+    }
     
     states->done = 1;
     return 0;
