@@ -5,8 +5,9 @@ set -e
 ESDK=${EPIPHANY_HOME}
 ELIBS="-L ${ESDK}/tools/host/lib"
 EINCS="-I ${ESDK}/tools/host/include"
-DEVINCS="-I ./"
-ELDF=${ESDK}/bsps/current/internal.ldf
+DEVINCS="-I ./ -L ./"
+#ELDF=${ESDK}/bsps/current/internal.ldf
+ELDF=fast_cacheman.ldf
 
 SCRIPT=$(readlink -f "$0")
 EXEPATH=$(dirname "$SCRIPT")
@@ -31,8 +32,11 @@ esac
 ${CROSS_PREFIX}gcc main.c -g -o bin/main.elf ${EINCS} ${ELIBS} -le-hal -le-loader -lpthread
 
 # Build DEVICE side program
-e-gcc -O0 -g -T ${ELDF} e_SU.c -o bin/e_SU.elf ${DEVINCS} -le-lib -lm -ffast-math
-e-gcc -O0 -g -T ${ELDF} e_CU.c -o bin/e_CU.elf ${DEVINCS} -le-lib -lm -ffast-math
+echo "e-gcc -O0 -g -ffast-math -fpic -o bin/e_SU.elf e_SU.c -T ${ELDF} ${DEVINCS} -lm -le-lib"
+echo "e-gcc -O0 -g -ffast-math -fpic -o bin/e_CU.elf e_CU.c -T ${ELDF} ${DEVINCS} -lm -le-lib"
+
+e-gcc -O0 -g -ffast-math -fpic -o bin/e_SU.elf e_SU.c -T ${ELDF} ${DEVINCS} -lm -le-lib
+e-gcc -O0 -g -ffast-math -fpic -o bin/e_CU.elf e_CU.c -T ${ELDF} ${DEVINCS} -lm -le-lib
 
 # Convert ebinary to SREC file
 #e-objcopy --srec-forceS3 --output-target srec bin/e_CU.elf bin/e_CU.srec
