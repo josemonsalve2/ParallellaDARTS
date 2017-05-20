@@ -42,7 +42,7 @@ endif
 
 .PHONY: all clean
 
-all: bin/e_SU.elf bin/e_CU.elf bin/main.elf
+all: bin/e_SU.elf bin/e_CU.elf bin/main.elf bin/e_DARTS.elf
 
 bin/main.elf: main.c
 	$(HOST_CC) $(HOST_CFLAGS) -o $@ $< -I$(HOST_EINCS) -L$(HOST_ELIBS) $(HOST_LDFLAGS)
@@ -60,7 +60,12 @@ bin/e_SU.o: e_SU.c
 
 bin/e_SU.elf: bin/e_SU.o bin/cachemanager.o
 	$(TARGET_LD) -o $@ $^ $(TARGET_LDBINS) $(TARGET_LD_INCLUDES) $(TARGET_LDFLAGS) -T $(LDSCRIPT) 
-	
+
+bin/e_DARTS.o: e_DARTS.c
+	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ $^ $(TARGET_INCLUDES)
+
+bin/e_DARTS.elf: bin/e_DARTS.o bin/cachemanager.o
+	$(TARGET_LD) -o $@ $^ $(TARGET_LDBINS) $(TARGET_LD_INCLUDES) $(TARGET_LDFLAGS) -T $(LDSCRIPT) 
 else
 bin/e_SU.elf: e_SU.c
 	$(TARGET_CC) $(TARGET_CFLAGS) -o $@ $^ -T $(LDSCRIPT) $(TARGET_LDFLAGS) $(TARGET_ELIBS)
