@@ -1,6 +1,5 @@
 #include "common.h"
 
-
 /*
  * Temporal function
  *
@@ -138,10 +137,12 @@ void _SU_rt()
         codeletQueue = (codeletsQueue_t *) (cuCodeletQueueAddr);
         for ( j = 0; j < 1; ++j )
         {
-            while ( pushCodeletQueue(codeletQueue, (unsigned) ( (_rt_states.SU_states)->suBaseAddress + ((unsigned) &sum))) == 1);
+            //while ( pushCodeletQueue(codeletQueue, (unsigned) ( (_rt_states.SU_states)->suBaseAddress + ((unsigned) &sum))) == 1);
+            while ( pushCodeletQueue(codeletQueue, (unsigned) &sum) == 1);
         }
         //Send final codelet
-        while ( pushCodeletQueue(codeletQueue, (unsigned) ( (_rt_states.SU_states)->suBaseAddress + ((unsigned) &end_rt))) == 1);
+        //while ( pushCodeletQueue(codeletQueue, (unsigned) ( (_rt_states.SU_states)->suBaseAddress + ((unsigned) &end_rt))) == 1);
+            while ( pushCodeletQueue(codeletQueue, (unsigned) &end_rt) == 1);
         
 
     }
@@ -166,7 +167,6 @@ void _SU_rt()
 void _CU_rt()
 {
     //Runtime variables
-    CU_states_t* states;
     init_CU_states(&(_rt_states.CU_states));
     
     unsigned *value;
@@ -190,7 +190,6 @@ void _CU_rt()
     unsigned * su_signal;
     su_signal = (unsigned *) (suAddress + SU_CU_SIGNALS + MY_CU_NUM*sizeof(unsigned));
     *su_signal = 0;
-
     // This happens forever until the runtime is stopped
     while( (_rt_states.CU_states)->done == 0 || queueEmpty(&(_rt_states.CU_states)->codeletQueue)  != 0)
     {

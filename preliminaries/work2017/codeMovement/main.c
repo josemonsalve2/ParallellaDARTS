@@ -14,13 +14,9 @@ void init_rt (e_epiphany_t* dev, e_platform_t* platform)
 void load_rt (e_epiphany_t* dev)
 {
     int i;
-    //Load program to cores and run
-    //Load SU
-    e_load("e_SU.elf", dev, SU_ROW, SU_COL, E_FALSE);
-    //Load CUs
-    for ( i = 0; i < NUM_CU; ++i)
+    for ( i = 0; i < NUM_CU + 1; ++i)
     {
-        e_load("e_CU.elf", dev, (i+1)/4, (i+1)%4, E_FALSE);
+        e_load ("e_DARTS.elf",dev,i/4,i%4,E_FALSE);
     }
     
 }
@@ -98,7 +94,7 @@ int main(int argc, char *argv[]){
     e_read(&dev, 0,0, 0x2228, val_ptr, sizeof(val)*100);
     for ( j = 0; j < 100; j++)
         avg += val_ptr[j];
-    printf("0\t0\t%u\n", avg/100);
+    printf("0\t0\t%u\n", val_ptr[0]);//avg/100);
     // Get result. this is temp
     for( i = 0; i < NUM_CU; ++i)
     {
@@ -106,7 +102,7 @@ int main(int argc, char *argv[]){
         avg = 0;
         for ( j = 0; j < 100; j++)
             avg += val_ptr[j];
-        printf("%d\t%d\t%u\n", (i+1)/4, (i+1)%4, avg/100);
+        printf("%d\t%d\t%u\n", (i+1)/4, (i+1)%4, val_ptr[0]);//avg/100);
     }
     fflush(stdout);
 
