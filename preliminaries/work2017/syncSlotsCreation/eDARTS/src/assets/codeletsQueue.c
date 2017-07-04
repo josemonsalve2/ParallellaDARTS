@@ -9,7 +9,7 @@
  * concurrently. There is a mutex that locks the queue on push or pop
  * operations. operations over a queue are defined in functions.
  */
-#include "codeletQueue.h"
+#include "codeletsQueue.h"
 
 
 void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned * newHeadAddress)
