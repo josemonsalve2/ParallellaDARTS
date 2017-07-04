@@ -34,4 +34,4 @@
 
 typedef void (*codelet)();
 typedef int  darts_mutex_t;
-typedef DARTS_MUTEX_NULL;
+//typedef DARTS_MUTEX_NULL;
