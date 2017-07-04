@@ -63,17 +63,7 @@ typedef struct PACKED codeletsQueue_s {
  * @p newHeadAddress the address where the actual queue is located
  * 
  */
-void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned * newHeadAddress)
-{
-    queue->headAddress = newHeadAddress;
-    queue->size = newSize;
-    queue->currentTail=0;
-    queue->curNumElements=0;
-    queue->row = e_group_config.core_row;
-    queue->col = e_group_config.core_col;
-    queue->lockMutex = MUTEX_NULL;
-}
-
+void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned * newHeadAddress);
 
 /**
  * @brief push a codelet from the queue
@@ -90,24 +80,7 @@ void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned 
  * @return 
  */
 
-unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet)
-{
-    e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
-    //check if full
-    if (queue->curNumElements == queue->size)
-    {
-        e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-        return 1;
-    }
-    //Insert in the current Tail
-    queue->headAddress[queue->currentTail] = newCodelet;
-    queue->currentTail = (queue->currentTail + 1) % queue->size;
-    queue->curNumElements++;
-    
-    e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-    return 0;
-}
-
+unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet);
 
 /**
  * @brief pop a codelet from the queue
@@ -123,23 +96,7 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet)
  * @p queue Codelet Queue
  * @p popedCodelet codelet that was taken from the queue
  */
-unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet)
-{
-    e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
-    //check if empty
-    if (queue->curNumElements == 0)
-    {
-        e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-        popedCodelet = 0;
-        return 1;
-    }
-    //Pop from head
-    *popedCodelet = (queue->currentTail >= queue->curNumElements)? queue->headAddress[queue->currentTail - queue->curNumElements] : queue->headAddress[queue->currentTail - queue->curNumElements + queue->size];
-    queue->curNumElements--;
-    
-    e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-    return 0;
-}
+unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet);
 
 /** 
  * @brief is queue empty?
@@ -149,7 +106,4 @@ unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet)
  * \p queue codelet queue to check
  */
 
-unsigned queueEmpty(codeletsQueue_t * queue)
-{
-    return queue->curNumElements;
-}
+unsigned queueEmpty(codeletsQueue_t * queue);

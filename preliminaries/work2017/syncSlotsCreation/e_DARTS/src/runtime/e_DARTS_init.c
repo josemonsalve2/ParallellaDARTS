@@ -19,6 +19,9 @@ void sum()
 
 int main(void)
 {
+    unsigned *cd;
+    cd = 0x4000;
+    *cd = (unsigned) &sum; 
     // Identify SU
     if (e_group_config.core_row == 0 && e_group_config.core_col == 0) 
     {

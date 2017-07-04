@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include "common.h"
 
-
 /**
  * @brief syncronization slots struct
  *
@@ -44,42 +43,23 @@ typedef struct PACKED syncSlot_s {
  *
  */
 
-void initSyncSlot ( syncSlot_t * newSyncSlot, unsigned resetDep, unsigned initDep, codelet fireCodelet)
-{
-    newSyncSlot->resetDep = resetDep;
-    newSyncSlot->currentDep = initDep;
-    newSyncSlot->fire = fireCodelet; 
-    newSyncSlot->lockMutex = MUTEX_NULL;
-}
-
+void initSyncSlot ( syncSlot_t * newSyncSlot, unsigned resetDep, unsigned initDep, codelet fireCodelet);
 
 /**
  * @brief This function allows decrementing a dependency of a syncronization slot 
+ * @todo. Find a better way to get the syncSlot's address or to express this requirement
  *
  * @p syncSlot synchronization slot to decrement dependency to
+ *
+ * @return Returns 1 if dependencies are satisfied (currentDep == 0)
  */
-void decDep( syncSlot_t * syncSlot )
-{
-    darts_mutex_lock()   
-}
+int syncSlotDecDep( syncSlot_t * syncSlot );
 
-void darts_mutex_lock( e_mutex_t *mutex)
-{
-    e_mutex_t *gmutex;
-    uint32_t coreid, offset, val;
-
-    coreid = e_get_coreid();
-    gmutex = (e_mutex_t *) e_get_global_address(row, col, mutex);
-    offset = 0x0;
-
-    do {
-        val = coreid;
-        __asm__ __volatile__(
-                "testset    %[val], [%[gmutex], %[offset]]"
-                : [val] "+r" (val)
-                : [gmutex] "r" (gmutex), [offset] "r" (offset)
-                : "memory");
-    } while (val != 0);
-
-    return;
-}
+/**
+ * @brief Reset the syncSlot counter
+ * @todo. Find a better way to get the syncSlot's address or to express this requirement
+ *
+ * @p syncSlot synchronization slot to decrement dependency to
+ *
+ */
+void syncSlotResetDep( syncSlot_t * syncSlot );
