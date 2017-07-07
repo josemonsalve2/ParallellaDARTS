@@ -39,9 +39,15 @@ SET(CMAKE_SYSTEM_NAME Generic)
 set(EPIPHANY_HOME /opt/adapteva/esdk)
 set(ELDF_INTERNAL ${EPIPHANY_HOME}/bsps/current/internal.ldf)
 set(ELDF_FAST ${EPIPHANY_HOME}/bsps/current/fast.ldf)
+set(ELDF_EDARTS_CACHEMAN ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/fast_cacheman_codelets.ldf)
 
-
+# setting up the right compiler and linker
 set(CMAKE_C_COMPILER ${EPIPHANY_HOME}/tools/e-gnu.armv7l/bin/e-gcc)
+set(CMAKE_LINKER ${EPIPHANY_HOME}/tools/e-gnu/bin/e-ld)
+set(EPIPHANY_OBJ_FILES "${EPIPHANY_HOME}/tools/e-gnu/epiphany-elf/lib/crt0.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crti.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crtbegin.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crtend.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crtn.o")
+
+set(CMAKE_C_LINK_EXECUTABLE
+"<CMAKE_LINKER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> ${EPIPHANY_OBJ_FILES} -o <TARGET> <LINK_LIBRARIES>")
 
 ENABLE_TESTING()
  
@@ -140,18 +146,15 @@ message("\n")
 option(DEBUG "DEBUG" ON)
 if (DEBUG)
     message("DEBUG MODE ON!!")
-    set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} " -g -ffast-math -mfp-mode=round-nearest -fpic")
+    set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "  -g -ffast-math -mfp-mode=round-nearest -fpic -T ${ELDF_EDARTS_CACHEMAN} ")
 else ()
-    set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-ffast-math -mfp-mode=round-nearest -fpic ")
+    set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-ffast-math -mfp-mode=round-nearest -fpic -T ${ELDF_EDARTS_CACHEMAN} ")
 endif()
 
-set(EPIPHANY_OBJ_FILES ${EPIPHANY_HOME}/tools/e-gnu/epiphany-elf/lib/crt0.o 
-                       ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crti.o
-                       ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crtbegin.o
-                       ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crtend.o
-                       ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.2.0/crtn.o)
 
-set(EPIPHANY_LIBS M_LIB ELIB_LIB GCC_LIB G_LIB C_LIB EPIPHANY_LIB)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${ELDF_EDARTS_CACHEMAN} ${CMAKE_BINARY_DIR}/eDARTS/src/softcache/cachemanager.o")
+
+set(EPIPHANY_LIBS ${M_LIB} ${ELIB_LIB} ${GCC_LIB} ${G_LIB} ${C_LIB} ${EPIPHANY_LIB})
 
 #including eDARTS
 message("=> Starting eDARTS environment\n")

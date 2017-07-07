@@ -34,7 +34,7 @@ set( edarts_assets_src
 set( edarts_assets_inc ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/codeletsQueue.h)
 
 add_library( edarts_assets ${edarts_assets_src} ${edarts_assets_inc})
-target_link_libraries( edarts_assets ${ELIB_LIB} )
+#target_link_libraries( edarts_assets )
 
 set_target_properties(edarts_assets PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(edarts_assets PROPERTIES PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/codeletsQueue.h)

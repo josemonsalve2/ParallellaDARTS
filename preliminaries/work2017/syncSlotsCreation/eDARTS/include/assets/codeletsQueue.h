@@ -63,7 +63,7 @@ typedef struct PACKED codeletsQueue_s {
  * @p newHeadAddress the address where the actual queue is located
  * 
  */
-void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned * newHeadAddress);
+void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned * newHeadAddress) __attribute__((section(".internaltext")));
 
 /**
  * @brief push a codelet from the queue
@@ -80,7 +80,7 @@ void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned 
  * @return 
  */
 
-unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet);
+unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet) __attribute__((section(".internaltext")));
 
 /**
  * @brief pop a codelet from the queue
@@ -96,7 +96,7 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet);
  * @p queue Codelet Queue
  * @p popedCodelet codelet that was taken from the queue
  */
-unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet);
+unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet) __attribute__((section(".internaltext")));
 
 /** 
  * @brief is queue empty?
@@ -106,4 +106,4 @@ unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet);
  * \p queue codelet queue to check
  */
 
-unsigned queueEmpty(codeletsQueue_t * queue);
+unsigned queueEmpty(codeletsQueue_t * queue) __attribute__((section(".internaltext")));

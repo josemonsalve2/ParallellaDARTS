@@ -29,8 +29,6 @@
 #                                                                              #
 ################################################################################ 
 
-message(CMAKE_INCLUDE_PATH " " ${CMAKE_INCLUDE_PATH})
-
 # Given that I am not able to use two compilers with cmake. I will
 # use custom command and custom target to manually build this
 if(DEBUG)
@@ -39,6 +37,7 @@ else()
     set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include ${E_LOADER_LIB} ${E_HAL_LIB})
 endif()
 
+# For the host we need to compile manually without cmake
 add_custom_command(
    OUTPUT codeletQueue_test.out
    COMMAND gcc codeletQueue/main.c ${EXTERNAL_FLAGS} -o codeletQueue_test.out
@@ -56,4 +55,4 @@ add_custom_target( codeletQueue_test
 add_executable(e_codQueue.elf codeletQueue/e_codQueue.c)
 target_link_libraries(e_codQueue.elf edarts_assets ${EPIPHANY_LIBS})
 
-add_dependencies(e_codQueue.elf codeletQueue_test)
+add_dependencies(e_codQueue.elf codeletQueue_test edarts_cachemanager)

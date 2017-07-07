@@ -206,7 +206,16 @@ SECTIONS
     *(.plt)
     PROVIDE (_PROCEDURE_LINKAGE_TABLE_END = .);
   } > INTERNAL_RAM
-
+  
+  .internaltext :
+  {
+    *(.internaltext.unlikely .internaltext.*_unlikely)
+    *(.internaltext.exit .internaltext.exit.*)
+    *(.internaltext.startup .internaltext.startup.*)
+    *(.internaltext.hot .internaltext.hot.*)
+    *(.internaltext .internaltext.*)
+  } > INTERNAL_RAM =0
+  
   /* Here lies the software manager.  */
   .cacheman	  : {
     *(.cacheman)
