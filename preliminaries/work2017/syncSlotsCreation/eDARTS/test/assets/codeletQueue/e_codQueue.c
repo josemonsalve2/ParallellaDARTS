@@ -4,16 +4,16 @@
 #include <stdlib.h>
 #include "e-lib.h"
 #include "codeletsQueue.h"
+#include "codelet.h"
 
-#define GLOBAL_BASE_ADDR e_emem_config.base
 #define SUM_RESULT 0x2228
 #define STATES_BASE_ADDR 0x3000  /// Chosen randomly
-#define START_SIGNAL CU_STATES_BASE_ADDR // consumer->producer(ready to receieve)
-#define DONE_SIGNAL CU_STATES_BASE_ADDR // producer->consumer (done pushing codelets)
-#define CODQUEUE_ADDR (CU_STATES_BASE_ADDR + 0x4) // Metadata and handler
-#define QUEUEHEAD_ADDR (CU_STATES_BASE_ADDR + 0x20) // Actual queue sizeMetadata=0x1C
+#define START_SIGNAL STATES_BASE_ADDR // consumer->producer(ready to receieve)
+#define DONE_SIGNAL STATES_BASE_ADDR // producer->consumer (done pushing codelets)
+#define CODQUEUE_ADDR (STATES_BASE_ADDR + 0x4) // Metadata and handler
+#define QUEUEHEAD_ADDR (STATES_BASE_ADDR + 0x20) // Actual queue sizeMetadata=0x1C
 
-typedef void (*codelet)();
+typedef void (*codeletFunction)();
 
 //function to execute
 void sum() __attribute__((section (".internaltext")));
@@ -49,7 +49,9 @@ void e_producer()
     unsigned sumPtr = producerBaseAddress + *((unsigned *)pltEntryAddr + 2); // 2 for the actual address
     
     for (i = 0 ; i < 100000; i++) {
-        while ( pushCodeletQueue(codeletQueue, sumPtr) == 1);
+        codelet_t codelet;
+        codelet.fire = (codeletFunction) sumPtr;
+        while ( pushCodeletQueue(codeletQueue, codelet) == 1);
     }
 
      *doneSig=1;
@@ -68,8 +70,7 @@ void e_consumer()
     codeletsQueue_t * codeletQueue = (codeletsQueue_t *) consumerCodeletQueueAddr;
 
     // to fetch from queue
-    unsigned codeletAddr;
-    codelet toExecute;
+    codelet_t codelet;
     
     // flags
     unsigned *doneSig = (unsigned *) (consumerBaseAddress + DONE_SIGNAL);
@@ -85,10 +86,9 @@ void e_consumer()
     *startSig = 1;
     while(*doneSig == 0 || queueEmpty(codeletQueue) != 0)
     {        
-        if ( popCodeletQueue(codeletQueue, &codeletAddr) == 0 ) // Assuming core(0,0)
+        if ( popCodeletQueue(codeletQueue, &codelet) == 0 ) // Assuming core(0,0)
         {
-            toExecute = (codelet) codeletAddr;;
-            toExecute();
+            codelet.fire();
         }
     }
     *doneSig = 2;

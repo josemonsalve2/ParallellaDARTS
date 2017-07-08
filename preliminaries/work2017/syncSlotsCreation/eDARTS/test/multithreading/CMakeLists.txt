@@ -29,5 +29,30 @@
 #                                                                              #
 ################################################################################ 
 
-add_subdirectory(assets)
-add_subdirectory(multithreading)
+# Given that I am not able to use two compilers with cmake. I will
+# use custom command and custom target to manually build this
+if(DEBUG)
+    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include ${E_LOADER_LIB} ${E_HAL_LIB} -g)
+else()
+    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include ${E_LOADER_LIB} ${E_HAL_LIB})
+endif()
+
+# For the host we need to compile manually without cmake
+add_custom_command(
+   OUTPUT darts_mutex_test.out
+   COMMAND gcc e_darts_mutex/main.c ${EXTERNAL_FLAGS} -o darts_mutex_test.out
+   DEPENDS e_darts_mutex/main.c
+   COMMENT "CROSS-COMPILING HOST FILE darts_mutex_test "
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   VERBATIM
+)
+
+add_custom_target( darts_mutex_test
+                   COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/darts_mutex_test.out ${CMAKE_CURRENT_BINARY_DIR}/darts_mutex_test
+                    DEPENDS darts_mutex_test.out e_darts_mutex/main.c)
+
+# For e_codQueue.elf
+add_executable(e_darts_mutex_test.elf e_darts_mutex/e_darts_mutex_test.c)
+target_link_libraries(e_darts_mutex_test.elf edarts_multithreading ${EPIPHANY_LIBS})
+
+add_dependencies(e_darts_mutex_test.elf darts_mutex_test edarts_cachemanager)

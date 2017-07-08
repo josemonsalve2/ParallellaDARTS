@@ -11,9 +11,13 @@
  * dependecies have been already satisfied. 
  */
 
+#ifndef SYNCSLOT_H
+#define SYNCSLOT_H
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "common.h"
+#include "codelet.h"
+#include "e_darts_mutex.h"
 
 /**
  * @brief syncronization slots struct
@@ -26,9 +30,12 @@
  *
  */
 typedef struct PACKED syncSlot_s {
+    unsigned slotID;
     unsigned resetDep;
     unsigned currentDep;
-    codelet fire;
+    //threadedProcedure_t tpFrame;
+    codelet_t codeletTemplate;
+    unsigned numCodelets;
     darts_mutex_t lockMutex;
 } syncSlot_t;
 
@@ -43,7 +50,7 @@ typedef struct PACKED syncSlot_s {
  *
  */
 
-void initSyncSlot ( syncSlot_t * newSyncSlot, unsigned resetDep, unsigned initDep, codelet fireCodelet);
+void initSyncSlot (syncSlot_t * newSyncSlot, unsigned resetDep, unsigned initDep, codelet_t fireCodelet);
 
 /**
  * @brief This function allows decrementing a dependency of a syncronization slot 
@@ -63,3 +70,5 @@ int syncSlotDecDep( syncSlot_t * syncSlot );
  *
  */
 void syncSlotResetDep( syncSlot_t * syncSlot );
+
+#endif /* SYNCSLOT_H */

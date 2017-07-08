@@ -32,6 +32,7 @@
 //Experiments
 #define COUNT_TO 1000
 
-typedef void (*codelet)();
+#include "codelet.h"
+
 typedef int  darts_mutex_t;
 //typedef DARTS_MUTEX_NULL;

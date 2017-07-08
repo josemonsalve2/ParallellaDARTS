@@ -33,6 +33,7 @@ include_directories(include
                     include/assets
                     include/multithreading
                     include/runtime
+                    include/codeletModel
                     include)
 
 add_subdirectory( src )

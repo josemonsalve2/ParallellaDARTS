@@ -10,11 +10,13 @@
  * operations. operations over a queue are defined in functions.
  */
 
+#ifndef CODELETSQUEUE_H
+#define CODELETSQUEUE_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "e-lib.h"
-#include "common.h"
-
+#include "codelet.h"
 
 /**
  * @brief codelets queue struct
@@ -34,7 +36,7 @@
  */
 
 typedef struct PACKED codeletsQueue_s {
-    unsigned * headAddress;
+    codelet_t * headAddress;
     unsigned int size;
     unsigned int curNumElements;
     unsigned int currentTail;
@@ -80,7 +82,7 @@ void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned 
  * @return 
  */
 
-unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet) __attribute__((section(".internaltext")));
+unsigned pushCodeletQueue (codeletsQueue_t * queue, codelet_t newCodelet) __attribute__((section(".internaltext")));
 
 /**
  * @brief pop a codelet from the queue
@@ -96,7 +98,7 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet) __attri
  * @p queue Codelet Queue
  * @p popedCodelet codelet that was taken from the queue
  */
-unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet) __attribute__((section(".internaltext")));
+unsigned popCodeletQueue (codeletsQueue_t * queue, codelet_t * popedCodelet) __attribute__((section(".internaltext")));
 
 /** 
  * @brief is queue empty?
@@ -107,3 +109,5 @@ unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet) __at
  */
 
 unsigned queueEmpty(codeletsQueue_t * queue) __attribute__((section(".internaltext")));
+
+#endif /* CODELETSQUEUE_H */

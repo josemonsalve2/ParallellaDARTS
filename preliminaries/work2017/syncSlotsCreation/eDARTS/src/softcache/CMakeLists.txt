@@ -47,4 +47,4 @@ add_custom_command(
 )
 
 add_custom_target(edarts_cachemanager
-    DEPENDS cachemanager.o)
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/cachemanager.o)

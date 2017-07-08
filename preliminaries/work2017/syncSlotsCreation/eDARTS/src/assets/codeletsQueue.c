@@ -14,16 +14,16 @@
 
 void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned * newHeadAddress)
 {
-    queue->headAddress = newHeadAddress;
+    queue->headAddress = (codelet_t *) newHeadAddress;
     queue->size = newSize;
-    queue->currentTail=0;
-    queue->curNumElements=0;
+    queue->currentTail = 0;
+    queue->curNumElements = 0;
     queue->row = e_group_config.core_row;
     queue->col = e_group_config.core_col;
     queue->lockMutex = MUTEX_NULL;
 }
 
-unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet)
+unsigned pushCodeletQueue (codeletsQueue_t * queue, codelet_t newCodelet)
 {
     e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
     //check if full
@@ -41,7 +41,7 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, unsigned newCodelet)
     return 0;
 }
 
-unsigned popCodeletQueue (codeletsQueue_t * queue, unsigned * popedCodelet)
+unsigned popCodeletQueue (codeletsQueue_t * queue, codelet_t * popedCodelet)
 {
     e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
     //check if empty

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <e-hal.h>
-#include "common.h"
 
 int main(int argc, char *argv[]){
     e_platform_t platform;

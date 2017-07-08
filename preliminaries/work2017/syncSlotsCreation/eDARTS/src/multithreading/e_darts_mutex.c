@@ -1,36 +1,47 @@
 #include "e_darts_mutex.h"
 
-void darts_mutex_lock( e_mutex_t *mutex, unsigned baseAddr)
+int darts_mutex_lock( darts_mutex_t *mutex )
 {
-    darts_mutex_t *gmutex;
-    gmutex = (darts_mutex_t *) ((unsigned)(mutex & 0x000FFFFF) + baseAddr);
-    offset = 0x0;
-    unsigned coreid;
-    __asm__ __volatile__ ("movfs %0, coreid" : "=r" (coreid));
+    // If the mutex does not contain the core ID in the address
+    if (!((unsigned)mutex & 0x000FFFFF))
+        return -1;
+    
+    const register unsigned offset = 0x0;
+    
+    // Obtaining core ID from special register COREID
+    register unsigned coreid, val, i, wait = 1;
+    //register unsigned addition = ((unsigned)mutex & 0x00300000) >> 20;
+    __asm__ __volatile__ ("movfs %0, coreid" : "=r" (coreid)); 
 
+    // Loop until lock is locked
     do {
         val = coreid;
         __asm__ __volatile__(
-                "testset    %[val], [%[gmutex], %[offset]]"
+                "testset    %[val], [%[mutex], %[offset]]"
                 : [val] "+r" (val)
-                : [gmutex] "r" (gmutex), [offset] "r" (offset)
+                : [mutex] "r" (mutex), [offset] "r" (offset)
                 : "memory");
+        // Exponential backoff
+        //for (i = 0; val != 0 && i < wait; i++);
+        //wait += addition;
     } while (val != 0);
 
-    return;
+    return val;
 }
 
-void darts_mutex_unlock( e_mutex_t *mutex, unsigned baseAddr)
+int darts_mutex_unlock( darts_mutex_t *mutex )
 {
-    const register uint32_t zero = 0;
-    e_mutex_t *gmutex;
-    gmutex = (darts_mutex_t *) ((unsigned)(mutex & 0x000FFFFF) + baseAddr);
+    // If the mutex does not contain the core ID in the address
+    if (!((unsigned)mutex & 0x000FFFFF))
+        return -1;
+
+    const register unsigned zero = 0;
 
     __asm__ __volatile__(
-            "str    %[zero], [%[gmutex]]"
+            "str    %[zero], [%[mutex]]"
             : /* no outputs */
-            : [zero] "r" (zero), [gmutex] "r" (gmutex)
+            : [zero] "r" (zero), [mutex] "r" (mutex)
             : "memory");
-
-    return;
+    
+    return 0;
 }

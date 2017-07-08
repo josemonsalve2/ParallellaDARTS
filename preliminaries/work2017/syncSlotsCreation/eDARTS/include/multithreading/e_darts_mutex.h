@@ -14,16 +14,35 @@
  *
  */
 
-typedef int  darts_mutex_t;
+typedef unsigned darts_mutex_t;
 #define DARTS_MUTEX_NULL (0)
 
 /**
- * @brief Locking a mutex given its location
+ * @brief Locking a mutex given its location. The location 
+ * must include core ID. 
+ * 
+ * @todo exponential backoff. Find the best parameters
  *
- * @param
+ * @param mutex. It is the darts_mutex_t to be locked. 
+ * Address must be complete. this is including code row and col ID
+ * 
+ * @return the coreID of the owner of the lock. -1 if the mutex was sent 
+ * without core ID.
  *
  */
 
-void darts_mutex_lock( e_mutex_t *mutex, unsigned baseAddr);
+int darts_mutex_lock( darts_mutex_t *mutex );
 
-void darts_mutex_unlock( e_mutex_t *mutex, unsigned baseAddr);
+/**
+ * @brief unlocking a mutex. The pointer must have all the 
+ * core ID.
+ *
+ * @param mutex. It is the darts_mutex_t to be unlocked. 
+ * Address must be complete. this is including code row and col ID
+ * 
+ * @return 0 if it was unlocked successfully. -1 if the mutex was sent 
+ * without core ID.
+ *
+ */
+
+int darts_mutex_unlock( darts_mutex_t *mutex );
