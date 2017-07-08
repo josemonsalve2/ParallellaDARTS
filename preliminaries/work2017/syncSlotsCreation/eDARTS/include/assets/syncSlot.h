@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include "codelet.h"
 #include "e_darts_mutex.h"
+#include "common.h"
 
 /**
  * @brief syncronization slots struct
@@ -26,10 +27,8 @@
  * for synchronization between codelets. Each synchronization 
  * represent a data or control dependency.
  *
- * @todo Add multiple fire codelets to this syncslot
- *
  */
-typedef struct PACKED syncSlot_s {
+typedef struct __attribute__ ((packed)) syncSlot_s {
     unsigned slotID;
     unsigned resetDep;
     unsigned currentDep;
@@ -50,7 +49,7 @@ typedef struct PACKED syncSlot_s {
  *
  */
 
-void initSyncSlot (syncSlot_t * newSyncSlot, unsigned resetDep, unsigned initDep, codelet_t fireCodelet);
+void initSyncSlot (syncSlot_t * newSyncSlot,unsigned slotID, unsigned resetDep, unsigned initDep, codelet_t fireCodeletTemplate, unsigned numCodeletsToFire);
 
 /**
  * @brief This function allows decrementing a dependency of a syncronization slot 
@@ -58,7 +57,7 @@ void initSyncSlot (syncSlot_t * newSyncSlot, unsigned resetDep, unsigned initDep
  *
  * @p syncSlot synchronization slot to decrement dependency to
  *
- * @return Returns 1 if dependencies are satisfied (currentDep == 0)
+ * @return Returns current dependency value
  */
 int syncSlotDecDep( syncSlot_t * syncSlot );
 

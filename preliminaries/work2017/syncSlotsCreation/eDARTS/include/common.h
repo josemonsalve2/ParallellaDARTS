@@ -29,10 +29,10 @@
 //RUNtIME:
 #define RT_START_SIGNAL 0x3000
 
-//Experiments
-#define COUNT_TO 1000
-
 #include "codelet.h"
 
-typedef int  darts_mutex_t;
-//typedef DARTS_MUTEX_NULL;
+#define COMPLETE_ADDRESS(element, address) {                                \
+            unsigned __coreid;                                              \
+            __asm__ __volatile__ ("movfs %0, coreid" : "=r" (__coreid));    \
+            address = (__coreid << 20) + (unsigned)(&(element));            \
+            }

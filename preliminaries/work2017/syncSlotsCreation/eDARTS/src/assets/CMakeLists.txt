@@ -30,14 +30,18 @@
 ################################################################################ 
 
 set( edarts_assets_src
-     codeletsQueue.c)
-set( edarts_assets_inc ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/codeletsQueue.h)
+     codeletsQueue.c
+     syncSlot.c)
+set( edarts_assets_inc 
+     ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/codeletsQueue.h
+     ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/syncSlot.h
+     )
 
 add_library( edarts_assets ${edarts_assets_src} ${edarts_assets_inc})
 #target_link_libraries( edarts_assets )
 
 set_target_properties(edarts_assets PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(edarts_assets PROPERTIES PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/codeletsQueue.h)
+set_target_properties(edarts_assets PROPERTIES PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/eDARTS/include/assets/codeletsQueue.h ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/syncSlot.h")
 
 install(TARGETS edarts_assets
         EXPORT edartsLibraryDepends
