@@ -1,4 +1,4 @@
-#include "syncSlots.h"
+#include "syncSlot.h"
 
 void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID, unsigned resetDep, unsigned initDep, codelet_t fireCodeletTemplate, unsigned numCodeletsToFire)
 {

@@ -1,5 +1,5 @@
 /**
- * @file syncSlots.h
+ * @file syncSlot.h
  * @author Jose M Monsalve
  * @date 26 May 2017
  * @brief Definition of the synchronization slots
