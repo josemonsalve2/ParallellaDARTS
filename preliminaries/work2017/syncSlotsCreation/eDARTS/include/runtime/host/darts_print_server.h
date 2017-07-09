@@ -29,4 +29,11 @@ int start_printing_server();
  * 
  */
 
-void printing_server();
+void* printing_server(void *tid);
+
+/**
+ * @brief This functions signals the server for safe termination
+ */
+void stop_printing_server();
+
+

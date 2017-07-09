@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "darts_print_server.h"
+
 struct {
     pthread_t printThread;
     int stillRunning;
@@ -19,7 +21,7 @@ int start_printing_server()
 }
 
 
-void printing_server(void *tid)
+void* printing_server(void *tid)
 {
     printf("Starting the printer server ...\n");
     while (pthread_vars.stillRunning == 1)

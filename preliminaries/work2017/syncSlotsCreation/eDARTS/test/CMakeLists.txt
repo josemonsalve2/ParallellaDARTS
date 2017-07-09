@@ -31,3 +31,4 @@
 
 add_subdirectory(assets)
 add_subdirectory(multithreading)
+add_subdirectory(runtime)

@@ -33,6 +33,8 @@ include_directories(include
                     include/assets
                     include/multithreading
                     include/runtime
+                    include/runtime/host
+                    include/runtime/device
                     include/codeletModel
                     include)
 

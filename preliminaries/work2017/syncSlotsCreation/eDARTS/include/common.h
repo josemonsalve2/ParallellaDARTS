@@ -36,3 +36,13 @@
             __asm__ __volatile__ ("movfs %0, coreid" : "=r" (__coreid));    \
             address = (__coreid << 20) + (unsigned)(&(element));            \
             }
+
+#define LOCK_MUTEX_OPERATION(mutexName, operation) {                        \
+            unsigned mutexAddress;                                          \
+            COMPLETE_ADDRESS(mutexName, mutexAddress);                      \
+            darts_mutex_lock((darts_mutex_t *) mutexAddress);               \
+            operation;                                                      \
+            darts_mutex_unlock((darts_mutex_t *) mutexAddress);             \
+            }
+            
+            

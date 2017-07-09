@@ -33,21 +33,21 @@
 # Given that I am not able to use two compilers with cmake. I will
 # use custom command and custom target to manually build this
 if(DEBUG)
-    set(EXTERNAL_FLAGS -g -L${PTHREAD_LIB} -lpthread)
+    set(EXTERNAL_FLAGS -g -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread)
 else()
-    set(EXTERNAL_FLAGS -L${PTHREAD_LIB} -lpthread)
+    set(EXTERNAL_FLAGS -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread)
 endif()
 
 # For the host we need to compile manually without cmake
 add_custom_command(
-   OUTPUT darts_printer_server.o
-   COMMAND gcc darts_printer_server.c ${EXTERNAL_FLAGS} -o darts_printer_server.o
-   DEPENDS darts_printer_server.c
-   COMMENT "CROSS-COMPILING HOST FILE darts_printer_server "
+   OUTPUT darts_print_server.o
+   COMMAND gcc -c darts_print_server.c ${EXTERNAL_FLAGS} -o darts_print_server.o
+   DEPENDS darts_print_server.c
+   COMMENT "CROSS-COMPILING HOST FILE darts_print_server "
    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
    VERBATIM
 )
 
-add_custom_target( darts_printer_server
-                   COMMAND ar cr ${CMAKE_CURRENT_BINARY_DIR}/darts_printer_server.a ${CMAKE_CURRENT_SOURCE_DIR}/darts_printer_server.o
-                    DEPENDS darts_printer_server.o darts_printer_server.c)
+add_custom_target( darts_print_server
+                   COMMAND ar cr ${CMAKE_CURRENT_BINARY_DIR}/libdarts_print_server.a ${CMAKE_CURRENT_SOURCE_DIR}/darts_print_server.o
+                    DEPENDS darts_print_server.o darts_print_server.c)

@@ -1,5 +1,3 @@
-//First implementation of a codeletsQueue for the parallella
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "e-lib.h"

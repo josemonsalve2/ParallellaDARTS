@@ -47,4 +47,12 @@ typedef struct __attribute__ ((packed)) codelet_s {
     codeletFunction fire;
 } codelet_t;
 
+/**
+ * @brief initCodelet
+ * 
+ * codelet creation method.
+ * 
+ */
+void initCodelet(codelet_t * newCodelet, unsigned newID, syncSlot_t * newSyncSlot, codeletFunction newFire);
+
 #endif /* CODELET_H */
