@@ -50,4 +50,5 @@ add_custom_command(
 
 add_custom_target( darts_print_server
                    COMMAND ar cr ${CMAKE_CURRENT_BINARY_DIR}/libdarts_print_server.a ${CMAKE_CURRENT_SOURCE_DIR}/darts_print_server.o
+                   COMMAND rm ${CMAKE_CURRENT_SOURCE_DIR}/darts_print_server.o
                     DEPENDS darts_print_server.o darts_print_server.c)
