@@ -16,14 +16,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "e_darts_mutex.h"
+#include "common.h"
 
 typedef struct __attribute__ ((packed)) printBuffer_s
 {
     unsigned sendPrintInstruction;
-    char * printingBufferHead;
+    darts_mutex_t * mutex;
+    char printingBufferHead[200];
 } printBuffer_t;
 
-printBuffer_t __printBuffer __attribute__ ((section("printingBuffer")));
+darts_mutex_t __printingMutex __attribute__ ((section(".bss"))) = DARTS_MUTEX_NULL;
+printBuffer_t __printBuffer __attribute__ ((section(".printBuffer"))) = {0, &__printingMutex, ""};
 
 /**
  * @brief printing function

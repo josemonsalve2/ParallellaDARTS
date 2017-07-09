@@ -5,11 +5,14 @@ void e_darts_print(const char * message){
     // has not finished printing
     while (__printBuffer.sendPrintInstruction != 0);
     
-    int charCount = 0;
-    while (message[charCount] != 0x0)
-    {
-        __printBuffer.printprintingBufferHead[charCount] = message[charCount];
-        charCount++;
-    }
-    __printBuffer.sendPrintInstruction = 1;
+ 
+    LOCK_MUTEX_OPERATION(__printingMutex,
+        int charCount = 0;
+        while (message[charCount] != 0x0)
+        {
+            __printBuffer.printingBufferHead[charCount] = message[charCount];
+            charCount++;
+        }
+        __printBuffer.sendPrintInstruction = 1;
+    );
 }
