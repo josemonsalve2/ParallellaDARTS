@@ -13,6 +13,8 @@
  * This file borrows heavily from the original eSDK 
  *
  */
+#ifndef E_DARTS_MUTEX_H
+#define E_DARTS_MUTEX_H
 
 typedef unsigned darts_mutex_t;
 #define DARTS_MUTEX_NULL (0)
@@ -46,3 +48,5 @@ int darts_mutex_lock( darts_mutex_t *mutex );
  */
 
 int darts_mutex_unlock( darts_mutex_t *mutex );
+
+#endif /* E_DARTS_MUTEX_H */

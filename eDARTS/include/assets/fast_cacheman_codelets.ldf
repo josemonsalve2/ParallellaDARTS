@@ -122,6 +122,8 @@ SECTIONS
 	    . = 0x10; /* force allocation */
 	  } > WORKGROUP_RAM /* 58 5C 60 64 */
 
+
+	  
 	/* place the ISR handlers after workgroup-configuration */
 	.reserved_crt0  ORIGIN(IVT_RAM) + LENGTH(IVT_RAM) + LENGTH(WORKGROUP_RAM) : {*.o(RESERVED_CRT0) *.o(reserved_crt0)} > INTERNAL_RAM
 
@@ -139,6 +141,7 @@ SECTIONS
 	.data_bank3   : {*.o(.data_bank3)} > BANK3_SRAM
 	.text_bank3   : {*.o(.text_bank3)} > BANK3_SRAM
 
+	
 	.code_dram    : {*.o(code_dram)   *.o(.code_dram)  } > EXTERNAL_DRAM_0
 	.shared_dram  : {*.o(shared_dram) *.o(.shared_dram)} > EXTERNAL_DRAM_1
 	.heap_dram   ORIGIN(EXTERNAL_DRAM_1) + LENGTH(EXTERNAL_DRAM_1) - __HEAP_SIZE_FOR_CORE_ * __NUM_ROWS_IN_CHIP_ * __NUM_COLS_IN_CHIP_ : {*.o(heap_dram) *.o(.heap_dram)} > EXTERNAL_DRAM_1
@@ -146,6 +149,9 @@ SECTIONS
 	/* the newlib  (libc and libm) library is mapped to the dedicated section */
 	/* create offset with location counter                                    */
 	. = (ORIGIN(EXTERNAL_DRAM_0) + __PROG_SIZE_FOR_CORE_ * __CORE_NUM_);
+
+        /* Reserved section for print buffer*/
+        .printBuffer . : {*(.printBuffer)} > EXTERNAL_DRAM_0 
 
 	NEW_LIB_RO           . : {lib_a-*.o(.text  .rodata)  *.o(libgloss_epiphany) } > EXTERNAL_DRAM_0
 	NEW_LIB_WR           . : {lib_a-*.o(.data)                                  } > EXTERNAL_DRAM_0
@@ -155,7 +161,8 @@ SECTIONS
 		*divsi3.o(.text  .rodata)   *udivsi3.o(.text .rodata)
 		*umodsi3.o(.text .rodata)  _*.o(.text  .rodata)
 	} > EXTERNAL_DRAM_0
-
+	
+	
   /* Read-only sections, merged into text segment: */
 
   .interp            : { *(.interp) }

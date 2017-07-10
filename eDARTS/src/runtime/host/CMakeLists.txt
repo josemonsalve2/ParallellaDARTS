@@ -33,9 +33,9 @@
 # Given that I am not able to use two compilers with cmake. I will
 # use custom command and custom target to manually build this
 if(DEBUG)
-    set(EXTERNAL_FLAGS -g -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread)
+    set(EXTERNAL_FLAGS -g -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread)
 else()
-    set(EXTERNAL_FLAGS -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread)
+    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread)
 endif()
 
 # For the host we need to compile manually without cmake

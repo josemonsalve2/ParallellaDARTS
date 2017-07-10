@@ -16,18 +16,36 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "e_darts_mutex.h"
 #include "common.h"
 
+// Changing this should also be changed on the host side
+#define MAX_NUM_CHARACTERS 200
+#define MAX_NUM_ARGUMENTS 20
+#define ARGUMENTS_SIZE 100
+#define TYPE_SELECTOR(letter)                               \
+        ((letter == 'd' || letter == 'i' ||                  \
+         letter == 'o' || letter == 'u' ||                  \
+         letter == 'x' || letter == 'X')? sizeof(int):(      \
+        (letter == 'c' || letter == 'C')? sizeof(char):     \
+        (letter == 'e' || letter == 'E' ||                  \
+         letter == 'f' || letter == 'F' ||                  \
+         letter == 'g' || letter == 'G' ||                  \
+         letter == 'a' || letter == 'A' ||                  \
+         letter == 'n' || letter == 'N')? sizeof(double):0))   \
+
+         
 typedef struct __attribute__ ((packed)) printBuffer_s
 {
     unsigned sendPrintInstruction;
     darts_mutex_t * mutex;
-    char printingBufferHead[200];
+    char printingBufferHead[MAX_NUM_CHARACTERS];
+    char arguments[ARGUMENTS_SIZE];
 } printBuffer_t;
 
-darts_mutex_t __printingMutex __attribute__ ((section(".bss"))) = DARTS_MUTEX_NULL;
-printBuffer_t __printBuffer __attribute__ ((section(".printBuffer"))) = {0, &__printingMutex, ""};
+extern darts_mutex_t __printingMutex __attribute__ ((section(".bss")));
+extern printBuffer_t __printBuffer __attribute__ ((section(".printBuffer")));
 
 /**
  * @brief printing function
@@ -39,6 +57,6 @@ printBuffer_t __printBuffer __attribute__ ((section(".printBuffer"))) = {0, &__p
  * and whenver there is a 1, it will copy the information over
  * 
  */
-void e_darts_print(const char * message);
+void e_darts_print(const char * message, ...);
 
 #endif /* E_DARTS_PRINT_H */

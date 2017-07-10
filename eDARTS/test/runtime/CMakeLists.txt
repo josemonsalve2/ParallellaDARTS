@@ -53,6 +53,6 @@ add_custom_target( darts_print_test
 
 # For e_codQueue.elf
 add_executable(e_darts_print_test.elf e_darts_print/e_darts_print_test.c)
-target_link_libraries(e_darts_print_test.elf edarts_runtime_device ${EPIPHANY_LIBS})
+target_link_libraries(e_darts_print_test.elf edarts_runtime_device edarts_multithreading ${EPIPHANY_LIBS})
 
 add_dependencies(e_darts_print_test.elf darts_print_test darts_print_server edarts_cachemanager)

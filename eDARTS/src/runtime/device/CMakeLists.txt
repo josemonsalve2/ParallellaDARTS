@@ -31,7 +31,7 @@
 
 set( edarts_runtime_device_src
      e_darts_print.c)
-set( edarts_runtime_device_inc ${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/device/e_darts_print.h)
+set( edarts_runtime_device_inc ${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/device/e_darts_print.h ${CMAKE_SOURCE_DIR}/eDARTS/include/multithreading/e_darts_mutex.h)
 
 add_library( edarts_runtime_device ${edarts_runtime_device_src} ${edarts_runtime_device_inc})
 
