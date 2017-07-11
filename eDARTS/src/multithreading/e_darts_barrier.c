@@ -1,5 +1,4 @@
 #include "e_darts_barrier.h"
-#include "e_darts_print.h"
 
 void darts_barrier_init( darts_barrier_t * newBarrier, unsigned numThreads) {
 	int i;

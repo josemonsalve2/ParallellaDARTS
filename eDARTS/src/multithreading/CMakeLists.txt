@@ -35,7 +35,6 @@ set( edarts_multithreading_src
 set( edarts_assets_inc ${CMAKE_SOURCE_DIR}/eDARTS/include/multithreading/e_darts_mutex.h ${CMAKE_SOURCE_DIR}/eDARTS/include/multithreading/e_darts_barrier.h)
 
 add_library( edarts_multithreading ${edarts_multithreading_src} ${edarts_multithreading_inc})
-target_link_libraries( edarts_multithreading edarts_runtime_device)
 
 set_target_properties(edarts_multithreading PROPERTIES LINKER_LANGUAGE C)
 set_target_properties(edarts_multithreading PROPERTIES PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/eDARTS/include/multithreading/e_darts_mutex.h ${CMAKE_SOURCE_DIR}/eDARTS/include/multithreading/e_darts_barrier.h")
