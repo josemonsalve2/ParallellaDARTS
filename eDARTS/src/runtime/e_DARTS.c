@@ -8,7 +8,7 @@ void end_rt()
     *cuDone = 1;
     suDone = (unsigned *) (*((unsigned *)CU_SU_BASE_ADDR) + SU_CU_DONE+ 4*MY_CU_NUM);
     *suDone = 1;
-    
+
 }
 
 void init_CU_states(CU_states_t** states)
@@ -38,9 +38,9 @@ void _SU_rt()
 
     //Runtime variables
     init_SU_states(&(_rt_states.SU_states));
-    
+
     int i,j;
-   
+
     //for global memory of the CUs
     codeletsQueue_t * codeletQueue;
     unsigned cuCodeletQueueAddr;
@@ -49,7 +49,7 @@ void _SU_rt()
     cd = 0x4000;
     codelet sum;
     sum();
-    
+
     //Wait for host
     while((_rt_states.SU_states)->startSignal != 0);
 
@@ -58,7 +58,7 @@ void _SU_rt()
     {
         while ((_rt_states.SU_states)->signal[i] != 0);
     }
-    
+
     for (i = 0; i < NUM_CU; ++i)
     {
         cuCodeletQueueAddr = ((unsigned)((_rt_states.SU_states)->cuBaseAddress[i] + CU_CODQUEUE_ADDR));
@@ -69,15 +69,15 @@ void _SU_rt()
         }
         //Send final codelet
             while ( pushCodeletQueue(codeletQueue, (unsigned) &end_rt) == 1);
-        
+
 
     }
-    
+
     for (i = 0; i < NUM_CU; i++)
     {
-        while ( (_rt_states.SU_states)->cuDone[i] == 0); 
+        while ( (_rt_states.SU_states)->cuDone[i] == 0);
     }
-    
+
     (_rt_states.SU_states)->done = 1;
 
 }
@@ -86,24 +86,24 @@ void _CU_rt()
 {
     //Runtime variables
     init_CU_states(&(_rt_states.CU_states));
-    
+
     unsigned *value;
-    unsigned popedCodelet; 
+    unsigned popedCodelet;
 
     codelet toExecute;
-     
+
     value = (unsigned *) 0x2228;
-    
+
     unsigned suAddress;
     suAddress = (unsigned)  e_get_global_address( SU_ROW , SU_COL , 0x0000 );
-    
+
     //Init the queue
     (_rt_states.CU_states)->done = 0;
     *value = 0;
-    
+
     // RT Barrier
     while((_rt_states.CU_states)->startSignal != 0);
-    
+
     //signal SU
     unsigned * su_signal;
     su_signal = (unsigned *) (suAddress + SU_CU_SIGNALS + MY_CU_NUM*sizeof(unsigned));

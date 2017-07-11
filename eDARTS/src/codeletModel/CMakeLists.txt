@@ -29,9 +29,18 @@
 #                                                                              #
 ################################################################################
 
+set( edarts_codeletModel_src
+     codelet.c)
+set( edarts_codeletModel_inc
+     ${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/codelet.h
+     )
 
-add_subdirectory( assets )
-add_subdirectory( multithreading )
-add_subdirectory( codeletModel )
-add_subdirectory( runtime )
-add_subdirectory( softcache )
+add_library( edarts_codeletModel ${edarts_codeletModel_src} ${edarts_codeletModel_inc})
+
+set_target_properties(edarts_codeletModel PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(edarts_codeletModel PROPERTIES PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/codelet.h")
+
+install(TARGETS edarts_codeletModel
+        EXPORT edartsLibraryDepends
+        ARCHIVE DESTINATION edarts/lib/             COMPONENT bin
+        PUBLIC_HEADER DESTINATION edarts/include/   COMPONENT dev)

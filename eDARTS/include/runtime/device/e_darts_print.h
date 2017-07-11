@@ -2,7 +2,7 @@
  * @file e_darts_print.h
  * @author Jose M Monsalve
  * @date 8 July 2017
- * @brief printing service from the epiphany to darts 
+ * @brief printing service from the epiphany to darts
  * @todo Add copyright
  * @todo add printing of variables
  *
@@ -35,11 +35,11 @@
          letter == 'a' || letter == 'A' ||                  \
          letter == 'n' || letter == 'N')? sizeof(double):0))   \
 
-         
+
 typedef struct __attribute__ ((packed)) printBuffer_s
 {
     unsigned sendPrintInstruction;
-    darts_mutex_t * mutex;
+    darts_mutex_t *mutex;
     char printingBufferHead[MAX_NUM_CHARACTERS];
     char arguments[ARGUMENTS_SIZE];
 } printBuffer_t;
@@ -50,12 +50,12 @@ extern printBuffer_t __printBuffer __attribute__ ((section(".printBuffer")));
 /**
  * @brief printing function
  * @todo allow printing variables
- * 
+ *
  * Send a message to this function and the message will be send to
- * the host by copying it to the printBuffer. There will be a thread 
+ * the host by copying it to the printBuffer. There will be a thread
  * on the host that will be spinning over the sendPrintInstruction flag
  * and whenver there is a 1, it will copy the information over
- * 
+ *
  */
 void e_darts_print(const char * message, ...);
 

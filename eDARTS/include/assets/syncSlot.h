@@ -5,10 +5,10 @@
  * @brief Definition of the synchronization slots
  * @todo Add copyright
  *
- * Syncronization slots are the part of the runtime that 
- * receives the signals from previous events or codelets. They 
+ * Syncronization slots are the part of the runtime that
+ * receives the signals from previous events or codelets. They
  * express when the required data, control or resource
- * dependecies have been already satisfied. 
+ * dependecies have been already satisfied.
  */
 
 #ifndef SYNCSLOT_H
@@ -24,7 +24,7 @@
  * @brief syncronization slots struct
  *
  * This struct contains the required variables and information
- * for synchronization between codelets. Each synchronization 
+ * for synchronization between codelets. Each synchronization
  * represent a data or control dependency.
  *
  */
@@ -36,23 +36,24 @@ typedef struct __attribute__ ((packed)) syncSlot_s {
     codelet_t codeletTemplate;
     unsigned numCodelets;
     darts_mutex_t lockMutex;
+    darts_mutex_t * lockMutexFullAddressPtr;
 } syncSlot_t;
 
 /**
- * @brief This function allows to initialize a new synchronization slot. 
+ * @brief This function allows to initialize a new synchronization slot.
  *
  * @p newSyncSlot Pointer to the new synchronization slot to initialize
  * @p resetDep Reset dependencies. Howe many initial dependencies exist
  * @p initDep Initial value for the current dependency counter
  * @p fireCodelet This is the codelet to run whenever the dependencies
- * are satisfied. 
+ * are satisfied.
  *
  */
 
 void initSyncSlot (syncSlot_t * newSyncSlot,unsigned slotID, unsigned resetDep, unsigned initDep, codelet_t fireCodeletTemplate, unsigned numCodeletsToFire);
 
 /**
- * @brief This function allows decrementing a dependency of a syncronization slot 
+ * @brief This function allows decrementing a dependency of a syncronization slot
  * @todo. Find a better way to get the syncSlot's address or to express this requirement
  *
  * @p syncSlot synchronization slot to decrement dependency to

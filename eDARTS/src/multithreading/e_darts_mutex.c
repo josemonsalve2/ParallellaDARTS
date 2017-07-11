@@ -5,13 +5,13 @@ int darts_mutex_lock( darts_mutex_t *mutex )
     // If the mutex does not contain the core ID in the address
     if (!((unsigned)mutex & 0x000FFFFF))
         return -1;
-    
+
     const register unsigned offset = 0x0;
-    
+
     // Obtaining core ID from special register COREID
     register unsigned coreid, val, i, wait = 1;
     //register unsigned addition = ((unsigned)mutex & 0x00300000) >> 20;
-    __asm__ __volatile__ ("movfs %0, coreid" : "=r" (coreid)); 
+    __asm__ __volatile__ ("movfs %0, coreid" : "=r" (coreid));
 
     // Loop until lock is locked
     do {
@@ -42,6 +42,6 @@ int darts_mutex_unlock( darts_mutex_t *mutex )
             : /* no outputs */
             : [zero] "r" (zero), [mutex] "r" (mutex)
             : "memory");
-    
+
     return 0;
 }

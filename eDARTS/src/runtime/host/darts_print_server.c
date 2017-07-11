@@ -9,7 +9,7 @@ struct {
     e_mem_t printBuffer;
     pthread_t printThread;
     int stillRunning;
-    
+
 } pthread_vars;
 
 int start_printing_server()
@@ -39,7 +39,7 @@ void* printing_server(void *tid)
         // Do server stuff
         e_read(&(pthread_vars.printBuffer), 0, 0, 0x0, &myBuffer, sizeof(printBuffer_t));
         if (myBuffer.sendPrintInstruction == 1) {
-            // Wait for a little, read again. to avoid problems 
+            // Wait for a little, read again. to avoid problems
             // with the processor writting to external memory
             int charCount = 0;
             char * argPointer = myBuffer.arguments;
@@ -49,7 +49,7 @@ void* printing_server(void *tid)
             while (myBuffer.printingBufferHead[charCount] != 0x0 && charCount < MAX_NUM_CHARACTERS) {
                 if (myBuffer.printingBufferHead[charCount] == '%') {
                     TRANSFORM_PARAMETER(myBuffer.printingBufferHead[charCount + 1],
-                                        tempBuffer, 
+                                        tempBuffer,
                                         argPointer);
                     int counter = 0;
                     while (tempBuffer[counter] != 0x0) {
@@ -63,7 +63,7 @@ void* printing_server(void *tid)
                     currentStr++;
                 }
                 charCount++;
-                    
+
             }
             // Add end of string
             *currentStr = 0x0;
@@ -73,7 +73,6 @@ void* printing_server(void *tid)
             myBuffer.arguments[0]=0;
             myBuffer.sendPrintInstruction = 0;
             e_write(&(pthread_vars.printBuffer), 0, 0, 0x0, &myBuffer, sizeof(myBuffer));
-            usleep(1e5);
         }
     }
     pthread_exit(NULL);

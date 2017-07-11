@@ -25,7 +25,7 @@ void sum(unsigned int * value)
     unsigned configReg = 0, countResult;
     unsigned useless=2;
 
-        
+
 
 
 
@@ -40,7 +40,7 @@ void startTimer()
     configReg = configReg & 0xffffff0f;// Set timer to off
     asm("movts config, %[configValue]"
         : // No outputs
-        : [configValue] "r" (configReg) 
+        : [configValue] "r" (configReg)
         );
     // Init timer with 0xffffffff since it decrements
     asm("movts ctimer0, %[value]"
@@ -50,7 +50,7 @@ void startTimer()
     configReg = configReg | 0x00000010;// Set timer to count clock
     asm("movts config, %[configValue]"
         : // No outputs
-        : [configValue] "r" (configReg) 
+        : [configValue] "r" (configReg)
         );
 }
 
@@ -66,25 +66,25 @@ void stopTimer()
         : [configValue] "=r" (configReg), [timerValue] "=r" (countResult)
         : // No inputs
         );
-    *value = (0xffffffff - countResult);    
+    *value = (0xffffffff - countResult);
 }
 
 int main(void)
 {
     // for loops
     int i;
-    
+
     unsigned base0_0Address = (unsigned) e_get_global_address( 0 , 0 , 0x0000 );
     unsigned *initSignal = (unsigned *) (base0_0Address + INIT_SIGNAL);
     unsigned * finalBarrier = (unsigned*) (base0_0Address + FINAL_BARRIER);
-    
+
     // The mutex
     darts_mutex_t *mutex = (unsigned *) (base0_0Address + MUTEX_LOCATION);
-    
+
     // Sum values
     unsigned * safeSum = (unsigned*) (base0_0Address + SAFE_SUM_RESULT);
     unsigned * unsafeSum = (unsigned*) (base0_0Address + UNSAFE_SUM_RESULT);
-    
+
     if (e_group_config.core_row == 0 && e_group_config.core_col == 0)
     {
         *safeSum = 0;
@@ -98,11 +98,11 @@ int main(void)
     {
         while (*initSignal != 1);
     }
-    
+
     // Unsafe sum
     for (i = 0; i < 1000; i++)
         sum(unsafeSum);
-    
+
     // safe sum
     for (i = 0; i < 1000; i++)
     {
@@ -119,6 +119,6 @@ int main(void)
     {
         SAFE_OP(sum(finalBarrier), mutex);
     }
-        
+
     return 0;
-} 
+}

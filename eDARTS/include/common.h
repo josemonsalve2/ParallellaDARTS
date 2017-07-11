@@ -31,10 +31,10 @@
 
 #include "codelet.h"
 
-#define COMPLETE_ADDRESS(element, address) {                                \
-            unsigned __coreid;                                              \
-            __asm__ __volatile__ ("movfs %0, coreid" : "=r" (__coreid));    \
-            address = (__coreid << 20) + (unsigned)(&(element));            \
+#define COMPLETE_ADDRESS(element, address) {                                 \
+            unsigned __coreid;                                               \
+            __asm__ __volatile__ ("movfs %0, coreid" : "=r" (__coreid));     \
+            address = (__coreid << 20) + (unsigned)(((unsigned)&(element)) & 0x000FFFFF);\
             }
 
 #define LOCK_MUTEX_OPERATION(mutexName, operation) {                        \
@@ -44,5 +44,5 @@
             operation;                                                      \
             darts_mutex_unlock((darts_mutex_t *) mutexAddress);             \
             }
-            
-            
+
+

@@ -5,33 +5,27 @@ void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID, unsigned resetD
     newSyncSlot->slotID = newSlotID;
     newSyncSlot->resetDep = resetDep;
     newSyncSlot->currentDep = initDep;
-    newSyncSlot->codeletTemplate = fireCodeletTemplate; 
+    newSyncSlot->codeletTemplate = fireCodeletTemplate;
+    // We need the full address to lock this mutex
     newSyncSlot->lockMutex = DARTS_MUTEX_NULL;
+    COMPLETE_ADDRESS(newSyncSlot->lockMutex, *(newSyncSlot->lockMutexFullAddressPtr));
 }
 
 
 int syncSlotDecDep( syncSlot_t * syncSlot )
 {
-    // mutex must have the coreID in the address
-    unsigned mutexAddress;
-    COMPLETE_ADDRESS(syncSlot->lockMutex, mutexAddress);
-    
     // decrementing dependency.
-    darts_mutex_lock((darts_mutex_t *) mutexAddress);
+    darts_mutex_lock(syncSlot->lockMutexFullAddressPtr);
     syncSlot->currentDep--;
-    darts_mutex_unlock((darts_mutex_t *) mutexAddress);
+    darts_mutex_unlock(syncSlot->lockMutexFullAddressPtr);
     return syncSlot->currentDep;
 }
 
 void syncSlotResetDep( syncSlot_t * syncSlot )
 {
-    // mutex must have the coreID in the address
-    unsigned mutexAddress;
-    COMPLETE_ADDRESS(syncSlot->lockMutex, mutexAddress);
-    
     // reseting the dependencies
-    darts_mutex_lock((darts_mutex_t *) mutexAddress);
+    darts_mutex_lock(syncSlot->lockMutexFullAddressPtr);
     syncSlot->currentDep = syncSlot->resetDep;
-    darts_mutex_unlock((darts_mutex_t *) mutexAddress);
+    darts_mutex_unlock(syncSlot->lockMutexFullAddressPtr);
 }
 

@@ -5,7 +5,7 @@
  * @brief File defining the codeletsQueue_t parallel struct.
  * @todo Add copyright
  *
- * codeletsQueue_t is an structure that allows a queue to be accessed 
+ * codeletsQueue_t is an structure that allows a queue to be accessed
  * concurrently. There is a mutex that locks the queue on push or pop
  * operations. operations over a queue are defined in functions.
  */
@@ -36,7 +36,7 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, codelet_t newCodelet)
     queue->headAddress[queue->currentTail] = newCodelet;
     queue->currentTail = (queue->currentTail + 1) % queue->size;
     queue->curNumElements++;
-    
+
     e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
     return 0;
 }
@@ -54,7 +54,7 @@ unsigned popCodeletQueue (codeletsQueue_t * queue, codelet_t * popedCodelet)
     //Pop from head
     *popedCodelet = (queue->currentTail >= queue->curNumElements)? queue->headAddress[queue->currentTail - queue->curNumElements] : queue->headAddress[queue->currentTail - queue->curNumElements + queue->size];
     queue->curNumElements--;
-    
+
     e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
     return 0;
 }
