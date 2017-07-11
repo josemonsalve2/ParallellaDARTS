@@ -8,7 +8,13 @@ void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID, unsigned resetD
     newSyncSlot->codeletTemplate = fireCodeletTemplate;
     // We need the full address to lock this mutex
     newSyncSlot->lockMutex = DARTS_MUTEX_NULL;
-    COMPLETE_ADDRESS(newSyncSlot->lockMutex, *(newSyncSlot->lockMutexFullAddressPtr));
+    // We obtain the mutex address
+    // TODO: MUTEX ADDRESS CAN BE OBTAINED FROM newSyncSlot or the incomming syncSlot.
+    // This field is unnecessary.
+    unsigned __coreid;
+	__asm__ __volatile__ ("movfs %0, coreid" : "=r" (__coreid));
+	newSyncSlot->lockMutexFullAddressPtr = (darts_mutex_t *) ((__coreid << 20) + (unsigned)(((unsigned)&(newSyncSlot->lockMutex)) & 0x000FFFFF));
+	newSyncSlot->numCodelets = numCodeletsToFire;
 }
 
 

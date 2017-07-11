@@ -27,6 +27,8 @@
  * for synchronization between codelets. Each synchronization
  * represent a data or control dependency.
  *
+ * SyncSlot size = 4 + 4 + 4 + 12 + 4 + 4 + 4 = 36 = 0x24
+ *
  */
 typedef struct __attribute__ ((packed)) syncSlot_s {
     unsigned slotID;
@@ -70,5 +72,6 @@ int syncSlotDecDep( syncSlot_t * syncSlot );
  *
  */
 void syncSlotResetDep( syncSlot_t * syncSlot );
+
 
 #endif /* SYNCSLOT_H */

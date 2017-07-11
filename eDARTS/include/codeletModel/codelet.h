@@ -5,9 +5,9 @@
  * @brief Definition of the synchronization slots
  * @todo Add copyright
  *
- * Codelets are the unito of computation of the codelet model. 
+ * Codelets are the unito of computation of the codelet model.
  * A codelet represents a task and it is a non-preemtible segment
- * of code. 
+ * of code.
  * A codelet can be waiting for dependencies, enabled, ready or fired.
  * Enabled codelets have all their dependencies satisfied, but have not been
  * allocated to a CU nor the code prefetched. ready codelets are allocated
@@ -15,7 +15,7 @@
  * that are executing or have been already executed
  * A codelet has an ID that can be used as reference within the computation
  * A codelet always belongs to a syncronization slot, which is where
- * dependencies are kept. A syncronization slot might fire multiple 
+ * dependencies are kept. A syncronization slot might fire multiple
  * codelets.
  * A codelet can use the syncslot to obtian the TP frame
  */
@@ -30,16 +30,18 @@
 typedef void (*codeletFunction)();
 
 // Forward declaration
-typedef struct __attribute__ ((packed)) syncSlot_s syncSlot_t; 
+typedef struct __attribute__ ((packed)) syncSlot_s syncSlot_t;
 
 /**
  * @brief codeletStruct
  *
  * This struct contains the required variables and information
- * for the codelets. Each codelet is a unit of computation and 
- * is associated with a synchronization slot. Each codelet 
- * has an ID within that synchronization slot and can be used within 
+ * for the codelets. Each codelet is a unit of computation and
+ * is associated with a synchronization slot. Each codelet
+ * has an ID within that synchronization slot and can be used within
  * the codelet
+ *
+ * codelet_t size = 4 + 4 + 4 = 12 = 0xC
  */
 typedef struct __attribute__ ((packed)) codelet_s {
     unsigned codeletID;
@@ -49,9 +51,9 @@ typedef struct __attribute__ ((packed)) codelet_s {
 
 /**
  * @brief initCodelet
- * 
+ *
  * codelet creation method.
- * 
+ *
  */
 void initCodelet(codelet_t * newCodelet, unsigned newID, syncSlot_t * newSyncSlot, codeletFunction newFire);
 
