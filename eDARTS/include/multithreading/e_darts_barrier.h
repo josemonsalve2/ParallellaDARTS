@@ -16,7 +16,7 @@
 #include "e_darts_mutex.h"
 #include "common.h"
 
-#define  16
+#define __MAX_NUM_THREADS_BARRIER 16
 
 /**
  * @brief barrier Struct.

@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <e-hal.h>
+#include "darts_print_server.h"
+
+#define INIT_SIGNAL 0x6004
+#define FINAL_SIGNAL 0x6008
 
 int main(int argc, char *argv[]){
     e_platform_t platform;
@@ -10,30 +14,25 @@ int main(int argc, char *argv[]){
     e_init(NULL);
     e_reset_system();//reset Epiphany
     e_get_platform_info(&platform);
-    e_open(&dev, 0, 0, 2, 2);
+    e_open(&dev, 0, 0, 4, 4);
+    start_printing_server();
 
     unsigned number = 0;
 
-    e_load("e_codQueue.elf", &dev, 0, 0, E_FALSE); // producer
-    e_load("e_codQueue.elf", &dev, 0, 1, E_FALSE); // consumer
+    e_load_group("e_darts_tp_test.elf", &dev, 0, 0, 4, 4, E_FALSE);
 
     // Set the initial value for the flags
-    e_write(&dev,0,0, 0x3000,&number,sizeof(number)); // startSignal
-    e_write(&dev,0,1, 0x3000,&number,sizeof(number)); // doneSignal
+    e_write(&dev,0,0, INIT_SIGNAL,&number,sizeof(number)); // startSignal
+    e_write(&dev,0,0, FINAL_SIGNAL,&number,sizeof(number)); // startSignal
 
-
-
-    e_start(&dev, 0,0);
-    e_start(&dev, 0,1);
+    e_start_group(&dev);
     // wait until consumer is done
-    while(number != 2)
+    while(number != 1)
     {
-        e_read(&dev,0,1,0x3000,&number,sizeof(number));
+        e_read(&dev,0,0,FINAL_SIGNAL,&number,sizeof(number));
     }
 
-    e_read(&dev,0,1,0x2228,&number,sizeof(number)); //reading result from sum
-    printf ("result = %d \n",number);
-
+    stop_printing_server();
     e_close(&dev);
     e_finalize();
     return EXIT_SUCCESS;

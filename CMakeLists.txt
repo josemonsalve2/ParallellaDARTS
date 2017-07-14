@@ -143,7 +143,7 @@ endif()
 message("\n")
 
 #Compilation flags
-option(DEBUG "DEBUG" ON)
+option(DEBUG "DEBUG" OFF)
 if (DEBUG)
     message("DEBUG MODE ON!!")
     set (CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "  -g -ffast-math -mfp-mode=round-nearest -fpic -T ${ELDF_EDARTS_CACHEMAN} ")
