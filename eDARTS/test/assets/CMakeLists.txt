@@ -50,13 +50,13 @@ add_custom_command(
 
 add_custom_target( codeletQueue_test
                    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/codeletQueue_test.out ${CMAKE_CURRENT_BINARY_DIR}/codeletQueue_test
-                    DEPENDS codeletQueue_test.out codeletQueue/main.c)
+                    DEPENDS codeletQueue_test.out darts_print_server codeletQueue/main.c)
 
 # For e_codQueue.elf
 add_executable(e_codQueue.elf codeletQueue/e_codQueue.c)
 target_link_libraries(e_codQueue.elf edarts_assets ${EPIPHANY_LIBS})
 
-add_dependencies(e_codQueue.elf codeletQueue_test edarts_cachemanager)
+add_dependencies(e_codQueue.elf codeletQueue_test darts_print_server edarts_cachemanager)
 
 ### FOR SYNC SLOTS TESTS ###
 # For the host we need to compile manually without cmake
@@ -71,7 +71,7 @@ add_custom_command(
 
 add_custom_target( syncSlot_test
                    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/syncSlot_test.out ${CMAKE_CURRENT_BINARY_DIR}/syncSlot_test
-                    DEPENDS syncSlot_test.out syncSlot/main.c)
+                    DEPENDS syncSlot_test.out darts_print_server syncSlot/main.c)
 
 # For e_codQueue.elf
 add_executable(e_syncSlot_test.elf syncSlot/e_syncSlot_test.c)

@@ -27,27 +27,27 @@ void sum()
 
 void e_producer()
 {
-    
+
     int i=0; // for loop interations
 
     // For sending and receiving address
     unsigned producerBaseAddress = (unsigned) e_get_global_address( 0 , 0 , 0x0000 );
     unsigned consumerBaseAddress = (unsigned) e_get_global_address( 0 , 1 , 0x0000 );
-    
+
     // The codelet queue
     unsigned consumerCodeletQueueAddr = consumerBaseAddress + CODQUEUE_ADDR;
     codeletsQueue_t * codeletQueue = (codeletsQueue_t *) consumerCodeletQueueAddr;
-    
+
     // flags
     unsigned *doneSig = (unsigned *)(consumerBaseAddress + DONE_SIGNAL);
     unsigned *startSig = (unsigned *)(producerBaseAddress + START_SIGNAL);
 
     while (*startSig == 0);
-    
+
     //Obtain the sum address (considering sum function points to the plt entry)
     unsigned pltEntryAddr = (unsigned)sum;
     unsigned sumPtr = producerBaseAddress + *((unsigned *)pltEntryAddr + 2); // 2 for the actual address
-    
+
     for (i = 0 ; i < 100000; i++) {
         codelet_t codelet;
         codelet.fire = (codeletFunction) sumPtr;
@@ -71,28 +71,28 @@ void e_consumer()
 
     // to fetch from queue
     codelet_t codelet;
-    
+
     // flags
     unsigned *doneSig = (unsigned *) (consumerBaseAddress + DONE_SIGNAL);
     unsigned *startSig = (unsigned *) (producerBaseAddress + START_SIGNAL);
-    
+
     // sumResult initialization
     unsigned *sumResult = (unsigned *)SUM_RESULT;
     *sumResult = 0;
-    
+
      //Init the queue (pointer,size, headPtr)
     initCodeletsQueue(codeletQueue, 300, (unsigned*)codeletQueueHead);
-    
+
     *startSig = 1;
     while(*doneSig == 0 || queueEmpty(codeletQueue) != 0)
-    {        
+    {
         if ( popCodeletQueue(codeletQueue, &codelet) == 0 ) // Assuming core(0,0)
         {
             codelet.fire();
         }
     }
     *doneSig = 2;
-    
+
 }
 
 int main(void)
@@ -106,6 +106,6 @@ int main(void)
     {
         e_consumer();
     }
-        
+
     return 0;
-} 
+}

@@ -57,4 +57,11 @@ typedef struct __attribute__ ((packed)) codelet_s {
  */
 void initCodelet(codelet_t * newCodelet, unsigned newID, syncSlot_t * newSyncSlot, codeletFunction newFire);
 
+/**
+ * @brief function that does nothing for empty codelets
+ *
+ */
+
+void __emptyCodeletFunction();
+
 #endif /* CODELET_H */

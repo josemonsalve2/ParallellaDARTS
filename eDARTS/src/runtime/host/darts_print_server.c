@@ -55,7 +55,7 @@ void* printing_server(void *tid)
                     while (tempBuffer[counter] != 0x0) {
                         *currentStr = tempBuffer[counter];
                         counter++;
-                        *currentStr++;
+                        currentStr++;
                     }
                     charCount++;
                 } else {

@@ -1,6 +1,8 @@
 #include "syncSlot.h"
 
-void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID, unsigned resetDep, unsigned initDep, codelet_t fireCodeletTemplate, unsigned numCodeletsToFire)
+void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID,
+                   unsigned resetDep, unsigned initDep,
+                   codelet_t fireCodeletTemplate, unsigned numCodeletsToFire)
 {
     newSyncSlot->slotID = newSlotID;
     newSyncSlot->resetDep = resetDep;
@@ -13,7 +15,8 @@ void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID, unsigned resetD
     // This field is unnecessary.
     unsigned __coreid;
 	__asm__ __volatile__ ("movfs %0, coreid" : "=r" (__coreid));
-	newSyncSlot->lockMutexFullAddressPtr = (darts_mutex_t *) ((__coreid << 20) + (unsigned)(((unsigned)&(newSyncSlot->lockMutex)) & 0x000FFFFF));
+	newSyncSlot->lockMutexFullAddressPtr = (darts_mutex_t *) ((__coreid << 20) +
+	                                       (unsigned)(((unsigned)&(newSyncSlot->lockMutex)) & 0x000FFFFF));
 	newSyncSlot->numCodelets = numCodeletsToFire;
 }
 

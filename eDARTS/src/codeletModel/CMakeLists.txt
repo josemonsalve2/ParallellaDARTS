@@ -30,15 +30,18 @@
 ################################################################################
 
 set( edarts_codeletModel_src
-     codelet.c)
+     codelet.c
+     threadedProcedure.c)
 set( edarts_codeletModel_inc
      ${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/codelet.h
+     ${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/threadedProcedure.h
+     ${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/tpClosure.h
      )
 
 add_library( edarts_codeletModel ${edarts_codeletModel_src} ${edarts_codeletModel_inc})
 
 set_target_properties(edarts_codeletModel PROPERTIES LINKER_LANGUAGE C)
-set_target_properties(edarts_codeletModel PROPERTIES PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/codelet.h")
+set_target_properties(edarts_codeletModel PROPERTIES PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/codelet.h ${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/threadedProcedure.h ${CMAKE_SOURCE_DIR}/eDARTS/include/codeletModel/tpClosure.h")
 
 install(TARGETS edarts_codeletModel
         EXPORT edartsLibraryDepends

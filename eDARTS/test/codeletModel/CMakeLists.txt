@@ -32,27 +32,55 @@
 # Given that I am not able to use two compilers with cmake. I will
 # use custom command and custom target to manually build this
 if(DEBUG)
-    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include ${E_LOADER_LIB} -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${CMAKE_BINARY_DIR}/eDARTS/src/runtime/host -ldarts_print_server -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB} -g)
+    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${CMAKE_BINARY_DIR}/eDARTS/src/runtime/host -ldarts_print_server -L${PTHREAD_LIB} -lpthread ${E_LOADER_LIB} ${E_HAL_LIB} -g)
 else()
-    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host ${E_LOADER_LIB} -L${CMAKE_BINARY_DIR}/eDARTS/src/runtime/host -ldarts_print_server -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB})
+    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${CMAKE_BINARY_DIR}/eDARTS/src/runtime/host -ldarts_print_server -L${PTHREAD_LIB} -lpthread ${E_LOADER_LIB} ${E_HAL_LIB})
 endif()
+
+### FOR DARTS_MUTEX ###
 
 # For the host we need to compile manually without cmake
 add_custom_command(
-   OUTPUT darts_print_test.out
-   COMMAND gcc e_darts_print/main.c ${EXTERNAL_FLAGS} -o darts_print_test.out
-   DEPENDS e_darts_print/main.c
-   COMMENT "CROSS-COMPILING HOST FILE darts_print_test "
+   OUTPUT darts_tp_test.out
+   COMMAND gcc main.c ${EXTERNAL_FLAGS} -o darts_tp_test.out
+   DEPENDS main.c
+   COMMENT "CROSS-COMPILING HOST FILE darts_tp_test "
    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
    VERBATIM
 )
 
-add_custom_target( darts_print_test
-                   COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/darts_print_test.out ${CMAKE_CURRENT_BINARY_DIR}/darts_print_test
-                    DEPENDS darts_print_test.out darts_print_server e_darts_print/main.c)
+add_custom_target( darts_tp_test
+                   COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/darts_tp_test.out ${CMAKE_CURRENT_BINARY_DIR}/darts_tp_test
+                    DEPENDS darts_tp_test.out darts_print_server main.c)
 
-# For e_codQueue.elf
-add_executable(e_darts_print_test.elf e_darts_print/e_darts_print_test.c)
-target_link_libraries(e_darts_print_test.elf edarts_runtime_device edarts_multithreading ${EPIPHANY_LIBS})
+# For e_darts_mutex_test.elf
+add_executable(e_darts_tp_test.elf e_tp_test.c e_tp_definition_test.h)
+target_link_libraries(e_darts_tp_test.elf edarts_codeletModel edarts_assets edarts_runtime_device edarts_multithreading ${EPIPHANY_LIBS})
 
-add_dependencies(e_darts_print_test.elf darts_print_test darts_print_server edarts_cachemanager)
+add_dependencies(e_darts_tp_test.elf darts_tp_test darts_print_server edarts_cachemanager)
+
+if(SHOW_TPS_EXPANDED)
+        message("EXPANDING TP IN DIRECTORY " ${CMAKE_CURRENT_BINARY_DIR})
+        # For Outputing the preprocessed
+        get_target_property(originalIncludes e_darts_tp_test.elf INCLUDE_DIRECTORIES)
+        set(finalIncludes "")
+        foreach(dir ${originalIncludes})
+                set(finalIncludes ${finalIncludes} "-I" ${dir})
+        endforeach()
+        message("-->" ${originalIncludes})
+        add_custom_command(
+           OUTPUT e_darts_tp_expanded.c
+           COMMAND e-gcc -E e_tp_definition_test.h ${CMAKE_FLAGS} ${finalIncludes} -o e_darts_tp_expanded.c
+           DEPENDS e_tp_definition_test.h
+           COMMENT "EXPANDING THE THREADED PROCEDURE MACROS OF e_tp_definition_test.h"
+           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+           VERBATIM
+        )
+
+        add_custom_target( e_darts_tp_expanded
+                           COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/e_darts_tp_expanded.c ${CMAKE_CURRENT_BINARY_DIR}/e_darts_tp_expanded.c
+                           DEPENDS e_darts_tp_expanded.c e_tp_definition_test.h)
+
+        add_dependencies(e_darts_tp_test.elf e_darts_tp_expanded)
+
+endif()

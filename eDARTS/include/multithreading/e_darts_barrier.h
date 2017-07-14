@@ -16,7 +16,7 @@
 #include "e_darts_mutex.h"
 #include "common.h"
 
-#define __MAX_NUM_THREADS_BARRIER 16
+#define  16
 
 /**
  * @brief barrier Struct.
@@ -26,6 +26,8 @@
  *
  * @TODO think of a possible implementation with WAND instead of this way
  *
+ * if __MAX_NUM_THREADS_BARRIER = 16
+ *    Size of barrier = 4 + 4 + 4 + 4 + 4*16 = 80
  */
 typedef struct darts_barrier_s {
 	darts_mutex_t lock;

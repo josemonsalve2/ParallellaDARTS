@@ -6,3 +6,5 @@ void initCodelet(codelet_t * newCodelet, unsigned newID, syncSlot_t * newSyncSlo
     newCodelet->syncSlot = newSyncSlot;
     newCodelet->fire = newFire;
 }
+
+void __emptyCodeletFunction(){}
