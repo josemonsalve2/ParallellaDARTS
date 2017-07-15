@@ -85,7 +85,7 @@
  *
  */
 
-typedef struct __attribute__ ((packed)) _tp_metadata_s {
+typedef struct __attribute__ ((__packed__)) _tp_metadata_s {
     unsigned _TPid;
     unsigned numSyncSlots;
     unsigned refCount;
@@ -133,7 +133,7 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
 		{\
 	        syncSlot_t* theSyncSlot = GET_SYNC_SLOT(_Tp,syncSlotNum);\
 			codelet_t newCodeletTemplate;\
-            initCodelet(&newCodeletTemplate,0 ,theSyncSlot, __emptyCodeletFunction);\
+            initCodelet(&newCodeletTemplate,0 ,theSyncSlot, codeletFunction);\
             initSyncSlot(theSyncSlot, syncSlotNum, resetDep, numDep, newCodeletTemplate, numExec);\
         }\
 
@@ -141,13 +141,13 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
 // Functions for creating Threded Procedures definitions
 
 #define DEFINE_TP_MEM_REGIONS(_TPname,memRegionDRAM,memRegionLocal,memRegionDist)\
-		typedef struct __attribute__((packed)) _TPname##_memDRAM_s {\
+		typedef struct __attribute__((__packed__)) _TPname##_memDRAM_s {\
             memRegionDRAM\
         } _TPname##_memDRAM_t;\
-        typedef struct __attribute__((packed)) _TPname##_memLocal_s {\
+        typedef struct __attribute__((__packed__)) _TPname##_memLocal_s {\
             memRegionLocal;\
         } _TPname##_memLocal_t;\
-        typedef struct __attribute__((packed)) _TPname##_memDist_s {\
+        typedef struct __attribute__((__packed__)) _TPname##_memDist_s {\
             memRegionDist;\
         } _TPname##_memDist_t;\
 
@@ -172,7 +172,7 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
 
 // NO TP ARGUMENTS
 #define DEFINE_THREADED_PROCEDURE_NOARGS(TPname,_numSyncSlots,initializationCode)   \
-        typedef struct __attribute__((packed)) TPname##_threadedProcedure_s {\
+        typedef struct __attribute__((__packed__)) TPname##_threadedProcedure_s {\
             _tp_metadata_t metadata;\
         }TPname##_threadedProcedure_t;\
         \
@@ -194,7 +194,7 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
 
 // WITH TP ARGUMENTS
 #define DEFINE_THREADED_PROCEDURE_ARGS(TPname,_numSyncSlots, initializationCode, ...)   \
-		typedef struct __attribute__((packed)) TPname##_threadedProcedure_s {\
+		typedef struct __attribute__((__packed__)) TPname##_threadedProcedure_s {\
             _tp_metadata_t metadata;\
         }TPname##_threadedProcedure_t;\
         \

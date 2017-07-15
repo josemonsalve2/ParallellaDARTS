@@ -29,10 +29,10 @@
  * if __MAX_NUM_THREADS_BARRIER = 16
  *    Size of barrier = 4 + 4 + 4 + 4 + 4*16 = 80
  */
-typedef struct darts_barrier_s {
+typedef struct __attribute__((__packed__)) darts_barrier_s {
 	darts_mutex_t lock;
 	darts_mutex_t * lockFullAddressPtr;
-	unsigned counter;
+	volatile unsigned counter;
 	unsigned numThreads;
 	unsigned mailboxes[__MAX_NUM_THREADS_BARRIER];
 } darts_barrier_t;
@@ -46,7 +46,7 @@ typedef struct darts_barrier_s {
  * @TODO think of a possible implementation with WAND instead of this way
  *
  */
-void darts_barrier_init( darts_barrier_t * newBarrier, unsigned numThreads);
+void darts_barrier_init( volatile darts_barrier_t * newBarrier, unsigned numThreads);
 
 /**
  * @brief makes the thread to wait until the counter reaches the number of threads
@@ -59,7 +59,7 @@ void darts_barrier_init( darts_barrier_t * newBarrier, unsigned numThreads);
  * @TODO think of a possible implementation with WAND instead of this way
  *
  */
-void darts_barrier(darts_barrier_t * barrier);
+unsigned darts_barrier(volatile darts_barrier_t * barrier);
 
 
 #endif /* E_DARTS_BARRIER_H */

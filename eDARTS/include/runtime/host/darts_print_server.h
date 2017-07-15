@@ -27,11 +27,11 @@
             myChar[0]='%'; myChar[1]=letter; myChar[3]=0x0;             \
             if (letter == 'd' || letter == 'i') {                       \
                 sprintf(tempBuffer, myChar,*((int*)argument));       \
-                argument += sizeof (int);                               \
+                argument += sizeof(int);                               \
             } else if (letter == 'o' || letter == 'u' ||                \
                 letter == 'x' || letter == 'X') {                       \
                 sprintf(tempBuffer, myChar,*((unsigned*)argument));   \
-                argument += sizeof (char);                              \
+                argument += sizeof(int);                              \
             } else if (letter == 'e' || letter == 'E' ||                \
                 letter == 'f' || letter == 'g' ||                       \
                 letter == 'G' || letter == 'a' ||                       \
@@ -52,7 +52,7 @@
 
 
 
-typedef struct __attribute__ ((packed)) printBuffer_s
+typedef struct __attribute__ ((__packed__)) printBuffer_s
 {
     unsigned sendPrintInstruction;
     unsigned padding;

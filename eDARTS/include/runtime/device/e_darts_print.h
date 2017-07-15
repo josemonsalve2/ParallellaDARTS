@@ -27,7 +27,7 @@
 #define TYPE_SELECTOR(letter)                               \
         ((letter == 'd' || letter == 'i' ||                  \
          letter == 'o' || letter == 'u' ||                  \
-         letter == 'x' || letter == 'X')? sizeof(int):(      \
+         letter == 'x' || letter == 'X')? sizeof(unsigned):(      \
         (letter == 'c' || letter == 'C')? sizeof(char):     \
         (letter == 'e' || letter == 'E' ||                  \
          letter == 'f' || letter == 'F' ||                  \
@@ -36,7 +36,7 @@
          letter == 'n' || letter == 'N')? sizeof(double):0))   \
 
 
-typedef struct __attribute__ ((packed)) printBuffer_s
+typedef struct __attribute__ ((__packed__)) printBuffer_s
 {
     unsigned sendPrintInstruction;
     darts_mutex_t *mutex;

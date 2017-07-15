@@ -30,7 +30,7 @@
  * SyncSlot size = 4 + 4 + 4 + 12 + 4 + 4 + 4 = 36 = 0x24
  *
  */
-typedef struct __attribute__ ((packed)) syncSlot_s {
+typedef struct __attribute__ ((__packed__)) syncSlot_s {
     unsigned slotID;
     unsigned resetDep;
     unsigned currentDep;

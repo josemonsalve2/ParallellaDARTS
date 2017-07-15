@@ -33,6 +33,14 @@ int main(void)
     } else {
         while (*initSignal != 1);
     }
+    //stress test
+    for (i = 0; i < 1000; i++)
+    {
+        for (j = 0; j < e_group_config.core_row * 4 + e_group_config.core_col; j++);
+        darts_barrier(myBarrier);
+        for (j = 0; j < e_group_config.core_row * 4 + e_group_config.core_col; j++);
+        darts_barrier(myBarrier);
+    }
 
     int NUM_LOOPS = 1;
     int threadNumber = e_group_config.core_row + e_group_config.core_col*4;

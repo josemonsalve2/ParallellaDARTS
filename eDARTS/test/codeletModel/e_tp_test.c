@@ -18,10 +18,11 @@ typedef void (*codeletFunction)();
 //void sum() __attribute__((section (".internaltext")));
 
 void e_tpDefiner(darts_barrier_t * threadsBarrier) {
-    my_test_tpClosure_t * tpClosure = (my_test_tpClosure_t *)TP_CLOSURE_LOCATION;
-    *tpClosure = _invoke_my_test(4,5);
-    e_darts_print(" a tpClosure was created \n");
+    volatile my_test_tpClosure_t * tpClosure = (my_test_tpClosure_t *)TP_CLOSURE_LOCATION;
+    *tpClosure = (my_test_tpClosure_t)_invoke_my_test(4,5);
+
     darts_barrier(threadsBarrier);
+    e_darts_print(" a tpClosure was created \n");
     // Wait until TP everything is executed
 }
 
@@ -33,11 +34,22 @@ void e_tpCreatorExecuter(darts_barrier_t * threadsBarrier) {
     darts_barrier(threadsBarrier);
 
     // Actually create the TP
-    unsigned tpId = 0;
 
+    unsigned tpId = 0;
     // Initialization of metadata;
     *actualTP = tpClosure->_metadataCtor(tpId);
-    e_darts_print(" Starting runtime %X \n",(unsigned)(*((unsigned *)(tpClosure->_metadataCtor)+2)));
+
+    // Initialize syncSlots to zero
+    int i;
+    syncSlot_t* theSyncSlot = GET_SYNC_SLOT(*actualTP,0);
+    for ( i = 0; i < actualTP->numSyncSlots; i++)
+    {
+        codelet_t emptyCodelet;
+        initCodelet(&emptyCodelet,0,theSyncSlot,__emptyCodeletFunction);
+        initSyncSlot(theSyncSlot,i,0,0,emptyCodelet,0);
+        theSyncSlot++;
+    }
+    e_darts_print(" Starting runtime %X \n",(unsigned)(*((unsigned*)tpClosure)));
 
 
     // Allocation of data size of args should be used here by the runtime
@@ -50,19 +62,22 @@ void e_tpCreatorExecuter(darts_barrier_t * threadsBarrier) {
 
     // Lets log this event
     e_darts_print(" a TP was created \n");
-
-    // pseudo runtime
-    int i, somethingToExecute;
-    for (i = 0; i < actualTP->numSyncSlots; i++)
-    {
-        somethingToExecute = 0;
+//
+//    // pseudo runtime
+    unsigned firedFlag[4] = {0,0,0,0};
+    for (i = 0; i < actualTP->numSyncSlots; i++) {
         syncSlot_t * currentSyncSlot = GET_SYNC_SLOT(*actualTP,i);
-        if (currentSyncSlot->currentDep == 0) {
+        if (currentSyncSlot->currentDep == 0 && firedFlag[i] != 1) {
             // Here we are supposed to push the codelet to the codeletQueue
             codelet_t codeletToExec = currentSyncSlot->codeletTemplate;
             codeletToExec.fire();
+            syncSlotResetDep(currentSyncSlot);
+            firedFlag[i] = 1;
+            i = -1;
         }
     }
+    e_darts_print("Runtime finished \n");
+
 
 }
 
@@ -79,14 +94,16 @@ int main(void)
     {
         darts_barrier_init(myBarrier,16);
         *initSignal = 1;
-        e_darts_print(" === TP TESTING ===\n");
+        e_darts_print(" === TP TESTING === %x\n",BARRIER_LOCATION + sizeof(darts_barrier_t));
         e_tpDefiner(myBarrier);
     }
     else if (e_group_config.core_row == 0 && e_group_config.core_col == 1)// core (0,1) is consumer
     {
         while (*initSignal == 0);
         e_tpCreatorExecuter(myBarrier);
+
     } else {
+        while (*initSignal == 0);
         darts_barrier(myBarrier);
     }
 

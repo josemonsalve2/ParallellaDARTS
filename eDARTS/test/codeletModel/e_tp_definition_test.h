@@ -1,5 +1,10 @@
 #include "threadedProcedure.h"
 #include "tpClosure.h"
+#include "e_darts_print.h"
+#include "codelet.h"
+#include "e_darts_barrier.h"
+#include "syncSlot.h"
+
 /**
  * Threaded Procedure defined in this file
  *  /---------------------------\
@@ -29,14 +34,11 @@
  *
  */
 
-#include "e_darts_print.h"
-#include "codelet.h"
-#include "e_darts_barrier.h"
-#include "syncSlot.h"
+
 
 // SOME VALUES SINCE THERE IS NO RUNTIME YET
-#define TP_CLOSURE_LOCATION 0x604C
-#define TP_LOCATION 0x604C
+#define TP_CLOSURE_LOCATION 0x6060
+#define TP_LOCATION 0x6060
 #define LOCAL_MEM_LOCATION 0x7000
 #define EXTERNAL_MEM_LOCATION 0x8f000000
 
@@ -68,6 +70,7 @@ DEFINE_TP_MEM_REGIONS(my_test,
 //                                  3) memLocal a pointer to the local section
 //                                  4) memDist a pointer to the distributed section
 DEFINE_THREADED_PROCEDURE(my_test,4, {
+                      e_darts_print("Initializing  ... user constructor \n");
                       memDRAM->a = a;
                       memDRAM->b = b;
                       ASSIGN_SYNC_SLOT_CODELET(*this,0,print_codelet,1,1,1);
@@ -91,7 +94,7 @@ void print_codelet(){
     _tp_metadata_t * actualTP = (_tp_metadata_t *) TP_LOCATION;
     my_test_memDRAM_t * memDRAM = (my_test_memDRAM_t * ) actualTP->memDRAM;
     my_test_memLocal_t * memLocal = (my_test_memLocal_t * ) actualTP->memLocal;
-    e_darts_print("DRAM VALUES = \n a=%d, b=%d \nLOCAL VALUES = \n c=%d, d=%d",memDRAM->a,memDRAM->b,memLocal->c,memLocal->d);
+    e_darts_print("DRAM VALUES = \n a=%d, b=%d \nLOCAL VALUES = \n c=%d, d=%d \n",memDRAM->a,memDRAM->b,memLocal->c,memLocal->d);
 
 }
 

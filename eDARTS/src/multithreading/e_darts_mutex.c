@@ -1,6 +1,6 @@
 #include "e_darts_mutex.h"
 
-int darts_mutex_lock( darts_mutex_t *mutex )
+int darts_mutex_lock( volatile darts_mutex_t *mutex )
 {
     // If the mutex does not contain the core ID in the address
     if (!((unsigned)mutex & 0x000FFFFF))
@@ -29,7 +29,7 @@ int darts_mutex_lock( darts_mutex_t *mutex )
     return val;
 }
 
-int darts_mutex_unlock( darts_mutex_t *mutex )
+int darts_mutex_unlock( volatile darts_mutex_t *mutex )
 {
     // If the mutex does not contain the core ID in the address
     if (!((unsigned)mutex & 0x000FFFFF))

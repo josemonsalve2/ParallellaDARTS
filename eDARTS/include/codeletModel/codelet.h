@@ -30,7 +30,7 @@
 typedef void (*codeletFunction)();
 
 // Forward declaration
-typedef struct __attribute__ ((packed)) syncSlot_s syncSlot_t;
+typedef struct __attribute__ ((__packed__)) syncSlot_s syncSlot_t;
 
 /**
  * @brief codeletStruct
@@ -43,7 +43,7 @@ typedef struct __attribute__ ((packed)) syncSlot_s syncSlot_t;
  *
  * codelet_t size = 4 + 4 + 4 = 12 = 0xC
  */
-typedef struct __attribute__ ((packed)) codelet_s {
+typedef struct __attribute__ ((__packed__)) codelet_s {
     unsigned codeletID;
     syncSlot_t * syncSlot;
     codeletFunction fire;

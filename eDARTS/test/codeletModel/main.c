@@ -32,6 +32,7 @@ int main(int argc, char *argv[]){
         e_read(&dev,0,0,FINAL_SIGNAL,&number,sizeof(number));
     }
 
+    usleep(1e5);
     stop_printing_server();
     e_close(&dev);
     e_finalize();

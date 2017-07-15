@@ -12,10 +12,10 @@
 #include "e_darts_print.h"
 
 // Forward declaration of _tp_metadata_t
-typedef struct __attribute__ ((packed)) __attribute__ ((packed)) _tp_metadata_s _tp_metadata_t;
-typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosure_s genericTpClosure_t;
+typedef struct __attribute__ ((__packed__)) __attribute__ ((__packed__)) _tp_metadata_s _tp_metadata_t;
+typedef struct __attribute__ ((__packed__)) __attribute__ ((__packed__)) genericTpClosure_s genericTpClosure_t;
 
-typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosure_s {
+typedef struct __attribute__ ((__packed__)) __attribute__ ((__packed__)) genericTpClosure_s {
     _tp_metadata_t (*_metadataCtor)(unsigned _TPid);
     void (*_userInitCtorExec)(_tp_metadata_t*, genericTpClosure_t*);
     unsigned sizeOfArgs;
@@ -36,9 +36,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
 
 
 #define DEFINE_TP_CLOSURE_ARGS0(TPname) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         }args;\
     } TPname##_tpClosure_t;\
     typedef TPname##_tpClosure_t TPname##_closure;\
@@ -59,9 +59,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
 
 
 #define DEFINE_TP_CLOSURE_ARGS1(TPname, ArgType0) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
     	ArgType0 A0;\
         }args;\
     } TPname##_tpClosure_t;\
@@ -81,9 +81,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS2(TPname, ArgType0, ArgType1) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         }args;\
@@ -105,9 +105,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS3(TPname, ArgType0, ArgType1, ArgType2) \
-    typedef struct __attribute__ ((packed)) __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -131,9 +131,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS4(TPname, ArgType0, ArgType1, ArgType2, ArgType3) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -160,9 +160,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
 
 
 #define DEFINE_TP_CLOSURE_ARGS5(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -190,9 +190,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS6(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -222,9 +222,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS7(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -256,9 +256,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS8(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -292,9 +292,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS9(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -330,9 +330,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS10(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -370,9 +370,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS11(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -412,9 +412,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS12(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -456,9 +456,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS13(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -502,9 +502,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS14(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -550,9 +550,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS15(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -600,9 +600,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS16(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -652,9 +652,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS17(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -706,9 +706,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS18(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -762,9 +762,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS19(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17, ArgType18) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -820,9 +820,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
     }\
 
 #define DEFINE_TP_CLOSURE_ARGS20(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17, ArgType18, ArgType19) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -879,9 +879,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS21(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17, ArgType18, ArgType19, ArgType20) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -941,9 +941,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS22(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17, ArgType18, ArgType19, ArgType20, ArgType21) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -1005,9 +1005,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS23(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17, ArgType18, ArgType19, ArgType20, ArgType21, ArgType22) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -1071,9 +1071,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS24(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17, ArgType18, ArgType19, ArgType20, ArgType21, ArgType22, ArgType23) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\
@@ -1139,9 +1139,9 @@ typedef struct __attribute__ ((packed)) __attribute__ ((packed)) genericTpClosur
         }\
 
 #define DEFINE_TP_CLOSURE_ARGS25(TPname, ArgType0, ArgType1, ArgType2, ArgType3, ArgType4, ArgType5, ArgType6, ArgType7, ArgType8, ArgType9, ArgType10, ArgType11, ArgType12, ArgType13, ArgType14, ArgType15, ArgType16, ArgType17, ArgType18, ArgType19, ArgType20, ArgType21, ArgType22, ArgType23, ArgType24) \
-    typedef struct __attribute__ ((packed)) TPname##_tpClosure_s {\
+    typedef struct __attribute__ ((__packed__)) TPname##_tpClosure_s {\
         genericTpClosure_t baseClosure;\
-        struct __attribute__ ((packed)) {\
+        struct __attribute__ ((__packed__)) {\
         ArgType0 A0;\
         ArgType1 A1;\
         ArgType2 A2;\

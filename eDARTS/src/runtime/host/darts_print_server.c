@@ -57,7 +57,7 @@ void* printing_server(void *tid)
                         counter++;
                         currentStr++;
                     }
-                    charCount++;
+                    charCount++; // to skip the token %
                 } else {
                     *currentStr = myBuffer.printingBufferHead[charCount];
                     currentStr++;
