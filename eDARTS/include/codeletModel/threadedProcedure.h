@@ -44,9 +44,6 @@
  * TP memory looks like this
  * |-----------------------------|
  * |  __tp_metadata_t METADATA   |
- * |  memPointer * DRAMpointer   |
- * |  memPointer * LocalPointer  |
- * |  memPointer * distPointer   |
  * -------------------------------
  * |     syncSlots *pointer      |
  * |     syncSlots *pointer      |
@@ -119,7 +116,7 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
  *
  */
 #define GET_SYNC_SLOT(_Tp,numSyncSlot) \
-		( (syncSlot_t *) (((unsigned)&(_Tp)) + sizeof(_tp_metadata_t) + (sizeof(void*) * 3) + sizeof(syncSlot_t)*numSyncSlot)) \
+		( (syncSlot_t *) (((unsigned)&(_Tp)) + sizeof(_tp_metadata_t) + sizeof(syncSlot_t)*numSyncSlot)) \
 /**
  * @brief Asign a codelet to a syncronization slot
  *
@@ -187,6 +184,9 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
         \
         void _##TPname##_userInitCtor(_tp_metadata_t * _tp) {\
             TPname##_threadedProcedure_t * this = (TPname##_threadedProcedure_t *) _tp;\
+            TPname##_memDRAM_t * memDRAM = (TPname##_memDRAM_t *) _tp->memDRAM;\
+            TPname##_memDRAM_t * memLocal = (TPname##_memDRAM_t *) _tp->memLocal;\
+            TPname##_memDRAM_t * memDist = (TPname##_memDRAM_t *) _tp->memDist;\
             initializationCode;\
             \
         }\

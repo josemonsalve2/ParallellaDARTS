@@ -73,9 +73,32 @@ add_custom_target( syncSlot_test
                    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/syncSlot_test.out ${CMAKE_CURRENT_BINARY_DIR}/syncSlot_test
                     DEPENDS syncSlot_test.out darts_print_server syncSlot/main.c)
 
-# For e_codQueue.elf
+# For e_syncSlot_test.elf
 add_executable(e_syncSlot_test.elf syncSlot/e_syncSlot_test.c)
 target_link_libraries(e_syncSlot_test.elf edarts_codeletModel edarts_assets edarts_runtime_device edarts_multithreading ${EPIPHANY_LIBS})
 
 add_dependencies(e_syncSlot_test.elf syncSlot_test darts_print_server edarts_cachemanager)
+
+
+### FOR TP CLOSURES QUEUE TESTS ###
+# For the host we need to compile manually without cmake
+add_custom_command(
+   OUTPUT tpClosuresQueue_test.out
+   COMMAND gcc tpClosuresQueue/main.c ${EXTERNAL_FLAGS} -o tpClosuresQueue_test.out
+   DEPENDS tpClosuresQueue/main.c
+   COMMENT "CROSS-COMPILING HOST FILE tpClosuresQueue_test "
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   VERBATIM
+)
+
+add_custom_target( tpClosuresQueue_test
+                   COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/tpClosuresQueue_test.out ${CMAKE_CURRENT_BINARY_DIR}/tpClosuresQueue_test
+                    DEPENDS tpClosuresQueue_test.out darts_print_server tpClosuresQueue/main.c)
+
+# For e_syncSlot_test.elf
+add_executable(e_tpClosuresQueue_test.elf tpClosuresQueue/e_tpClosuresQueue_test.c)
+target_link_libraries(e_tpClosuresQueue_test.elf edarts_codeletModel edarts_assets edarts_runtime_device edarts_multithreading ${EPIPHANY_LIBS})
+
+add_dependencies(e_tpClosuresQueue_test.elf tpClosuresQueue_test darts_print_server edarts_cachemanager)
+
 

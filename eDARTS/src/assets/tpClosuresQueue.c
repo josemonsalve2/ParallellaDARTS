@@ -1,7 +1,7 @@
 #include "tpClosuresQueue.h"
 
 // Private function returns the available free space
-inline unsigned _calculateMaxFreeSpaceQueue(tpClosuresQueue_t * queue) {
+unsigned calculateMaxFreeSpaceQueue(tpClosuresQueue_t * queue) {
     unsigned initAddress = ((unsigned) queue) + sizeof(tpClosuresQueue_t);
     if ((unsigned) queue->tailAddress >= (unsigned) queue->headAddress ) {
         // No padding included, No wrap of content
@@ -14,16 +14,16 @@ inline unsigned _calculateMaxFreeSpaceQueue(tpClosuresQueue_t * queue) {
     return 0;
 }
 
-inline unsigned _checkIfValidAddress (tpClosuresQueue_t * queue) {
-    unsigned currentCoreID;
-    // We make sure the address is complete
-    __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
+unsigned checkIfValidAddress (tpClosuresQueue_t * queue) {
+//    unsigned currentCoreID;
+//    // We make sure the address is complete
+//    __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
 
     // We check if we are getting the whole address.
-    if (((unsigned) queue) >> 20 != currentCoreID ) {
-        return INVALID_QUEUE_ADDRESS;
+    if (((unsigned) queue) >> 20 == 0 ) {
+        return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
     }
-    return SUCCESS_OP;
+    return TPC_QUEUE_SUCCESS_OP;
 }
 
 unsigned isTpClosureQueueEmpty(tpClosuresQueue_t * queue) {
@@ -31,8 +31,8 @@ unsigned isTpClosureQueueEmpty(tpClosuresQueue_t * queue) {
 }
 
 unsigned initTpClosuresQueue(tpClosuresQueue_t * queue, unsigned int newSize) {
-    if (_checkIfValidAddress(queue) != SUCCESS_OP) {
-        return INVALID_QUEUE_ADDRESS;
+    if (checkIfValidAddress(queue) != TPC_QUEUE_SUCCESS_OP) {
+        return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
     }
 
     void * init = (void *) (((unsigned) queue) + sizeof(tpClosuresQueue_t));
@@ -44,12 +44,12 @@ unsigned initTpClosuresQueue(tpClosuresQueue_t * queue, unsigned int newSize) {
     queue->size = newSize;
     queue->lockMutex = DARTS_MUTEX_NULL;
 
-    return SUCCESS_OP;
+    return TPC_QUEUE_SUCCESS_OP;
 }
 
 unsigned pushTpClosureQueue (tpClosuresQueue_t * queue, genericTpClosure_t * newTpClosure) {
-    if (_checkIfValidAddress(queue) != SUCCESS_OP) {
-        return INVALID_QUEUE_ADDRESS;
+    if (checkIfValidAddress(queue) != TPC_QUEUE_SUCCESS_OP) {
+        return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
     }
 
     darts_mutex_t * mutexPtr = (darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + 2*sizeof(unsigned));
@@ -57,12 +57,12 @@ unsigned pushTpClosureQueue (tpClosuresQueue_t * queue, genericTpClosure_t * new
     darts_mutex_lock(mutexPtr);
 
     unsigned newTpSize = sizeof(genericTpClosure_t) + newTpClosure->sizeOfArgs;
-    unsigned currentMaxFreeSpace = _calculateMaxFreeSpaceQueue(queue);
+    unsigned currentMaxFreeSpace = calculateMaxFreeSpaceQueue(queue);
 
     // Check if there is space
     if (newTpSize > currentMaxFreeSpace) {
         darts_mutex_unlock(mutexPtr);
-        return NOT_ENOUGH_SPACE;
+        return TPC_QUEUE_NOT_ENOUGH_SPACE;
     }
 
     // We check if head is greater than the tail. Normal insertion. There is padding already
@@ -93,12 +93,12 @@ unsigned pushTpClosureQueue (tpClosuresQueue_t * queue, genericTpClosure_t * new
     // We unlock the queue
     // We lock the queue
     darts_mutex_unlock(mutexPtr);
-    return SUCCESS_OP;
+    return TPC_QUEUE_SUCCESS_OP;
 }
 
 unsigned ownTpClosureQueue (tpClosuresQueue_t * queue) {
-    if (_checkIfValidAddress(queue) != SUCCESS_OP) {
-        return INVALID_QUEUE_ADDRESS;
+    if (checkIfValidAddress(queue) != TPC_QUEUE_SUCCESS_OP) {
+        return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
     }
 
     // get the mutex address
@@ -109,7 +109,7 @@ unsigned ownTpClosureQueue (tpClosuresQueue_t * queue) {
     if (queue->queueOwner != 0) {
         // Queue Already Own
         darts_mutex_unlock(mutexPtr);
-        return NOT_OWNER;
+        return TPC_QUEUE_NOT_OWNER;
     }
     // Own queue
     unsigned currentCoreID;
@@ -117,12 +117,12 @@ unsigned ownTpClosureQueue (tpClosuresQueue_t * queue) {
     queue->queueOwner = currentCoreID;
 
     darts_mutex_unlock(mutexPtr);
-    return SUCCESS_OP;
+    return TPC_QUEUE_SUCCESS_OP;
 }
 
 unsigned disownTpClosureQueue (tpClosuresQueue_t * queue) {
-    if (_checkIfValidAddress(queue) != SUCCESS_OP) {
-        return INVALID_QUEUE_ADDRESS;
+    if (checkIfValidAddress(queue) != TPC_QUEUE_SUCCESS_OP) {
+        return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
     }
 
     // Since there is only one owner, this operation does not require
@@ -133,18 +133,18 @@ unsigned disownTpClosureQueue (tpClosuresQueue_t * queue) {
     unsigned currentCoreID;
     __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
     if (queue->queueOwner != currentCoreID) {
-        return NOT_OWNER;
+        return TPC_QUEUE_NOT_OWNER;
     }
 
     // Disown queue
     queue->queueOwner = 0;
 
-    return SUCCESS_OP;
+    return TPC_QUEUE_SUCCESS_OP;
 }
 
-unsigned peakTopElement(tpClosuresQueue_t * queue, genericTpClosure_t * topElementPointer) {
-    if (_checkIfValidAddress(queue) != SUCCESS_OP) {
-           return INVALID_QUEUE_ADDRESS;
+unsigned peakTopElement(tpClosuresQueue_t * queue, genericTpClosure_t ** topElementPointer) {
+    if (checkIfValidAddress(queue) != TPC_QUEUE_SUCCESS_OP) {
+           return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
        }
 
     // Since there is only one owner, and only owners can peak,
@@ -154,25 +154,25 @@ unsigned peakTopElement(tpClosuresQueue_t * queue, genericTpClosure_t * topEleme
     __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
     // Only the owner can peak. Check if owner
     if (queue->queueOwner != currentCoreID) {
-       topElementPointer = 0;
-       return NOT_OWNER;
+       *topElementPointer = 0;
+       return TPC_QUEUE_NOT_OWNER;
     }
 
     // check if queue is empty
     if(isTpClosureQueueEmpty(queue)) {
-        topElementPointer = 0;
-        return EMPTY_QUEUE;
+        *topElementPointer = 0;
+        return TPC_QUEUE_EMPTY_QUEUE;
     }
 
     // return topElementPointer
-    topElementPointer = (genericTpClosure_t *) queue->headAddress;
+    *topElementPointer = (genericTpClosure_t *) queue->headAddress;
 
-    return SUCCESS_OP;
+    return TPC_QUEUE_SUCCESS_OP;
 }
 
 unsigned popTopElementQueue (tpClosuresQueue_t * queue) {
-    if (_checkIfValidAddress(queue) != SUCCESS_OP) {
-           return INVALID_QUEUE_ADDRESS;
+    if (checkIfValidAddress(queue) != TPC_QUEUE_SUCCESS_OP) {
+           return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
     }
 
     // Since there is only one owner, and only owners can peak,
@@ -182,12 +182,12 @@ unsigned popTopElementQueue (tpClosuresQueue_t * queue) {
     __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
     // Only the owner can peak. Check if owner
     if (queue->queueOwner != currentCoreID) {
-       return NOT_OWNER;
+       return TPC_QUEUE_NOT_OWNER;
     }
 
     // check if queue is empty
     if(isTpClosureQueueEmpty(queue)) {
-        return EMPTY_QUEUE;
+        return TPC_QUEUE_EMPTY_QUEUE;
     }
 
     unsigned topElementSize = sizeof(genericTpClosure_t) + ((genericTpClosure_t *)queue->headAddress)->sizeOfArgs;
@@ -200,12 +200,21 @@ unsigned popTopElementQueue (tpClosuresQueue_t * queue) {
         queue->headAddress = (void *) initAddress;
     }
 
-    return SUCCESS_OP;
+    // if the queue is empty, let's put the head at the beginnig of the memory space
+    // but since we are gonna modify the tail we need to lock
+    // get the mutex address
+    darts_mutex_t * mutexPtr = (darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + 2*sizeof(unsigned));
+    // We lock the queue
+    darts_mutex_lock(mutexPtr);
+    if (queue->headAddress == queue->tailAddress)
+        queue->headAddress = queue->tailAddress = (void *) initAddress;
+    darts_mutex_unlock(mutexPtr);
+    return TPC_QUEUE_SUCCESS_OP;
 }
 
 unsigned popTopElementAndDisownQueue (tpClosuresQueue_t * queue) {
-    if (_checkIfValidAddress(queue) != SUCCESS_OP) {
-       return INVALID_QUEUE_ADDRESS;
+    if (checkIfValidAddress(queue) != TPC_QUEUE_SUCCESS_OP) {
+       return TPC_QUEUE_INVALID_QUEUE_ADDRESS;
     }
 
     // Since there is only one owner, and only owners can peak,
@@ -215,12 +224,12 @@ unsigned popTopElementAndDisownQueue (tpClosuresQueue_t * queue) {
     __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
     // Only the owner can peak. Check if owner
     if (queue->queueOwner != currentCoreID) {
-       return NOT_OWNER;
+       return TPC_QUEUE_NOT_OWNER;
     }
 
     // check if queue is empty
     if(isTpClosureQueueEmpty(queue)) {
-        return EMPTY_QUEUE;
+        return TPC_QUEUE_EMPTY_QUEUE;
     }
 
     unsigned topElementSize = sizeof(genericTpClosure_t) + ((genericTpClosure_t *)queue->headAddress)->sizeOfArgs;
@@ -232,9 +241,17 @@ unsigned popTopElementAndDisownQueue (tpClosuresQueue_t * queue) {
     if (((unsigned)queue->headAddress) + queue->padding == initAddress + queue->size) {
         queue->headAddress = (void *) initAddress;
     }
+
+    // get the mutex address
+    darts_mutex_t * mutexPtr = (darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + 2*sizeof(unsigned));
+    // We lock the queue
+    darts_mutex_lock(mutexPtr);
+    if (queue->headAddress == queue->tailAddress)
+        queue->headAddress = queue->tailAddress = (void *) initAddress;
+    darts_mutex_unlock(mutexPtr);
 
     // Disown queue
     queue->queueOwner = 0;
 
-    return SUCCESS_OP;
+    return TPC_QUEUE_SUCCESS_OP;
 }

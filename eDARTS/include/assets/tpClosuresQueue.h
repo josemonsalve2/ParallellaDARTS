@@ -82,11 +82,11 @@
  */
 
 // Return codes
-#define SUCCESS_OP 0
-#define INVALID_QUEUE_ADDRESS 1
-#define NOT_ENOUGH_SPACE 2
-#define EMPTY_QUEUE 3
-#define NOT_OWNER 4
+#define TPC_QUEUE_SUCCESS_OP 0
+#define TPC_QUEUE_INVALID_QUEUE_ADDRESS 1
+#define TPC_QUEUE_NOT_ENOUGH_SPACE 2
+#define TPC_QUEUE_EMPTY_QUEUE 3
+#define TPC_QUEUE_NOT_OWNER 4
 
 typedef struct __attribute__((__packed__)) tpClosuresQueue_s {
     void * headAddress;
@@ -163,7 +163,7 @@ unsigned disownTpClosureQueue (tpClosuresQueue_t * queue);
  * @p queue Queue from where to obtain the top element pointer
  * @p topElement Pointer that will be modified with the address of the top element
  */
-unsigned peakTopElement(tpClosuresQueue_t * queue, genericTpClosure_t * topElementPointer);
+unsigned peakTopElement(tpClosuresQueue_t * queue, genericTpClosure_t ** topElementPointer);
 
 /**
  * @brief pop top element from the tpClosureQueue
