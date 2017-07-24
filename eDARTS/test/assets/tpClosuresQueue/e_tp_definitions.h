@@ -8,8 +8,8 @@
 
 // SOME VALUES SINCE THERE IS NO RUNTIME YET
 #define TP_QUEUE_LOCATION 0x6060
-#define CURRENT_EXECUTING_TP 0x60DC
-#define TP_HEAP_LOCATION 0x60E0
+#define CURRENT_EXECUTING_TP 0x62DC
+#define TP_HEAP_LOCATION 0x62E0
 #define LOCAL_MEM_LOCATION 0x7000
 #define EXTERNAL_MEM_LOCATION 0x8f000000
 
@@ -231,7 +231,10 @@ void mult_c_and_d_to_c()
     syncSlotDecDep(printSyncSlot);
 
     finish_tp_tpClosure_t newTpClosure = _invoke_finish_tp();
-    pushTpClosureQueue(myTpQueue,(genericTpClosure_t*)(&newTpClosure));
+    // Try pushing, otherwise execute codelet yourself. Not graceful but a possible solution
+    if(pushTpClosureQueue(myTpQueue,(genericTpClosure_t*)(&newTpClosure)) != TPC_QUEUE_SUCCESS_OP) {
+        finishExecution();
+    }
 }
 
 void finishExecution()
@@ -240,7 +243,7 @@ void finishExecution()
 }
 
 void print_message(){
-    e_darts_print(" THIS CODELET JUST PRINTS SOMETHING !!! \n");
+    e_darts_print("THIS CODELET JUST PRINTS SOMETHING !!! \n");
     // The runtime must provide a way to obtain this context
     // for now we know the TP location
 }

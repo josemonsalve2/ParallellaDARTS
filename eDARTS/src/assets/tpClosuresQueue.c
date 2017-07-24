@@ -1,5 +1,9 @@
 #include "tpClosuresQueue.h"
 
+#if defined DEBUG_TP_CLOSURE_QUEUE && DEBUG_TP_CLOSURE_QUEUE == 1
+#include "e_darts_print.h"
+#endif
+
 // Private function returns the available free space
 unsigned calculateMaxFreeSpaceQueue(tpClosuresQueue_t * queue) {
     unsigned initAddress = ((unsigned) queue) + sizeof(tpClosuresQueue_t);
@@ -9,7 +13,7 @@ unsigned calculateMaxFreeSpaceQueue(tpClosuresQueue_t * queue) {
         unsigned rightOfTail = (initAddress + queue->size) - ((unsigned)queue->tailAddress);
         return (rightOfTail >= leftOfHead)? rightOfTail : leftOfHead; // return the max
     } else {
-        return ((unsigned) queue->headAddress) - ((unsigned)queue->tailAddress);
+        return ((unsigned) queue->headAddress) - ((unsigned) queue->tailAddress);
     }
     return 0;
 }
@@ -43,6 +47,9 @@ unsigned initTpClosuresQueue(tpClosuresQueue_t * queue, unsigned int newSize) {
     queue->padding = 0;
     queue->size = newSize;
     queue->lockMutex = DARTS_MUTEX_NULL;
+#if defined DEBUG_TP_CLOSURE_QUEUE && DEBUG_TP_CLOSURE_QUEUE == 1
+    e_darts_print("Queue Initialized queue= 0x%X, newHead = 0x%X, newTail = 0x%X, size = 0x%X \n",(unsigned) queue, (unsigned)queue->headAddress,(unsigned)queue->tailAddress,(unsigned)queue->size);
+#endif
 
     return TPC_QUEUE_SUCCESS_OP;
 }
@@ -59,14 +66,14 @@ unsigned pushTpClosureQueue (tpClosuresQueue_t * queue, genericTpClosure_t * new
     unsigned newTpSize = sizeof(genericTpClosure_t) + newTpClosure->sizeOfArgs;
     unsigned currentMaxFreeSpace = calculateMaxFreeSpaceQueue(queue);
 
-    // Check if there is space
-    if (newTpSize > currentMaxFreeSpace) {
+    // Check if there is space. We must always be less than, otherwise, tail and head will meet
+    if (newTpSize >= currentMaxFreeSpace) {
         darts_mutex_unlock(mutexPtr);
         return TPC_QUEUE_NOT_ENOUGH_SPACE;
     }
 
     // We check if head is greater than the tail. Normal insertion. There is padding already
-    if ((unsigned) queue->tailAddress < (unsigned) queue->headAddress) {
+    if ((unsigned) queue->tailAddress <= (unsigned) queue->headAddress) {
         memcpy(queue->tailAddress, newTpClosure, newTpSize);
         // Update the tail
         queue->tailAddress = (void *) (((unsigned)queue->tailAddress) + newTpSize);
@@ -89,7 +96,9 @@ unsigned pushTpClosureQueue (tpClosuresQueue_t * queue, genericTpClosure_t * new
             queue->tailAddress = (void *) (initAddress + newTpSize);
         }
     }
-
+#if defined DEBUG_TP_CLOSURE_QUEUE && DEBUG_TP_CLOSURE_QUEUE == 1
+    e_darts_print("Pushing inserted= %X, newHead = %x, newTail = %x, padding=%d \n",newTpSize, (unsigned)queue->headAddress,(unsigned)queue->tailAddress, queue->padding);
+#endif
     // We unlock the queue
     // We lock the queue
     darts_mutex_unlock(mutexPtr);
@@ -116,6 +125,10 @@ unsigned ownTpClosureQueue (tpClosuresQueue_t * queue) {
     __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
     queue->queueOwner = currentCoreID;
 
+#if defined DEBUG_TP_CLOSURE_QUEUE && DEBUG_TP_CLOSURE_QUEUE == 1
+    e_darts_print("Queue 0x%X owned by core 0x%X \n",(unsigned)queue,queue->queueOwner);
+#endif
+
     darts_mutex_unlock(mutexPtr);
     return TPC_QUEUE_SUCCESS_OP;
 }
@@ -135,6 +148,10 @@ unsigned disownTpClosureQueue (tpClosuresQueue_t * queue) {
     if (queue->queueOwner != currentCoreID) {
         return TPC_QUEUE_NOT_OWNER;
     }
+
+#if defined DEBUG_TP_CLOSURE_QUEUE && DEBUG_TP_CLOSURE_QUEUE == 1
+    e_darts_print("Queue 0x%X disowned by core 0x%X \n",(unsigned)queue,queue->queueOwner);
+#endif
 
     // Disown queue
     queue->queueOwner = 0;
@@ -185,6 +202,13 @@ unsigned popTopElementQueue (tpClosuresQueue_t * queue) {
        return TPC_QUEUE_NOT_OWNER;
     }
 
+    // if the queue is empty, let's put the head at the beginnig of the memory space
+    // but since we are gonna modify the tail we need to lock
+    // get the mutex address
+    darts_mutex_t * mutexPtr = (darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + 2*sizeof(unsigned));
+    // We lock the queue
+    darts_mutex_lock(mutexPtr);
+
     // check if queue is empty
     if(isTpClosureQueueEmpty(queue)) {
         return TPC_QUEUE_EMPTY_QUEUE;
@@ -198,16 +222,18 @@ unsigned popTopElementQueue (tpClosuresQueue_t * queue) {
     unsigned initAddress = ((unsigned) queue) + sizeof(tpClosuresQueue_t);
     if (((unsigned)queue->headAddress) + queue->padding == initAddress + queue->size) {
         queue->headAddress = (void *) initAddress;
+        queue->padding = 0;
     }
 
-    // if the queue is empty, let's put the head at the beginnig of the memory space
-    // but since we are gonna modify the tail we need to lock
-    // get the mutex address
-    darts_mutex_t * mutexPtr = (darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + 2*sizeof(unsigned));
-    // We lock the queue
-    darts_mutex_lock(mutexPtr);
-    if (queue->headAddress == queue->tailAddress)
+
+    if (queue->headAddress == queue->tailAddress) {
         queue->headAddress = queue->tailAddress = (void *) initAddress;
+        queue->padding = 0;
+    }
+#if defined DEBUG_TP_CLOSURE_QUEUE && DEBUG_TP_CLOSURE_QUEUE == 1
+    e_darts_print("Popping removed= %X, newHead = %x, newTail = %x, padding=%d \n",topElementSize, (unsigned)queue->headAddress,(unsigned)queue->tailAddress, queue->padding);
+#endif
+
     darts_mutex_unlock(mutexPtr);
     return TPC_QUEUE_SUCCESS_OP;
 }
@@ -227,6 +253,12 @@ unsigned popTopElementAndDisownQueue (tpClosuresQueue_t * queue) {
        return TPC_QUEUE_NOT_OWNER;
     }
 
+    // get the mutex address
+    darts_mutex_t * mutexPtr = (darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + 2*sizeof(unsigned));
+    // We lock the queue
+    darts_mutex_lock(mutexPtr);
+
+
     // check if queue is empty
     if(isTpClosureQueueEmpty(queue)) {
         return TPC_QUEUE_EMPTY_QUEUE;
@@ -240,14 +272,19 @@ unsigned popTopElementAndDisownQueue (tpClosuresQueue_t * queue) {
     unsigned initAddress = ((unsigned) queue) + sizeof(tpClosuresQueue_t);
     if (((unsigned)queue->headAddress) + queue->padding == initAddress + queue->size) {
         queue->headAddress = (void *) initAddress;
+        queue->padding = 0;
     }
 
-    // get the mutex address
-    darts_mutex_t * mutexPtr = (darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + 2*sizeof(unsigned));
-    // We lock the queue
-    darts_mutex_lock(mutexPtr);
-    if (queue->headAddress == queue->tailAddress)
+
+    if (queue->headAddress == queue->tailAddress) {
         queue->headAddress = queue->tailAddress = (void *) initAddress;
+        queue->padding = 0;
+    }
+
+#if defined DEBUG_TP_CLOSURE_QUEUE && DEBUG_TP_CLOSURE_QUEUE == 1
+    e_darts_print("Popping removed= %X, newHead = %x, newTail = %x, padding=%d \n",topElementSize, (unsigned)queue->headAddress,(unsigned)queue->tailAddress, queue->padding);
+    e_darts_print("Queue 0x%X disowned by core 0x%X \n",(unsigned)queue,queue->queueOwner);
+#endif
     darts_mutex_unlock(mutexPtr);
 
     // Disown queue
