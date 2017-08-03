@@ -54,7 +54,7 @@ add_custom_target( codeletQueue_test
 
 # For e_codQueue.elf
 add_executable(e_codQueue.elf codeletQueue/e_codQueue.c)
-target_link_libraries(e_codQueue.elf edarts_assets ${EPIPHANY_LIBS})
+target_link_libraries(e_codQueue.elf edarts_assets edarts_codeletModel edarts_assets edarts_multithreading ${EPIPHANY_LIBS})
 
 add_dependencies(e_codQueue.elf codeletQueue_test darts_print_server edarts_cachemanager)
 

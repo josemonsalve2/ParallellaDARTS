@@ -3,7 +3,6 @@
 #include "e-lib.h"
 #include "syncSlot.h"
 #include "codelet.h"
-#include "codeletsQueue.h"
 #include "e_darts_print.h"
 #include "e_darts_barrier.h"
 

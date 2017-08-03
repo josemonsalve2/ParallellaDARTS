@@ -1,65 +1,121 @@
-/**
- * @file codeletsQueue.h
- * @author Jose M Monsalve
- * @date 2 March 2017
- * @brief File defining the codeletsQueue_t parallel struct.
- * @todo Add copyright
- *
- * codeletsQueue_t is an structure that allows a queue to be accessed
- * concurrently. There is a mutex that locks the queue on push or pop
- * operations. operations over a queue are defined in functions.
- */
 #include "codeletsQueue.h"
 
+#define IS_ADDRESS_VALID(queue) ((((unsigned) queue) >> 20 == 0 )? false : true)
+// This is because we need the pointer with the coreID in the address
+#define GET_MUTEX_PTR(queue) ((darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + sizeof(unsigned)));
+#define GET_QUEUE_AVAILABLE_SPACE(queue) (  ((unsigned)queue->headAddress <= (unsigned)queue->tailAddress)?\
+                                            (queue->size - (((unsigned)queue->tailAddress) - ((unsigned)queue->headAddress))):\
+                                            ((((unsigned)queue->headAddress) - ((unsigned)queue->tailAddress))-1)  )
 
-void initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize, unsigned * newHeadAddress)
+
+unsigned initCodeletsQueue( codeletsQueue_t * queue, unsigned int newSize)
 {
-    queue->headAddress = (codelet_t *) newHeadAddress;
+    // Check the address of the queue to see if it is valid or not
+    if (!IS_ADDRESS_VALID(queue))
+        return CODELET_QUEUE_INVALID_QUEUE_ADDRESS;
+
+    unsigned initAddress = (((unsigned) queue) + sizeof(codeletsQueue_t));
+
+    queue->headAddress = (void *) initAddress;
+    queue->tailAddress = (void *) initAddress;
     queue->size = newSize;
-    queue->currentTail = 0;
-    queue->curNumElements = 0;
-    queue->row = e_group_config.core_row;
-    queue->col = e_group_config.core_col;
-    queue->lockMutex = MUTEX_NULL;
+    queue->lockMutex = DARTS_MUTEX_NULL;
+
+    return CODELET_QUEUE_SUCCESS_OP;
 }
 
-unsigned pushCodeletQueue (codeletsQueue_t * queue, codelet_t newCodelet)
+// pointer codelet to avoid calling memcpy
+unsigned pushCodeletQueue (codeletsQueue_t * queue, codelet_t * newCodelet)
 {
-    e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
-    //check if full
-    if (queue->curNumElements == queue->size)
-    {
-        e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-        return 1;
-    }
-    //Insert in the current Tail
-    queue->headAddress[queue->currentTail] = newCodelet;
-    queue->currentTail = (queue->currentTail + 1) % queue->size;
-    queue->curNumElements++;
+    // Check the address of the queue to see if it is valid or not
+    if (!IS_ADDRESS_VALID(queue))
+        return CODELET_QUEUE_INVALID_QUEUE_ADDRESS;
 
-    e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-    return 0;
+    darts_mutex_t *mutexPtr = GET_MUTEX_PTR(queue);
+
+    darts_mutex_lock(mutexPtr);
+    //check if full
+    if (GET_QUEUE_AVAILABLE_SPACE(queue) < sizeof(codelet_t)) {
+        darts_mutex_unlock(mutexPtr);
+        return CODELET_QUEUE_NOT_ENOUGH_SPACE;
+    }
+
+    unsigned initAddress = (((unsigned) queue) + sizeof(codeletsQueue_t));
+    unsigned endAddress = initAddress + queue->size;
+
+    if (((unsigned)queue->tailAddress) + sizeof(codelet_t) < endAddress) {
+        // Normal insertion Must be first to not pay a misprediction penalty in the pipeline
+        codelet_t * tail = (codelet_t *) queue->tailAddress;
+        *tail = *newCodelet;
+        queue->tailAddress = (void *) (((unsigned)queue->tailAddress) + sizeof(codelet_t));
+        return 100;
+    } else {
+        // Split insertion codelet will be inserted between the end and the beginning
+        int i;
+        char * tail = (char *) queue->tailAddress;
+        char * codelet = (char *) newCodelet;
+        for (i = 0; i < sizeof(codelet_t); i++) {
+            *tail = *codelet;
+            tail++;
+            codelet++;
+            if ((unsigned)tail == endAddress ) {
+                tail = (char *) initAddress;
+            }
+        }
+        queue->tailAddress = (unsigned *) tail;
+    }
+
+    darts_mutex_unlock(mutexPtr);
+    return CODELET_QUEUE_SUCCESS_OP;
 }
 
 unsigned popCodeletQueue (codeletsQueue_t * queue, codelet_t * popedCodelet)
 {
-    e_mutex_lock(queue->row, queue->col, &(queue->lockMutex));
-    //check if empty
-    if (queue->curNumElements == 0)
-    {
-        e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-        popedCodelet = 0;
-        return 1;
-    }
-    //Pop from head
-    *popedCodelet = (queue->currentTail >= queue->curNumElements)? queue->headAddress[queue->currentTail - queue->curNumElements] : queue->headAddress[queue->currentTail - queue->curNumElements + queue->size];
-    queue->curNumElements--;
+    // Check the address of the queue to see if it is valid or not
+    if (!IS_ADDRESS_VALID(queue))
+        return CODELET_QUEUE_INVALID_QUEUE_ADDRESS;
 
-    e_mutex_unlock(queue->row, queue->col, &(queue->lockMutex));
-    return 0;
+    darts_mutex_t *mutexPtr = GET_MUTEX_PTR(queue);
+
+    darts_mutex_lock(mutexPtr);
+
+    // Check if queue is empty
+    if (GET_QUEUE_AVAILABLE_SPACE(queue) ==  queue->size) {
+        darts_mutex_unlock(mutexPtr);
+        popedCodelet = 0;
+        return CODELET_QUEUE_EMPTY_QUEUE;
+    }
+
+    unsigned initAddress = (((unsigned) queue) + sizeof(codeletsQueue_t));
+    unsigned endAddress = initAddress + queue->size;
+
+    //Pop from head
+    if (((unsigned)queue->headAddress) + sizeof(codelet_t) < endAddress) {
+        // Normal pop Must be first to not pay a misprediction penalty in the pipeline
+        codelet_t * head = (codelet_t *) queue->headAddress;
+        *popedCodelet = *head;
+        queue->headAddress = (void *) (((unsigned)queue->headAddress) + sizeof(codelet_t));
+    } else {
+        // Split insertion codelet will be inserted between the end and the beginning
+        int i;
+        char * head = (char *) queue->headAddress;
+        char * codelet = (char *) popedCodelet;
+        for (i = 0; i < sizeof(codelet_t); i++) {
+            *codelet = *head;
+            head++;
+            codelet++;
+            if ((unsigned)head == endAddress) {
+                head = (char *)initAddress;
+            }
+        }
+        queue->headAddress = (unsigned *) head;
+    }
+
+    darts_mutex_unlock(mutexPtr);
+    return CODELET_QUEUE_SUCCESS_OP;
 }
 
 unsigned queueEmpty(codeletsQueue_t * queue)
 {
-    return queue->curNumElements;
+    return (GET_QUEUE_AVAILABLE_SPACE(queue) ==  queue->size);
 }

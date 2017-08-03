@@ -21,6 +21,13 @@
 #include "tpClosure.h"
 #include "e_darts_mutex.h"
 
+// Return codes
+#define TPC_QUEUE_SUCCESS_OP 0
+#define TPC_QUEUE_INVALID_QUEUE_ADDRESS 1
+#define TPC_QUEUE_NOT_ENOUGH_SPACE 2
+#define TPC_QUEUE_EMPTY_QUEUE 3
+#define TPC_QUEUE_NOT_OWNER 4
+
 /**
  * @brief tpClosure queue struct
  *
@@ -59,6 +66,7 @@
  * | void * headAddress;            |
  * | void * tailAddress;            |
  * | unsigned size;                 |
+ * | unsigned padding;              |
  * | darts_mutex_t lockMutex;       |
  * |--------------------------------|
  * |         QUEUE RESERVED         |<-- initPosition = tpClosureQueueAddress + 4*4
@@ -80,13 +88,6 @@
  * \--------------------------------/
  *
  */
-
-// Return codes
-#define TPC_QUEUE_SUCCESS_OP 0
-#define TPC_QUEUE_INVALID_QUEUE_ADDRESS 1
-#define TPC_QUEUE_NOT_ENOUGH_SPACE 2
-#define TPC_QUEUE_EMPTY_QUEUE 3
-#define TPC_QUEUE_NOT_OWNER 4
 
 typedef struct __attribute__((__packed__)) tpClosuresQueue_s {
     void * headAddress;

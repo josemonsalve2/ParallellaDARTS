@@ -11,7 +11,6 @@
 #define START_SIGNAL STATES_BASE_ADDR // consumer->producer(ready to receieve)
 #define DONE_SIGNAL STATES_BASE_ADDR // producer->consumer (done pushing codelets)
 #define CODQUEUE_ADDR (STATES_BASE_ADDR + 0x4) // Metadata and handler
-#define QUEUEHEAD_ADDR (STATES_BASE_ADDR + 0x20) // Actual queue sizeMetadata=0x1C
 
 typedef void (*codeletFunction)();
 
@@ -48,10 +47,10 @@ void e_producer()
     unsigned pltEntryAddr = (unsigned)sum;
     unsigned sumPtr = producerBaseAddress + *((unsigned *)pltEntryAddr + 2); // 2 for the actual address
 
-    for (i = 0 ; i < 100000; i++) {
+    for (i = 0 ; i < 1; i++) {
         codelet_t codelet;
         codelet.fire = (codeletFunction) sumPtr;
-        while ( pushCodeletQueue(codeletQueue, codelet) == 1);
+        while(pushCodeletQueue(codeletQueue, &codelet) != CODELET_QUEUE_SUCCESS_OP);
     }
 
      *doneSig=1;
@@ -66,7 +65,6 @@ void e_consumer()
 
     // The codelet queue
     unsigned consumerCodeletQueueAddr = consumerBaseAddress + CODQUEUE_ADDR;
-    unsigned codeletQueueHead = consumerBaseAddress + QUEUEHEAD_ADDR;
     codeletsQueue_t * codeletQueue = (codeletsQueue_t *) consumerCodeletQueueAddr;
 
     // to fetch from queue
@@ -81,12 +79,11 @@ void e_consumer()
     *sumResult = 0;
 
      //Init the queue (pointer,size, headPtr)
-    initCodeletsQueue(codeletQueue, 300, (unsigned*)codeletQueueHead);
+    initCodeletsQueue(codeletQueue, 300);
 
     *startSig = 1;
-    while(*doneSig == 0 || queueEmpty(codeletQueue) != 0)
-    {
-        if ( popCodeletQueue(codeletQueue, &codelet) == 0 ) // Assuming core(0,0)
+    while(*doneSig == 0 || !queueEmpty(codeletQueue)) {
+        if (popCodeletQueue(codeletQueue, &codelet) == 0 ) // Assuming core(0,0)
         {
             codelet.fire();
         }
