@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include "codelet.h"
 #include "e_darts_mutex.h"
-#include "common.h"
 
 /**
  * @brief syncronization slots struct

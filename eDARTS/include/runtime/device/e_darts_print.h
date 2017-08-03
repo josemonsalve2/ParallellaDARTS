@@ -14,11 +14,10 @@
 #ifndef E_DARTS_PRINT_H
 #define E_DARTS_PRINT_H
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include "e_darts_mutex.h"
-#include "common.h"
 
 // Changing this should also be changed on the host side
 #define MAX_NUM_CHARACTERS 200
@@ -43,9 +42,6 @@ typedef struct __attribute__ ((__packed__)) printBuffer_s
     char printingBufferHead[MAX_NUM_CHARACTERS];
     char arguments[ARGUMENTS_SIZE];
 } printBuffer_t;
-
-extern darts_mutex_t __printingMutex __attribute__ ((section(".bss")));
-extern printBuffer_t __printBuffer __attribute__ ((section(".printBuffer")));
 
 /**
  * @brief printing function

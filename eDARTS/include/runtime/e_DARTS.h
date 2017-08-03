@@ -1,7 +1,7 @@
 #include "common.h"
 
-/* 
- * This corresponds to the CU state flags. 
+/*
+ * This corresponds to the CU state flags.
  * Used by the runtime to manage the CU.
  *
  * IMPORTANT: Order must be kept since it is used
@@ -17,8 +17,8 @@ typedef struct PACKED CU_states_s
     codeletsQueue_t codeletQueue;
 } CU_states_t;
 
-/* 
- * This corresponds to the SU state flags. 
+/*
+ * This corresponds to the SU state flags.
  * Used by the runtime to manage the SU.
  *
  * IMPORTANT: Order must be kept since it is used
@@ -47,7 +47,7 @@ union rt_states {
 } _rt_states;
 
 /*
- * At the end of execution the SU send an end_rt codelet 
+ * At the end of execution the SU send an end_rt codelet
  * which executes immediatly and sets the termination flag
  * to 1. This way the CU will return from the runtime and
  * end execution

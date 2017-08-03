@@ -250,17 +250,18 @@ void e_multipleProducersSingleConsumer() {
 }
 
 void e_multipleProducersMultipleConsumers() {
-    if (e_group_config.core_row == 0 && e_group_config.core_col == 0) {
-        e_darts_print("\n--- MULTIPLE PRODUCERS SINGLE CONSUMER TEST ---\n");
+    if (e_group_config.core_row == 0) {
+        if (e_group_config.core_col == 0)
+            e_darts_print("\n--- MULTIPLE PRODUCERS MULTIPLE CONSUMERS TEST ---\n");
         //Here we have the consumers
         unsigned base0_0Address = (unsigned) e_get_global_address( 0 , 0 , 0x0000 );
 
         // while the final tp has not been submitted
         // Since we only have one single consumer we can own the queue at the beginning
         unsigned numCreatedTps = 0, i, j, k, stillExecuting = 0;
-        ownTpClosureQueue(myTpQueue);
         while (*finalSignal != 1 || stillExecuting == 1) { // Final signal is set by a TP
             stillExecuting = 0;
+            while(ownTpClosureQueue(myTpQueue) != TPC_QUEUE_SUCCESS_OP);
             if (!isTpClosureQueueEmpty(myTpQueue)) {
                 genericTpClosure_t * currentTpClosure = 0;
                 // SU scheduling
@@ -291,6 +292,8 @@ void e_multipleProducersMultipleConsumers() {
                     popTopElementQueue(myTpQueue);
                 }
             }
+            while(disownTpClosureQueue(myTpQueue)!= TPC_QUEUE_SUCCESS_OP);
+
             // Codelet Scheduling
             // Iterate over the TPs to find codelets ready to execute
             *currentExecTpAddr = (unsigned) (TP_HEAP_LOCATION);
@@ -318,10 +321,10 @@ void e_multipleProducersMultipleConsumers() {
         }
 
         // We are done with the queue, we disown it
-        disownTpClosureQueue(myTpQueue);
 
         darts_barrier(myBarrier);
-    } else if (e_group_config.core_row == 0 && e_group_config.core_col == 1){
+    } else if (e_group_config.core_row == 1 && e_group_config.core_col == 1){
+        // This one pushes the complex TP that finishes the execution
         simple_tp_tpClosure_t newSimpleTpClosure = _invoke_simple_tp();
         unsigned code;
         while ((code = pushTpClosureQueue(myTpQueue,(genericTpClosure_t*)(&newSimpleTpClosure))) != TPC_QUEUE_SUCCESS_OP){}
@@ -336,12 +339,7 @@ void e_multipleProducersMultipleConsumers() {
         unsigned code;
         while ((code = pushTpClosureQueue(myTpQueue,(genericTpClosure_t*)(&newSimpleTpClosure))) != TPC_QUEUE_SUCCESS_OP){}
         darts_barrier(myBarrier);
-
     }
-}
-
-void e_checkingPaddingAndErrors() {
-
 }
 
 int main(void)
@@ -352,6 +350,9 @@ int main(void)
     // Reset runtime every
     e_reset_runtime_variables();
     e_multipleProducersSingleConsumer();
+    e_reset_runtime_variables();
+    e_multipleProducersMultipleConsumers();
+
     darts_barrier(myBarrier);
     if (e_group_config.core_row == 0 && e_group_config.core_col == 0)
     {

@@ -19,10 +19,6 @@ unsigned calculateMaxFreeSpaceQueue(tpClosuresQueue_t * queue) {
 }
 
 unsigned checkIfValidAddress (tpClosuresQueue_t * queue) {
-//    unsigned currentCoreID;
-//    // We make sure the address is complete
-//    __asm__ __volatile__ ("movfs %0, coreid" : "=r" (currentCoreID));
-
     // We check if we are getting the whole address.
     if (((unsigned) queue) >> 20 == 0 ) {
         return TPC_QUEUE_INVALID_QUEUE_ADDRESS;

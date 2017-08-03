@@ -14,7 +14,7 @@
 #define E_DARTS_BARRIER_H
 
 #include "e_darts_mutex.h"
-#include "common.h"
+#include "codelet.h"
 
 #define __MAX_NUM_THREADS_BARRIER 16
 
