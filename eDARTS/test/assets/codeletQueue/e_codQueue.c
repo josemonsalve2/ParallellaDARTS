@@ -47,7 +47,7 @@ void e_producer()
     unsigned pltEntryAddr = (unsigned)sum;
     unsigned sumPtr = producerBaseAddress + *((unsigned *)pltEntryAddr + 2); // 2 for the actual address
 
-    for (i = 0 ; i < 1; i++) {
+    for (i = 0 ; i < 100000; i++) {
         codelet_t codelet;
         codelet.fire = (codeletFunction) sumPtr;
         while(pushCodeletQueue(codeletQueue, &codelet) != CODELET_QUEUE_SUCCESS_OP);
@@ -83,7 +83,7 @@ void e_consumer()
 
     *startSig = 1;
     while(*doneSig == 0 || !queueEmpty(codeletQueue)) {
-        if (popCodeletQueue(codeletQueue, &codelet) == 0 ) // Assuming core(0,0)
+        if (popCodeletQueue(codeletQueue, &codelet) == CODELET_QUEUE_SUCCESS_OP ) // Assuming core(0,0)
         {
             codelet.fire();
         }

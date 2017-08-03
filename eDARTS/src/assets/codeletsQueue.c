@@ -48,7 +48,6 @@ unsigned pushCodeletQueue (codeletsQueue_t * queue, codelet_t * newCodelet)
         codelet_t * tail = (codelet_t *) queue->tailAddress;
         *tail = *newCodelet;
         queue->tailAddress = (void *) (((unsigned)queue->tailAddress) + sizeof(codelet_t));
-        return 100;
     } else {
         // Split insertion codelet will be inserted between the end and the beginning
         int i;
