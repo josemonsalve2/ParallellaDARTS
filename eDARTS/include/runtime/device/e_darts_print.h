@@ -4,7 +4,6 @@
  * @date 8 July 2017
  * @brief printing service from the epiphany to darts
  * @todo Add copyright
- * @todo add printing of variables
  *
  * Given that it is not possible to print from the device, it is necessary to
  * have a method that allows to pass information from the device to the host

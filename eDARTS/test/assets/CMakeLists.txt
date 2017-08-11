@@ -29,6 +29,10 @@
 #                                                                              #
 ################################################################################
 
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -T ${ELDF_EDARTS_CACHEMAN}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${ELDF_EDARTS_CACHEMAN} ${CMAKE_BINARY_DIR}/eDARTS/src/softcache/cachemanager.o")
+
+
 # Given that I am not able to use two compilers with cmake. I will
 # use custom command and custom target to manually build this
 if(DEBUG)

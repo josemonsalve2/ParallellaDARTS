@@ -29,6 +29,8 @@
 #                                                                              #
 ################################################################################
 
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -T ${ELDF_EDARTS_CACHEMAN}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${ELDF_EDARTS_CACHEMAN} ${CMAKE_BINARY_DIR}/eDARTS/src/softcache/cachemanager.o")
 set( edarts_assets_src
      codeletsQueue.c
      syncSlot.c

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "e-lib.h"
 
-#include "../tpClosuresQueue/e_tp_definitions.h"
+#include "e_tp_definitions.h"
 
 #define INIT_SIGNAL 0x6004
 #define FINAL_SIGNAL 0x6008
