@@ -21,7 +21,7 @@
 #include "syncSlot.h"
 #include "darts_rt_params.h"
 #include "threadedProcedure.h"
-//#include "e_darts_su_scheduler.h"
+#include "e_darts_su_scheduler.h"
 #include "e_darts_cu.h"
 
 typedef struct __attribute__ ((__packed__)) su_runtime_elements_s {
@@ -32,10 +32,11 @@ typedef struct __attribute__ ((__packed__)) su_runtime_elements_s {
     char codeletsQueuePadding[_DARTS_CODELET_QUEUE_SIZE_BYTES]; // Must be after codeletsQueue_t
     tpClosuresQueue_t darts_rt_tpclosuresQueue;
     char tpClosuresQueuePadding[_DARTS_TPCLOSURES_QUEUE_SIZE_BYTES]; // must be after tpClosuresQueue_t
-    cu_runtime_elements_t * myCUElements[_DARTS_NUM_CORES];
+    cu_runtime_elements_t * myCUElements[_DARTS_NUM_CORES]; // SET THIS WITH FULL ADDRESS WITH COREID
 } su_runtime_elements_t;
 
-extern su_runtime_elements_t sizeOfSUElements;
+extern su_runtime_elements_t _dartsSUElements;
+
 /* @brief SU runtime function
  *
  * This is the runtime function that will be loaded within the SU

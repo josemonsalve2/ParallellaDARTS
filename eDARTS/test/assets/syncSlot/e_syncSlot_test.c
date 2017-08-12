@@ -9,7 +9,7 @@
 #define INIT_FLAG 0x2000
 #define FINI_FLAG 0x2004
 #define SYNC_SLOT_ADDR 0x2008
-#define BARRIER_ADDR 0x202C
+#define BARRIER_ADDR 0x2030
 
 typedef void (*codeletFunction)();
 

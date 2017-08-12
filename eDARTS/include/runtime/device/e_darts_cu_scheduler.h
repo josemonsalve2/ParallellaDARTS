@@ -11,11 +11,14 @@
  */
 #ifndef _E_DARTS_CU_SCHEDULER_H_
 #define _E_DARTS_CU_SCHEDULER_H_
+
 #include "syncSlot.h"
 #include "codelet.h"
 #include "threadedProcedure.h"
-#include "e_darts_cu.h"
+#include "tpClosuresQueue.h"
 #include "e_darts_scheduler_base.h"
+#include "e_darts_global.h"
+#include "e_darts_cu.h"
 
 typedef enum {
     CU_ROUND_ROBIN

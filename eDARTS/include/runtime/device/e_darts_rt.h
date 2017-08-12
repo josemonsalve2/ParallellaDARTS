@@ -13,11 +13,12 @@
 #include "e_darts_cam.h"
 #include "e_darts_cu.h"
 #include "e_darts_su.h"
+#include "e_darts_global.h"
 #include "e_darts_scheduler_base.h"
 #include "threadedProcedure.h"
 #include "codelet.h"
 
-extern codelet_t finalCodelet;
+extern codelet_t _dartsFinalCodelet;
 extern scheduler_t dartsRtScheduler;
 
 /*
@@ -27,7 +28,7 @@ extern scheduler_t dartsRtScheduler;
  * be used
  *
  */
-//void e_darts_rt(e_darts_cam_t userCAM, cu_scheduler_selector cu_scheduler_policy, su_scheduler_selector su_scheduler_policy);
+void e_darts_rt(e_darts_cam_t userCAM, cu_scheduler_selector cu_scheduler_policy, su_scheduler_selector su_scheduler_policy);
 
 /*
  * @brief runtime reset initialization

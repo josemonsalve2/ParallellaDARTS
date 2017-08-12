@@ -20,7 +20,7 @@
 #include "syncSlot.h"
 #include "darts_rt_params.h"
 #include "threadedProcedure.h"
-//#include "e_darts_cu_scheduler.h"
+#include "e_darts_cu_scheduler.h"
 #include "e_darts_cam.h"
 
 typedef struct __attribute__ ((__packed__)) su_runtime_elements_s su_runtime_elements_t;
@@ -43,10 +43,10 @@ typedef struct __attribute__ ((__packed__)) cu_runtime_elements_s {
     codeletsQueue_t darts_rt_codeletsQueue;
     char codeletsQueuePadding[_DARTS_CODELET_QUEUE_SIZE_BYTES]; // Must be after codeletsQueue_t
     syncSlot_t syncSlots[_DARTS_NUM_SYNC_SLOTS_PER_CU];
-    su_runtime_elements_t * mySUElements;
+    su_runtime_elements_t * mySUElements; // SET THIS WITH FULL ADDRESS WITH COREID
 } cu_runtime_elements_t;
 
-extern cu_runtime_elements_t sizeOfCUElements;
+extern cu_runtime_elements_t _dartsCUElements;
 
 /* @brief CU runtime function
  *

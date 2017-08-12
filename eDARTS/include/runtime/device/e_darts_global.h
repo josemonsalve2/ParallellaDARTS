@@ -16,4 +16,7 @@
 // Flag that keeps the runtime going
 extern unsigned darts_rt_alive;
 
+#define DARTS_GETCOREID(coreIdVar) __asm__ __volatile__ ("movfs %0, coreid" : "=r" (coreIdVar))
+#define DARTS_APPEND_COREID(coreID, address) ((((unsigned)coreID) << 20) + (((unsigned)address) & 0x000FFFFF))
+
 #endif /* E_DARTS_GLOBAL_H */

@@ -8,6 +8,8 @@
  * This file defines the structure for the scheduler functions that are used
  * by the CUs, the SUs, and the user through e_darts_rt.h
  */
+#ifndef _E_DARTS_SCHEDULER_BASE_H_
+#define _E_DARTS_SCHEDULER_BASE_H_
 
 #include "syncSlot.h"
 #include "codelet.h"
@@ -20,4 +22,4 @@ typedef struct __attribute__ ((__packed__)) scheduler_s {
     void (*invokeTP)(genericTpClosure_t * tpClosure);
 } scheduler_t;
 
-extern void * dartsUnitElement;
+#endif /* _E_DARTS_SCHEDULER_BASE_H_ */

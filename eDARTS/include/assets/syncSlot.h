@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include "codelet.h"
 #include "e_darts_mutex.h"
+#include "threadedProcedure.h"
 
 /**
  * @brief syncronization slots struct
@@ -26,14 +27,14 @@
  * for synchronization between codelets. Each synchronization
  * represent a data or control dependency.
  *
- * SyncSlot size = 4 + 4 + 4 + 12 + 4 + 4 + 4 = 36 = 0x24
+ * SyncSlot size = 4 + 4 + 4 + 4 + 12 + 4 + 4 + 4 = 40 = 0x28
  *
  */
 typedef struct __attribute__ ((__packed__)) syncSlot_s {
     unsigned slotID;
     unsigned resetDep;
     unsigned currentDep;
-    //threadedProcedure_t tpFrame;
+    _tp_metadata_t * tpFrame;
     codelet_t codeletTemplate;
     unsigned numCodelets;
     darts_mutex_t lockMutex;

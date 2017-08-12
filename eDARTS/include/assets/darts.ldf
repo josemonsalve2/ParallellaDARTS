@@ -58,10 +58,10 @@ MEMORY
 	PRINT_MUTEX_POINTER (WXAI)	: ORIGIN = 0x80800068, LENGTH = 0x4
 
 	/* user program, continuous placement */
-	INTERNAL_RAM (WXAI)      : ORIGIN = LENGTH(IVT_RAM) + LENGTH(WORKGROUP_RAM) + LENGTH(PRINT_MUTEX_POINTER), LENGTH = 32K - LENGTH(IVT_RAM) - LENGTH(WORKGROUP_RAM) - LENGTH(PRINT_MUTEX_POINTER)
+	INTERNAL_RAM (WXAI)      : ORIGIN = LENGTH(IVT_RAM) + LENGTH(WORKGROUP_RAM) + LENGTH(PRINT_MUTEX_POINTER) , LENGTH = 32K - LENGTH(IVT_RAM) - LENGTH(WORKGROUP_RAM) - LENGTH(PRINT_MUTEX_POINTER)
 
 	/* user program, per bank usage */
-	BANK0_SRAM (WXAI)        : ORIGIN = LENGTH(IVT_RAM) + LENGTH(WORKGROUP_RAM) + LENGTH(PRINT_MUTEX_POINTER), LENGTH = 8K  - LENGTH(IVT_RAM) - LENGTH(WORKGROUP_RAM) - LENGTH(PRINT_MUTEX_POINTER)
+	BANK0_SRAM (WXAI)        : ORIGIN = LENGTH(IVT_RAM) + LENGTH(WORKGROUP_RAM) + LENGTH(PRINT_MUTEX_POINTER) , LENGTH = 8K  - LENGTH(IVT_RAM) - LENGTH(WORKGROUP_RAM) - LENGTH(PRINT_MUTEX_POINTER)
 	BANK1_SRAM (WXAI)        : ORIGIN = 0x2000, LENGTH = 8K
 	BANK2_SRAM (WXAI)        : ORIGIN = 0x4000, LENGTH = 8K
 	BANK3_SRAM (WXAI)        : ORIGIN = 0x6000, LENGTH = 8K
@@ -130,20 +130,34 @@ SECTIONS
 			*(printingMutex);
 		} > PRINT_MUTEX_POINTER
 
+	.dartsRtAlive :
+		{
+			*(.dartsRtAlive);
+		} > INTERNAL_RAM
+
+	.dartsFinalCodelet :
+		{
+			*(.dartsFinalCodelet);
+		} > INTERNAL_RAM
+	.dartsSchedulerPointers :
+		{
+			*(.dartsSchedulerPointers)
+		} > INTERNAL_RAM
+
 	OVERLAY :
 	{
-		.sizeOfSUElements
+		.dartsSUElements
 			{
-				KEEP(*(.sizeOfSUElements));
+				KEEP(*(.dartsSUElements));
 			}
-		.sizeOfCUElements
+		.dartsCUElements
 			{
-				KEEP(*(.sizeOfCUElements));
+				KEEP(*(.dartsCUElements));
 			}
 	} > INTERNAL_RAM
 
 	/* place the ISR handlers after workgroup-configuration */
-	.reserved_crt0  /*ORIGIN(IVT_RAM) + LENGTH(IVT_RAM) + LENGTH(WORKGROUP_RAM) + LENGTH(PRINT_MUTEX_POINTER)*/ : {*.o(RESERVED_CRT0) *.o(reserved_crt0)} > INTERNAL_RAM
+	.reserved_crt0 : {*.o(RESERVED_CRT0) *.o(reserved_crt0)} > INTERNAL_RAM
 	. = ADDR(.reserved_crt0) + SIZEOF(.reserved_crt0);
 
 	.data_bank0 . : {*.o(.data_bank0)} > BANK0_SRAM
