@@ -46,7 +46,7 @@ set(ELDF_EDARTS ${CMAKE_SOURCE_DIR}/eDARTS/include/assets/darts.ldf)
 # setting up the right compiler and linker
 set(CMAKE_C_COMPILER ${EPIPHANY_HOME}/tools/e-gnu.armv7l/bin/e-gcc)
 set(CMAKE_LINKER ${EPIPHANY_HOME}/tools/e-gnu/bin/e-ld)
-set(EPIPHANY_OBJ_FILES "${EPIPHANY_HOME}/tools/e-gnu/epiphany-elf/lib/crt0.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.4.0/crti.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.4.0/crtbegin.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.4.0/crtend.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.4.0/crtn.o")
+set(EPIPHANY_OBJ_FILES "${EPIPHANY_HOME}/tools/e-gnu/epiphany-elf/lib/crt0.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/8.3.0/crti.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/8.3.0/crtbegin.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/8.3.0/crtend.o ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/8.3.0/crtn.o")
 
 set(CMAKE_C_LINK_EXECUTABLE
 "<CMAKE_LINKER> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> ${EPIPHANY_OBJ_FILES} -o <TARGET> <LINK_LIBRARIES>")
@@ -82,7 +82,7 @@ else()
 endif()
 
 #lookig for gcc
-find_library(GCC_LIB gcc PATH ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/5.4.0/)
+find_library(GCC_LIB gcc PATH ${EPIPHANY_HOME}/tools/e-gnu/lib/gcc/epiphany-elf/8.3.0/)
 if (GCC_LIB)
     message_green("\tlibgcc FOUND = ${GCC_LIB}")
 else()
