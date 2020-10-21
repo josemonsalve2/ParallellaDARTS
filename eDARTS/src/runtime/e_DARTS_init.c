@@ -17,19 +17,65 @@ void sum()
     *value = 999;
 }
 
+void add()
+{
+    //where does start codelet come in?
+    e_darts_print(" ADD EXECUTED \n");
+    int x = 5;
+    int y = 2;
+    int z = y + x;
+    unsigned thisCoreID;
+    DARTS_GETCOREID(thisCoreID);
+    //how to get TP frame from inside codelet fire function?
+    _tp_metadata_t *actualTP = (_tp_metadata_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements->currentThreadedProcedure));
+    simple_tp_memDRAM_t *memDRAM = (simple_tp_memDRAM_t *) actualTP->memDRAM;
+    memDRAM->z = z;
+    syncSlot_t *next = GET_SYNC_SLOT(*actualTP, 1);
+    syncSlotDecDep(next);
+    e_darts_print(" SIGNALED READ \n");
+}
+
+void read()
+{
+    e_darts_print(" EXECUTING READ \n");
+    int read_z;
+    unsigned thisCoreID;
+    DARTS_GETCOREID(thisCoreID);
+    _tp_metadata_t *actualTP = (_tp_metadata_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements->currentThreadedProcedure));
+    simple_tp_memDRAM_t *memDRAM = (simple_tp_memDRAM_t *) actualTP->memDRAM;
+    read_z = memDRAM->z = z;
+    e_darts_print(" value read: %d\n", read_z);
+}
+
 int main(void)
 {
     unsigned *cd;
     cd = 0x4000;
     *cd = (unsigned) &sum;
-    // Identify SU
-    if (e_group_config.core_row == 0 && e_group_config.core_col == 0)
-    {
-        _SU_rt();
-    }
-    else
-    {
-        _CU_rt();
-    }
+
+    DEFINE_TP_MEM_REGIONS(simple_tp,
+		              //DRAM
+			      int z
+			      ,
+			      //INTERNAL
+			      ,
+			      //DIST
+		              ) 
+
+    DEFINE_THREADED_PROCEDURE(simple_tp,2, {
+                              e_darts_print("Initializing simple TP \n");
+			      memDRAM->z = z;
+			      ASSIGN_SYNC_SLOT_CODELET(*this,0,add,1,1,1);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,1,read,1,1,1);
+			      syncSlot_t *addCodelet = GET_SYNC_SLOT(*this, 1);
+			      syncSlotDecDep(addCodelet);
+		              }
+			      , int z)
+
+    DEFINE_TP_CLOSURE(simple_tp,int);
+
+    e_darts_cam_t CAM;
+    e_darts_rt(CAM, CU_ROUND_ROBIN, SU_ROUND_ROBIN);
+    e_darts_run(simple_tp); //see src code, doesn't seem to actually push before going into policy
     return 0;
 }
