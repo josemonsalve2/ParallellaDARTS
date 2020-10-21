@@ -14,6 +14,15 @@ void e_darts_rt(e_darts_cam_t userCAM, cu_scheduler_selector cu_scheduler_policy
 
     // Iterate over all the cores and do this
     darts_rt_alive = 1;
+    if (e_group_config.core_row == 0 && e_group_config.core_col == 0)
+    {
+        _SU_rt();
+    }
+    else
+    {
+        _CU_rt();
+    }
+    return 0;
 }
 
 void e_darts_reset() {

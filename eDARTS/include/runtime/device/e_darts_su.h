@@ -44,7 +44,7 @@ extern su_runtime_elements_t _dartsSUElements;
  * The scheduling policy must use the above definitions
  *
  */
-void darts_su_runtime();
+void _SU_rt();
 
 #endif /* _E_DARTS_SU_H_ */
 

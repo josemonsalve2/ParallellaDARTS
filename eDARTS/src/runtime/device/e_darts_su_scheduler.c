@@ -13,27 +13,29 @@ void su_scheduler_round_robin() {
         // Do the ThreadedProcedures
         if(ownTpClosureQueue(thisTPCQueue) == TPC_QUEUE_SUCCESS_OP) {
             if (peakTopElement(thisTPCQueue,&tpClosureToBuild) == TPC_QUEUE_SUCCESS_OP) {
-//                _tp_metadata_t * actualTP = (_tp_metadata_t *) ;
-//                *actualTP = currentTpClosure->_metadataCtor(numCreatedTps);
-//                numCreatedTps++;
-//                // Move the heap pointer
-//                myTpHeap = (void *) (((unsigned)myTpHeap) + sizeof(_tp_metadata_t) + (sizeof(syncSlot_t)*actualTP->numSyncSlots));
-//                // Memory allocation for Local
-//                if (actualTP->sizeLocal != 0) {
-//                    actualTP->memLocal = myLocalMemHeap;
-//                    myLocalMemHeap = (void *) (base0_0Address + (unsigned)myLocalMemHeap + actualTP->sizeLocal);
-//                }
-//                // Memory allocation for DRAM
-//                if (actualTP->sizeDRAM != 0) {
-//                    actualTP->memDRAM = myDRAMMemHeap;
-//                    myDRAMMemHeap = (void *) ((unsigned)myDRAMMemHeap + actualTP->sizeDRAM);
-//                }
-//
-//                // Now we can call the user Constructor
-//                currentTpClosure->_userInitCtorExec(actualTP,currentTpClosure);
-//
-//                // Last thing is to delete that already processed element from the queue
-//                popTopElementQueue(myTpQueue);
+                _tp_metadata_t * actualTP = (_tp_metadata_t *) ;
+                *actualTP = currentTpClosure->_metadataCtor(numCreatedTps);
+                numCreatedTps++;
+                // Move the heap pointer
+		// all the heap variables need somewhere to go. Where is a large continuous memory block?
+		// make e_mallocs for each spot (the TP, local, and DRAM)?
+                myTpHeap = (void *) (((unsigned)myTpHeap) + sizeof(_tp_metadata_t) + (sizeof(syncSlot_t)*actualTP->numSyncSlots));
+                // Memory allocation for Local
+                if (actualTP->sizeLocal != 0) {
+                    actualTP->memLocal = myLocalMemHeap;
+                    myLocalMemHeap = (void *) (base0_0Address + (unsigned)myLocalMemHeap + actualTP->sizeLocal);
+                }
+                // Memory allocation for DRAM
+                if (actualTP->sizeDRAM != 0) {
+                    actualTP->memDRAM = myDRAMMemHeap;
+                    myDRAMMemHeap = (void *) ((unsigned)myDRAMMemHeap + actualTP->sizeDRAM);
+                }
+
+                // Now we can call the user Constructor
+                currentTpClosure->_userInitCtorExec(actualTP,currentTpClosure);
+
+                // Last thing is to delete that already processed element from the queue
+                popTopElementQueue(myTpQueue);
             }
 
             disownTpClosureQueue(thisTPCQueue);

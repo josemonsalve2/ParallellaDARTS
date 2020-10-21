@@ -55,6 +55,6 @@ extern cu_runtime_elements_t _dartsCUElements;
  * The scheduling policy must use the above definitions
  *
  */
-void darts_cu_runtime();
+void _CU_rt();
 
 #endif /* _E_DARTS_CU_H_ */
