@@ -4,7 +4,7 @@
 cu_runtime_elements_t _dartsCUElements __attribute__ ((section(".dartsCUElements")));
 
 void _CU_rt(cu_scheduler_selector cu_scheduler_policy) {
-     mySUElements = (su_runtime_elements_t *) DARTS_APPEND_COREID(0x000,&(_dartsCUElements));
+     mySUElements = (su_runtime_elements_t *) DARTS_APPEND_COREID(0x808,&(_dartsCUElements));
      unsigned thisCoreID;
      DARTS_GET_COREID(thisCoreID);
      scheduler_t *cu_scheduler = (scheduler_t *) DARTS_APPEND_COREID(thisCoreID,&dartsRtScheduler);

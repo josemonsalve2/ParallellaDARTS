@@ -35,7 +35,12 @@ typedef struct __attribute__ ((__packed__)) su_runtime_elements_s {
     cu_runtime_elements_t * myCUElements[_DARTS_NUM_CORES]; // SET THIS WITH FULL ADDRESS WITH COREID
 } su_runtime_elements_t;
 
+typedef struct __attribute__ ((__packed__)) tp_heap_space_s {
+    char tpHeapPadding[_DARTS_TP_HEAP_SIZE_BYTES];
+} tp_heap_space_t;
+
 extern su_runtime_elements_t _dartsSUElements;
+extern tp_heap_space_t _dartsTpHeap;
 
 /* @brief SU runtime function
  *

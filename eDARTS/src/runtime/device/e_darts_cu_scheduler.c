@@ -6,10 +6,12 @@
 void cu_scheduler_round_robin() {
     unsigned thisCoreID;
     DARTS_GETCOREID(thisCoreID);
+    cu_runtime_elements_t * myCUElements = (cu_runtime_elements_t *) DARTS_APPEND_COREID(thisCoreID, &(_dartsCUElements));
     codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.darts_rt_codeletsQueue));
     codelet_t toFire;
     while(darts_rt_alive != 0) {
         if (popCodeletQueue(thisCodeletQueue, &toFire) == CODELET_QUEUE_SUCCESS_OP ) {
+            myCUElements->currentThreadedProcedure = toFire->syncSlot->tpFrame; //is this too much dereferencing?
             toFire.fire();
         }
     }

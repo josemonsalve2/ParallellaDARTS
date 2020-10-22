@@ -30,3 +30,36 @@
 ################################################################################  
 add_subdirectory(host)
 add_subdirectory(device)
+
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -T ${ELDF_EDARTS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${ELDF_EDARTS} ${CMAKE_BINARY_DIR}/eDARTS/src/softcache/cachemanager.o")
+
+
+# Given that I am not able to use two compilers with cmake. I will
+# use custom command and custom target to manually build this
+if(DEBUG)
+    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include ${E_LOADER_LIB} -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${CMAKE_BINARY_DIR}/eDARTS/src/runtime/host -ldarts_print_server -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB} -g)
+else()
+    set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host ${E_LOADER_LIB} -L${CMAKE_BINARY_DIR}/eDARTS/src/runtime/host -ldarts_print_server -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB})
+endif()
+
+# For the host we need to compile manually without cmake
+add_custom_command(
+   OUTPUT rt_main.out
+   COMMAND gcc rt_main.c ${EXTERNAL_FLAGS} -o rt_main.out
+   DEPENDS rt_main.c
+   COMMENT "CROSS-COMPILING HOST FILE darts_print_test "
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   VERBATIM
+)
+
+add_custom_target( rt_main
+                   COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/rt_main.out ${CMAKE_CURRENT_BINARY_DIR}/rt_main
+		   DEPENDS rt_main.out rt_main rt_main.c)
+
+# For e_darts_rt_init.elf
+add_executable(e_darts_rt_init.elf e_DARTS_init.c)
+target_link_libraries(e_darts_rt_init.elf edarts_runtime_device edarts_multithreading ${EPIPHANY_LIBS})
+
+add_dependencies(e_darts_rt_init.elf rt_main darts_print_server edarts_cachemanager)
+
