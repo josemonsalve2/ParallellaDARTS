@@ -19,9 +19,18 @@ int main(int argc, char *argv[]){
 
     start_printing_server();
 
-    e_load("e_darts_rt_init.elf", &dev, 0, 0, E_FALSE);
+    e_load_group("e_darts_rt_init.elf", &dev, 0, 0, 4, 4, E_FALSE);
+    printf("Group loaded \n");
 
     e_start_group(&dev);
+
+
+
+
+    //here we need to check the rt_alive signal in the SU assuming its the last to turn off. once that's done
+    //we can close out everything. use a delay function here for testing
+    usleep(1e8);
+
 
     usleep(1e5);
     stop_printing_server();

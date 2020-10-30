@@ -22,7 +22,6 @@ void e_darts_rt(e_darts_cam_t userCAM, cu_scheduler_selector cu_scheduler_policy
     {
         _CU_rt(cu_scheduler_policy);
     }
-    return 0;
 }
 
 void e_darts_reset() {
@@ -32,10 +31,9 @@ void e_darts_reset() {
     darts_rt_alive = 1;
 }
 
-void e_darts_run(genericTpClosure_t initialTPClosure) {
+void e_darts_run() {
     // push to the queue and get stuck in the policy
-    INVOKE_TP(initialTPClosure);
-    dartsRtScheduler->policy();
+    dartsRtScheduler.policy();
 }
 
 void e_darts_finilize() {

@@ -4,10 +4,15 @@
 su_runtime_elements_t _dartsSUElements __attribute__ ((section(".dartsSUElements")));
 tp_heap_space_t _dartsTpHeap __attribute__ ((section(".dartsTpHeap")));
 
+//scheduler_t dartsRtScheduler __attribute__((section(".dartsSchedulerPointers"))); //could not access dartsRtScheduler
+extern scheduler_t dartsRtScheduler;
+
 void _SU_rt(su_scheduler_selector su_scheduler_policy) {
      unsigned thisCoreID;
      DARTS_GETCOREID(thisCoreID);
      su_runtime_elements_t *mySUElements = (su_runtime_elements_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsSUElements));
+     initCodeletsQueue(&(mySUElements->darts_rt_codeletsQueue), _DARTS_CODELET_QUEUE_SIZE_BYTES);
+     initTpClosuresQueue(&(mySUElements->darts_rt_tpclosuresQueue), _DARTS_TPCLOSURES_QUEUE_SIZE_BYTES);
      //only 15 because 0,0 is the SU
      mySUElements->myCUElements[1] = (cu_runtime_elements_t *) DARTS_APPEND_COREID(0x809,&(_dartsSUElements));
      mySUElements->myCUElements[2] = (cu_runtime_elements_t *) DARTS_APPEND_COREID(0x80a,&(_dartsSUElements));

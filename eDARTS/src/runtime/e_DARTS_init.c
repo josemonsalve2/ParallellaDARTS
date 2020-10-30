@@ -3,19 +3,11 @@
 #include "e-lib.h"
 #include "codelet.h"
 #include "codeletsQueue.h"
+#include "e_darts_rt.h"
 #include "e_DARTS.h"
 
+extern codelet_t _dartsFinalCodelet;
 
-/*
- * This is a testing function with no dependencies.
- *
- */
-void sum()
-{
-    unsigned *value;
-    value = (unsigned *) 0x2228;
-    *value = 999;
-}
 
 void add()
 {
@@ -28,11 +20,11 @@ void add()
     unsigned thisCoreID;
     DARTS_GETCOREID(thisCoreID);
     //how to get TP frame from inside codelet fire function?
-    _tp_metadata_t *actualTP = (_tp_metadata_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements->currentThreadedProcedure));
+    _tp_metadata_t *actualTP = (_tp_metadata_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.currentThreadedProcedure));
     //simple_tp_memDRAM_t *memDRAM = (simple_tp_memDRAM_t *) actualTP->memDRAM;
     //memDRAM->z = z;
     syncSlot_t *next = GET_SYNC_SLOT(*actualTP, 1);
-    syncSlotDecDep(next);
+    DEC_DEP(next);
     e_darts_print(" SIGNALED READ \n");
 }
 
@@ -44,46 +36,61 @@ void read()
     e_darts_print("\tRESULT: %d\n", new_z);
     unsigned thisCoreID;
     DARTS_GETCOREID(thisCoreID);
-    _tp_metadata_t *actualTP = (_tp_metadata_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements->currentThreadedProcedure));
+    _tp_metadata_t *actualTP = (_tp_metadata_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.currentThreadedProcedure));
     //simple_tp_memDRAM_t *memDRAM = (simple_tp_memDRAM_t *) actualTP->memDRAM;
     //read_z = memDRAM->z = z;
     
     e_darts_print(" value read: %d\n", read_z);
+    syncSlot_t *next = GET_SYNC_SLOT(*actualTP, 2);
+    DEC_DEP(next);
 }
-
-int main(void)
-{
-    unsigned *cd;
-    cd = 0x4000;
-    *cd = (unsigned) &sum;
 
     DEFINE_TP_MEM_REGIONS(simple_tp,
 		              //DRAM
-			      int z
+			      //int z
 			      ,
 			      //INTERNAL
 			      ,
 			      //DIST
 		              ) 
 
-    DEFINE_THREADED_PROCEDURE(simple_tp,2, {
+    DEFINE_THREADED_PROCEDURE(simple_tp,3, {
                               e_darts_print("Initializing simple TP \n");
-			      memDRAM->z = z;
+			      //memDRAM->z = z;
 			      ASSIGN_SYNC_SLOT_CODELET(*this,0,add,1,1,1);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,1,read,1,1,1);
-			      //what to do with final codelet? how to make sure all cures 
-			      //set darts_rt_alive = 0? If it just comes last in the TP, only 1 CU
-			      //will turn off which is obviously not the intended effect
-			      ASSIGN_SYNC_SLOT_CODELET(*this,2,terminationCodelet,1,1,1);
-			      syncSlot_t *addCodelet = GET_SYNC_SLOT(*this, 1);
-			      syncSlotDecDep(addCodelet);
+			      e_darts_print("Assigned syncSlots for add and read\n");
+			      //ASSIGN_SYNC_SLOT_CODELET(*this,2,terminationCodelet,1,1,1);
+			      syncSlot_t* finalSyncSlot = GET_SYNC_SLOT(*this,2);
+			      initSyncSlot(finalSyncSlot, 2, 1, 1, _dartsFinalCodelet, 1);
+			      e_darts_print("initialized final syncSlot\n");
+			      //we can't make a final codelet by simply assigning it the fire function
+			      //how do we add the final codelet itself? a macro?
+			      syncSlot_t *addCodelet = GET_SYNC_SLOT(*this, 0);
+			      DEC_DEP(addCodelet);
+			      //syncSlotDecDep(addCodelet);
+			      e_darts_print("DEC_DEP called on addCodelet\n");
 		              }
-			      , int z)
+			      //, int z)
+                              )
 
-    DEFINE_TP_CLOSURE(simple_tp,int);
+    //DEFINE_TP_CLOSURE(simple_tp,int);
+    DEFINE_TP_CLOSURE(simple_tp);
+
+int main(void)
+{
+    e_darts_print("Main started\n");
+    unsigned base0_0Address = (unsigned) e_get_global_address(0, 0, 0x0000);
 
     e_darts_cam_t CAM;
     e_darts_rt(CAM, CU_ROUND_ROBIN, SU_ROUND_ROBIN);
-    e_darts_run(simple_tp); //see src code, doesn't seem to actually push before going into policy
+    if (e_group_config.core_row == 0 && e_group_config.core_col == 0) {
+        INVOKE(simple_tp);
+    }
+    e_darts_run();
+    //e_darts_run(simple_tp.baseClosure); //see src code, doesn't seem to actually push before going into policy
+    //INVOKE(simple_tp, 8);
+    //INVOKE(simple_tp);
+    //dartsRtScheduler.policy();
     return 0;
 }

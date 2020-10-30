@@ -38,14 +38,6 @@ void e_darts_rt(e_darts_cam_t userCAM, cu_scheduler_selector cu_scheduler_policy
  */
 
 void e_darts_reset();
-/*
- * @brief start runtime
- *
- * This function starts the runtime by sending the initial tpClosure
- *
- */
-
-void e_darts_run(genericTpClosure_t initialTPClosure);
 
 /*
  * @brief call final codelet

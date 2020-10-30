@@ -59,7 +59,7 @@ add_custom_target( rt_main
 
 # For e_darts_rt_init.elf
 add_executable(e_darts_rt_init.elf e_DARTS_init.c)
-target_link_libraries(e_darts_rt_init.elf edarts_runtime_device edarts_multithreading ${EPIPHANY_LIBS})
+target_link_libraries(e_darts_rt_init.elf edarts_runtime_device edarts_codeletModel edarts_assets edarts_multithreading ${EPIPHANY_LIBS})
 
 add_dependencies(e_darts_rt_init.elf rt_main darts_print_server edarts_cachemanager)
 

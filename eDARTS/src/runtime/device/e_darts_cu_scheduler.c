@@ -11,30 +11,36 @@ void cu_scheduler_round_robin() {
     codelet_t toFire;
     while(darts_rt_alive != 0) {
         if (popCodeletQueue(thisCodeletQueue, &toFire) == CODELET_QUEUE_SUCCESS_OP ) {
-            myCUElements->currentThreadedProcedure = toFire->syncSlot->tpFrame; //is this too much dereferencing?
+            myCUElements->currentThreadedProcedure = toFire.syncSlot->tpFrame; //is this too much dereferencing?
             toFire.fire();
         }
     }
 }
 
 // decDep Policies
-void decDepAndPush(syncSlot_t * toDecDep){
+void cu_decDepAndPush(syncSlot_t * toDecDep){
     int i;
     // Check if dependencies are zero
     if (syncSlotDecDep(toDecDep) == 0) {
+	if (toDecDep->codeletTemplate.codeletID == 0xFFFFFFFF) { //if final codelet, push to SU codelet queue instead
+            codeletsQueue_t * suCodeletQueue = (codeletsQueue_t *) &(_dartsCUElements.mySUElements->darts_rt_codeletsQueue);
+	    while (pushCodeletQueue(suCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
+        }
         // Push as many codelets as possible
-        for (i = 0; i < toDecDep->numCodelets; i++) {
-            unsigned thisCoreID;
-            DARTS_GETCOREID(thisCoreID);
-            codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.darts_rt_codeletsQueue));
-            toDecDep->codeletTemplate.codeletID = i;
-            while (pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
+        else { //normal codelet
+            for (i = 0; i < toDecDep->numCodelets; i++) {
+                unsigned thisCoreID;
+                DARTS_GETCOREID(thisCoreID);
+                codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.darts_rt_codeletsQueue));
+                toDecDep->codeletTemplate.codeletID = i;
+                while (pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
+            }
         }
     }
 }
 
 // addCodelet Policies
-void addCodeletSelfQueue(codelet_t * toAdd) {
+void cu_addCodeletSelfQueue(codelet_t * toAdd) {
     unsigned thisCoreID;
     DARTS_GETCOREID(thisCoreID);
     codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.darts_rt_codeletsQueue));
@@ -42,7 +48,7 @@ void addCodeletSelfQueue(codelet_t * toAdd) {
 }
 
 // invoke Policies
-void invokeSelfQueue(genericTpClosure_t * tpClosure) {
+void cu_invokeSelfQueue(genericTpClosure_t * tpClosure) {
     unsigned suCodeID = ((0xFFF00000) & ((unsigned)_dartsCUElements.mySUElements));
     tpClosuresQueue_t * suTPCQueue = (tpClosuresQueue_t *) DARTS_APPEND_COREID(suCodeID,&(_dartsCUElements.mySUElements->darts_rt_tpclosuresQueue));
     while(pushTpClosureQueue(suTPCQueue, tpClosure) != TPC_QUEUE_SUCCESS_OP);
@@ -52,9 +58,9 @@ void darts_set_cu_scheduler(scheduler_t* cu_scheduler, cu_scheduler_selector cu_
     switch(cu_scheduler_policy) {
     case CU_ROUND_ROBIN:
         cu_scheduler->policy = cu_scheduler_round_robin;
-        cu_scheduler->decDep = decDepAndPush;
-        cu_scheduler->invokeTP = invokeSelfQueue;
-        cu_scheduler->addCodelet = addCodeletSelfQueue;
+        cu_scheduler->decDep = cu_decDepAndPush;
+        cu_scheduler->invokeTP = cu_invokeSelfQueue;
+        cu_scheduler->addCodelet = cu_addCodeletSelfQueue;
         break;
     default:
         break;
