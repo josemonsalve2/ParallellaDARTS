@@ -16,7 +16,7 @@ void add()
     int x = 5;
     int y = 2;
     int z = y + x;
-    e_darts_print("\tRESULT: %d\n", z);
+    //e_darts_print("\tRESULT: %d\n", z);
     unsigned thisCoreID;
     DARTS_GETCOREID(thisCoreID);
     //how to get TP frame from inside codelet fire function?
@@ -25,7 +25,7 @@ void add()
     //memDRAM->z = z;
     syncSlot_t *next = GET_SYNC_SLOT(*actualTP, 1);
     DEC_DEP(next);
-    e_darts_print(" SIGNALED READ \n");
+    //e_darts_print(" SIGNALED READ \n");
 }
 
 void read()
@@ -40,7 +40,7 @@ void read()
     //simple_tp_memDRAM_t *memDRAM = (simple_tp_memDRAM_t *) actualTP->memDRAM;
     //read_z = memDRAM->z = z;
     
-    e_darts_print(" value read: %d\n", read_z);
+    //e_darts_print(" value read: %d\n", read_z);
     syncSlot_t *next = GET_SYNC_SLOT(*actualTP, 2);
     DEC_DEP(next);
 }
@@ -54,6 +54,7 @@ void read()
 			      //DIST
 		              ) 
 
+    /*
     DEFINE_THREADED_PROCEDURE(simple_tp,3, {
                               e_darts_print("Initializing simple TP \n");
 			      //memDRAM->z = z;
@@ -73,13 +74,23 @@ void read()
 		              }
 			      //, int z)
                               )
+    */
+    DEFINE_THREADED_PROCEDURE(simple_tp,2, {
+		              e_darts_print("Initializing simple TP\n");
+			      ASSIGN_SYNC_SLOT_CODELET(*this,0,add,1,1,4);
+			      e_darts_print("Assigned syncSlot for add\n");
+			      syncSlot_t* finalSyncSlot = GET_SYNC_SLOT(*this,1);
+			      initSyncSlot(finalSyncSlot, 1, 1, 4, _dartsFinalCodelet, 1);
+			      syncSlot_t *addCodelet = GET_SYNC_SLOT(*this, 0);
+			      DEC_DEP(addCodelet);
+			      e_darts_print("DEC_DEP done\n");
+			      })
 
     //DEFINE_TP_CLOSURE(simple_tp,int);
     DEFINE_TP_CLOSURE(simple_tp);
 
 int main(void)
 {
-    e_darts_print("Main started\n");
     unsigned base0_0Address = (unsigned) e_get_global_address(0, 0, 0x0000);
 
     e_darts_cam_t CAM;

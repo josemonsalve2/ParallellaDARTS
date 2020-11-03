@@ -1,5 +1,6 @@
 #include "e_darts_cu_scheduler.h"
 #include "e_darts_su.h"
+#include "e_darts_print.h"
 
 
 // Scheduler Policies
@@ -11,8 +12,10 @@ void cu_scheduler_round_robin() {
     codelet_t toFire;
     while(darts_rt_alive != 0) {
         if (popCodeletQueue(thisCodeletQueue, &toFire) == CODELET_QUEUE_SUCCESS_OP ) {
+            e_darts_print("codelet popped in CU codelet queue\n");
             myCUElements->currentThreadedProcedure = toFire.syncSlot->tpFrame; //is this too much dereferencing?
             toFire.fire();
+            e_darts_print("codelet completed firing in CU\n");
         }
     }
 }
@@ -20,10 +23,14 @@ void cu_scheduler_round_robin() {
 // decDep Policies
 void cu_decDepAndPush(syncSlot_t * toDecDep){
     int i;
+    e_darts_print("cu_decDep called\n");
     // Check if dependencies are zero
     if (syncSlotDecDep(toDecDep) == 0) {
+        e_darts_print("cu_decDep called - 0 deps\n");
 	if (toDecDep->codeletTemplate.codeletID == 0xFFFFFFFF) { //if final codelet, push to SU codelet queue instead
-            codeletsQueue_t * suCodeletQueue = (codeletsQueue_t *) &(_dartsCUElements.mySUElements->darts_rt_codeletsQueue);
+            //codeletsQueue_t * suCodeletQueue = (codeletsQueue_t *) &(_dartsCUElements.mySUElements->darts_rt_codeletsQueue);
+	    // SU hardcoded below
+	    codeletsQueue_t * suCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(0x808,&(_dartsCUElements.mySUElements->darts_rt_codeletsQueue));
 	    while (pushCodeletQueue(suCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
         }
         // Push as many codelets as possible
@@ -37,6 +44,7 @@ void cu_decDepAndPush(syncSlot_t * toDecDep){
             }
         }
     }
+    e_darts_print("cu_decDep returning\n");
 }
 
 // addCodelet Policies
