@@ -17,21 +17,25 @@
 #define SU_REQUEST_NM_PROVIDE 8  //SU tells NM it wants to accept more work (requests the NM provide it work)
 
 
+//move define statements for messages into an enum
+//messages: invokeTP, reset runtime
 //do we need 4? I think we should be okay with 2: one for SU->NM and one for NM->SU
 
+typedef struct header_s {
+    //msgtype (can be enum?)
+    //size
+    //void *
+} header_t; //on receive allocate memory for struct + size, load payload into void pointer
+
 typedef struct mailbox_s {
-    genericTpClosure_t closure;
-    unsigned suSignal;
-    unsigned nmSignal;
-    darts_mutex_t suLock;
-    darts_mutex_t nmLock;
+    genericTpClosure_t closure; //not just a closure, space data w/ type
+    unsigned signal;
+    darts_mutex_t lock;
 } mailbox_t;
 
 typedef struct nodeMailbox_s {
     mailbox_t SUtoNM;
     mailbox_t NMtoSU;
-    mailbox_t mailbox3;
-    mailbox_t mailbox4;
 } nodeMailbox_t;
 
 extern nodeMailbox_t _dartsLocalMailbox;
