@@ -4,6 +4,7 @@
 // DO NOT USE THIS SYMBOL, IT IS USED TO GET THE SIZE IN LINKER SCRIPT
 su_runtime_elements_t _dartsSUElements __attribute__ ((section(".dartsSUElements")));
 tp_heap_space_t _dartsTpHeap __attribute__ ((section(".dartsTpHeap")));
+tp_heap_space_t _tpDataHeap __attribute__ ((section(".tpDataHeap")));
 extern scheduler_t dartsRtScheduler;
 
 void _SU_rt(su_scheduler_selector su_scheduler_policy) {

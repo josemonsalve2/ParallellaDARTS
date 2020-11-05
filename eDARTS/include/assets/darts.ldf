@@ -161,6 +161,11 @@ SECTIONS
 			*(.dartsTpHeap)
 		} > INTERNAL_RAM
 
+        .tpDataHeap  :
+                {
+                        *(.tpDataHeap)
+                } > INTERNAL_RAM
+
 	/* place the ISR handlers after workgroup-configuration */
 	.reserved_crt0 : {*.o(RESERVED_CRT0) *.o(reserved_crt0)} > INTERNAL_RAM
 	. = ADDR(.reserved_crt0) + SIZEOF(.reserved_crt0);
