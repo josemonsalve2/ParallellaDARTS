@@ -13,7 +13,11 @@ void cu_scheduler_round_robin() {
     while(darts_rt_alive != 0) {
         if (popCodeletQueue(thisCodeletQueue, &toFire) == CODELET_QUEUE_SUCCESS_OP ) {
             e_darts_print("codelet popped in CU codelet queue\n");
-            myCUElements->currentThreadedProcedure = toFire.syncSlot->tpFrame; //is this too much dereferencing?
+            myCUElements->currentThreadedProcedure = (_tp_metadata_t *) DARTS_APPEND_COREID(0x808,toFire.syncSlot->tpFrame); //is this too much dereferencing?
+	    e_darts_print("codelet's syncSlot located at %x\n", (unsigned)toFire.syncSlot);
+	    e_darts_print("codelet's syncSlot tpFrame -> %x\n", toFire.syncSlot->tpFrame);
+	    e_darts_print("codelet's syncSlot tpFrame pointer address -> %x\n", &(toFire.syncSlot->tpFrame));
+	    e_darts_print("CUElements current TP at %x\n", (unsigned)myCUElements->currentThreadedProcedure);
             toFire.fire();
             e_darts_print("codelet completed firing in CU\n");
         }

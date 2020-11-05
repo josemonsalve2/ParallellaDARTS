@@ -126,11 +126,14 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
  * dependencies (resetDep), and a number of codelets created whenever this syncSlot is ready.
  *
  */
+//note: added tpFrame assignment, and full syncSlot address w/ core ID - SU location is hardcoded currently
 #define ASSIGN_SYNC_SLOT_CODELET(_Tp, syncSlotNum, codeletFunction, numDep, resetDep, numExec) \
 		{\
 	        syncSlot_t* theSyncSlot = GET_SYNC_SLOT(_Tp,syncSlotNum);\
 			codelet_t newCodeletTemplate;\
-            initCodelet(&newCodeletTemplate,0 ,theSyncSlot, codeletFunction);\
+            theSyncSlot->tpFrame = (_tp_metadata_t *) DARTS_APPEND_COREID(0x808,this);\
+            syncSlot_t* syncSlot_full_address = (syncSlot_t*) DARTS_APPEND_COREID(0x808,theSyncSlot);\
+            initCodelet(&newCodeletTemplate,0 ,syncSlot_full_address, codeletFunction);\
             initSyncSlot(theSyncSlot, syncSlotNum, resetDep, numDep, newCodeletTemplate, numExec);\
         }\
 

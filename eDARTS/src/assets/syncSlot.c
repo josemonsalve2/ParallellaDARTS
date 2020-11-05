@@ -31,8 +31,8 @@ int syncSlotDecDep( syncSlot_t * syncSlot )
     //e_darts_print("mutex variable address %x\n", &(syncSlot->lockMutex));
     // decrementing dependency.
     darts_mutex_lock(syncSlot->lockMutexFullAddressPtr);
-    e_darts_print("decreasing dependency\n");
     syncSlot->currentDep--;
+    e_darts_print("decreased dependencies to %d\n", syncSlot->currentDep);
     darts_mutex_unlock(syncSlot->lockMutexFullAddressPtr);
     return syncSlot->currentDep;
 }

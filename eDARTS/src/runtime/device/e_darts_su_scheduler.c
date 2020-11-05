@@ -34,6 +34,7 @@ void su_scheduler_round_robin() {
                 // Move the heap pointer
 		// all the heap variables need somewhere to go. Where is a large continuous memory block?
 		// make e_mallocs for each spot (the TP, local, and DRAM)?
+		e_darts_print("TP metadata located at %x\n", (unsigned)myTpHeap);
                 myTpHeap = (void *) (((unsigned)myTpHeap) + sizeof(_tp_metadata_t) + (sizeof(syncSlot_t)*actualTP->numSyncSlots));
                 // Memory allocation for Local
                 if (actualTP->sizeLocal != 0) {
