@@ -40,13 +40,14 @@ void su_scheduler_round_robin() {
                 if (actualTP->sizeLocal != 0) {
                     //heap is anchored here for now
                     void *myLocalMemHeap = (void *) LOCAL_MEM_LOCATION;
+		    //need to change this to tpHeap structure
                     actualTP->memLocal = myLocalMemHeap;
                     myLocalMemHeap = (void *) (base0_0Address + (unsigned)myLocalMemHeap + actualTP->sizeLocal);
                 }
                 // Memory allocation for DRAM
                 if (actualTP->sizeDRAM != 0) {
-                    //heap is anchored here for now
                     void *myDRAMMemHeap = (void *) EXTERNAL_MEM_LOCATION;
+		    //need to change this to tpHeap structure
                     actualTP->memDRAM = myDRAMMemHeap;
                     myDRAMMemHeap = (void *) ((unsigned)myDRAMMemHeap + actualTP->sizeDRAM);
                 }
@@ -90,17 +91,17 @@ void su_scheduler_round_robin() {
                 // etc. but if it fails it tries to push to the next one. Basically, distributes evenly where possible,
                 // always distributes if possible, SU fires the codelet itself otherwise
 		//e_darts_print("Trying to push codelet to queue %d\n", cuIndex+1);
-		unsigned response = 4;
-                while(response != CODELET_QUEUE_SUCCESS_OP) {
-                    cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[cuIndex%15+1]->darts_rt_codeletsQueue);
-                    response = pushCodeletQueue(cuCodeletQueue, &toFire);
-		    e_darts_print("tried to push to CU %d with response %d\n", cuIndex%15+1, response);
-		    cuIndex = (cuIndex + 1) % 15;;
-                }
-	        //for(i=1; pushCodeletQueue(cuCodeletQueue, &toFire) != CODELET_QUEUE_SUCCESS_OP && i<15; i++) {
-		    //e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
-                    //cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
+		//unsigned response = 4;
+                //while(response != CODELET_QUEUE_SUCCESS_OP) {
+                //    cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[cuIndex%15+1]->darts_rt_codeletsQueue);
+                //    response = pushCodeletQueue(cuCodeletQueue, &toFire);
+		//    e_darts_print("tried to push to CU %d with response %d\n", cuIndex%15+1, response);
+		//    cuIndex = (cuIndex + 1) % 15;;
                 //}
+	        for(i=1; pushCodeletQueue(cuCodeletQueue, &toFire) != CODELET_QUEUE_SUCCESS_OP && i<15; i++) {
+		    e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
+                    cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
+                }
 		e_darts_print("Codelet pushed to queue %d\n", (cuIndex+i)%15+1);
 	        if(i == 15) { //if for loop failed to push to one of the CU queues
 		    e_darts_print("SU firing codelet\n");

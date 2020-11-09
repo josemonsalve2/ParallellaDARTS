@@ -27,11 +27,11 @@ void read();
 			      //e_darts_print("syncSlot 0 at %x\n", GET_SYNC_SLOT(*this,0));
 			      //e_darts_print("syncSlot 1 at %x\n", GET_SYNC_SLOT(*this,1));
 			      //e_darts_print("syncSlot 2 at %x\n", GET_SYNC_SLOT(*this,2));
-			      ASSIGN_SYNC_SLOT_CODELET(*this,0,add,1,1,1);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,0,add,1,1,3);
 			      //syncSlot_t* first = GET_SYNC_SLOT(*this,0);
 			      //first->tpFrame = (_tp_metadata_t *) DARTS_APPEND_COREID(0x808,this);
 			      //e_darts_print("syncSlot 0 now has tpFrame -> %x\n", first->tpFrame);
-			      ASSIGN_SYNC_SLOT_CODELET(*this,1,read,1,1,1);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,1,read,3,1,1);
 			      //e_darts_print("Assigned syncSlots for add and read\n");
 			      //ASSIGN_SYNC_SLOT_CODELET(*this,2,terminationCodelet,1,1,1);
 			      syncSlot_t* finalSyncSlot = GET_SYNC_SLOT(*this,2);
@@ -76,7 +76,7 @@ void add()
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
     simple_tp_memDRAM_t *memDRAM = (simple_tp_memDRAM_t *) actualTP->memDRAM;
     e_darts_print("memDRAM for add located at %x\n", memDRAM);
-    memDRAM->z = z; //should be 7
+    memDRAM->z = memDRAM->z + z; //should be 7
     //e_darts_print("actual TP from add codelet at %x\n", actualTP);
     syncSlot_t *next = GET_SYNC_SLOT(*actualTP, 1);
     //e_darts_print("dec_dep read at %x\n", (unsigned)next);
