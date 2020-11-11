@@ -105,7 +105,10 @@ int main(void)
 {
     unsigned base0_0Address = (unsigned) e_get_global_address(0, 0, 0x0000);
 
-    e_darts_cam_t CAM;
+    e_darts_cam_t CAM = {SU, CU, CU ,CU,\
+	                 CU, CU, CU, CU,\
+                         CU, CU, CU, CU,\
+			 CU, CU, CU, CU};
     e_darts_rt(CAM, CU_ROUND_ROBIN, SU_ROUND_ROBIN);
     if (e_group_config.core_row == 0 && e_group_config.core_col == 0) {
         INVOKE(simple_tp,0);

@@ -41,7 +41,7 @@ typedef struct __attribute__ ((__packed__)) tp_heap_space_s {
 
 extern su_runtime_elements_t _dartsSUElements;
 extern tp_heap_space_t _dartsTpHeap;
-extern tp_heap_space_t _tpDataHeap;
+extern tp_heap_space_t _tpDataHeap; //on DRAM
 
 /* @brief SU runtime function
  *

@@ -3,6 +3,7 @@
 
 //tp_heap_space_t _dartsTpHeap __attribute__ ((section(".dartsTpHeap")));
 extern tp_heap_space_t _dartsTpHeap;
+extern tp_heap_space_t _tpDataHeap;
 //extern unsigned base0_0Address;
 
 #define LOCAL_MEM_LOCATION 0x7000
@@ -39,8 +40,7 @@ void su_scheduler_round_robin() {
                 // Memory allocation for Local
                 if (actualTP->sizeLocal != 0) {
                     //heap is anchored here for now
-                    void *myLocalMemHeap = (void *) LOCAL_MEM_LOCATION;
-		    //need to change this to tpHeap structure
+                    void *myLocalMemHeap = (void *) &(_tpDataHeap);
                     actualTP->memLocal = myLocalMemHeap;
                     myLocalMemHeap = (void *) (base0_0Address + (unsigned)myLocalMemHeap + actualTP->sizeLocal);
                 }

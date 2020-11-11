@@ -27,6 +27,13 @@
 #define DARTS_CAM_CU(SUVAL) SUVAL
 #define DARTS_CAM_NOT_USED 255
 
-typedef char e_darts_cam_t[_DARTS_NUM_CORES];
+typedef enum core_type {
+    SU = 0,
+    CU = 1,
+    NA = 2
+} coreType;
+
+//typedef char e_darts_cam_t[_DARTS_NUM_CORES];
+typedef coreType e_darts_cam_t[_DARTS_NUM_CORES]; //this should be row major directly correlating to the core
 
 #endif
