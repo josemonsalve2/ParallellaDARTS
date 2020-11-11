@@ -5,7 +5,7 @@
 #include "e_darts_mutex.h"
 
 
-enum messages {
+typedef enum message_select {
     blank = 0,
     SU_MAILBOX_REJECT = 1,      //SU rejects incoming data
     SU_MAILBOX_ACCEPT = 2,      //SU accepts incoming data
@@ -16,13 +16,13 @@ enum messages {
     SU_REQUEST_NM_RECEIVE = 7,  //SU requests NM receive some data
     SU_REQUEST_NM_PROVIDE = 8   //SU requests NM provide some data
     //reset?
-};
+} message;
 
-enum messageType {
+typedef enum message_type {
     DATA = 1,
     TPCLOSURE = 2
     //anything else?
-};
+} messageType;
 
 //move define statements for messages into an enum
 //messages: invokeTP, reset runtime
@@ -36,7 +36,7 @@ typedef struct header_s {
 typedef struct mailbox_s {
     header_t msg_header;
     char data[DARTS_MAILBOX_MSG_SIZE]; //this is not defined yet
-    unsigned signal;
+    message signal;
     darts_mutex_t lock;
 } mailbox_t;
 
