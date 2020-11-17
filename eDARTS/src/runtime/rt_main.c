@@ -28,17 +28,15 @@ int main(int argc, char *argv[]){
     e_start_group(&dev);
 
     usleep(1e6);
-    /*
     for(int i=0; i<16; i++) { //wait for all cores to have darts_rt_alive = 0
+        number = 1;
         while(number != 0) {
-            number = 1;
             e_read(&dev, i/4, i%4, DARTS_RT_ALIVE, &number, sizeof(number));
         }
     }
-    */
-    while(number != 0) {
-        e_read(&dev, 0, 0, DARTS_RT_ALIVE, &number, sizeof(number));
-    }
+    //while(number != 0) {
+    //    e_read(&dev, 0, 0, DARTS_RT_ALIVE, &number, sizeof(number));
+    //}
 
     usleep(1e5);
     stop_printing_server();
