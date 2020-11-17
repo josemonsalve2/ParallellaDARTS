@@ -3,10 +3,10 @@
 #include <unistd.h>
 #include <e-hal.h>
 #include "darts_print_server.h"
-#include "e_darts_api.h"
+#include "darts_api.h"
 
 
-int e_darts_init()
+int darts_init()
 {
     e_init(NULL);
     e_reset_system(); //reset epiphany
@@ -17,7 +17,7 @@ int e_darts_init()
 
 // non blocking; should change this later to allow the elf file to be independently selected
 // add error checking
-void e_darts_run()
+void darts_run()
 {
     e_load_group("e_darts_rt_init.elf", &dev, 0, 0, 4, 4, E_FALSE);
     printf("Group loaded \n");
@@ -26,7 +26,7 @@ void e_darts_run()
 }
 
 // wait for the runtime to close out
-void e_darts_wait()
+void darts_wait()
 {
     unsigned number = 1;
     for(int i=0; i<16; i++) { //wait for all cores to have darts_rt_alive = 0
@@ -38,10 +38,21 @@ void e_darts_wait()
 
 }
 
-void e_darts_close()
+void darts_close()
 {
     usleep(1e5);
     stop_printing_server();
     e_close(&dev);
     e_finalize();
+}
+
+int darts_send_message(msg message)
+{
+
+}
+
+// need to add generic tp closure to header definition and such
+int darts_invoke_TP(tp_closure_t closure)
+{
+
 }
