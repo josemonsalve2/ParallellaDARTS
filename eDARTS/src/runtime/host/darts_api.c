@@ -46,13 +46,31 @@ void darts_close()
     e_finalize();
 }
 
+// add SUid as arg
 int darts_send_message(msg message)
 {
 
 }
 
+int darts_receive_message(msg message)
+{
+
+}
+
 // need to add generic tp closure to header definition and such
-int darts_invoke_TP(tp_closure_t closure)
+int darts_invoke_TP(void *data, unsigned size)
+{
+
+
+}
+
+// include header struct in darts_api.h
+int darts_send_data(void *data, unsigned size, header ) 
+{
+
+}
+
+int darts_receive_data(void *local)
 {
 
 }

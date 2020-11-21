@@ -14,13 +14,16 @@ typedef enum message_select {
     NM_REQUEST_SU_RECEIVE = 5,  //NM requests SU receive some data, ex: invoke new closure from NM
     NM_REQUEST_SU_PROVIDE = 6,  //NM requests SU provide some data
     SU_REQUEST_NM_RECEIVE = 7,  //SU requests NM receive some data
-    SU_REQUEST_NM_PROVIDE = 8   //SU requests NM provide some data
+    SU_REQUEST_NM_PROVIDE = 8,   //SU requests NM provide some data
+    NM_REQUEST_STATUS = 9,
+    SU_PROVIDE_STATUS = 10
     //reset?
 } message;
 
 typedef enum message_type {
     DATA = 1,
-    TPCLOSURE = 2
+    TPCLOSURE = 2,
+    STATUS = 3
     //anything else?
 } messageType;
 

@@ -55,7 +55,7 @@ add_custom_command(
 
 add_custom_target( rt_main
                    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/rt_main.out ${CMAKE_CURRENT_BINARY_DIR}/rt_main
-		   DEPENDS rt_main.out rt_main rt_main.c)
+		   DEPENDS rt_main.out rt_main rt_main.c darts_print_server)
 
 # For e_darts_rt_init.elf
 add_executable(e_darts_rt_init.elf e_DARTS_init.c)
