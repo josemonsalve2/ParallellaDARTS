@@ -1,3 +1,4 @@
 #include "e_darts_mailbox.h"
 
-nodeMailbox_t _dartsLocalMailbox __attribute__ ((section(".nodeMailbox")));
+//Address of mailbox: 8e000138
+nodeMailbox_t _dartsNodeMailbox __attribute__ ((section(".nodeMailbox")));

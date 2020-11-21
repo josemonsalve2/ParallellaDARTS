@@ -6,9 +6,11 @@
 #include "threadedProcedure.h"
 #include "tpClosuresQueue.h"
 #include "e_darts_rt.h"
+#include "e_darts_mailbox.h"
 #include "e_DARTS.h"
 
 extern codelet_t _dartsFinalCodelet;
+extern nodeMailbox_t _dartsNodeMailbox;
 void add();
 void read();
 
@@ -104,6 +106,7 @@ void read()
 int main(void)
 {
     unsigned base0_0Address = (unsigned) e_get_global_address(0, 0, 0x0000);
+    e_darts_print("Address of mailbox: %x\n", &(_dartsNodeMailbox));
 
     e_darts_cam_t CAM = {SU, CU, CU ,CU,\
 	                 CU, CU, CU, CU,\
