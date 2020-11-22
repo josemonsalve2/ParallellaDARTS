@@ -32,6 +32,7 @@ int main(int argc, char *argv[]){
 
     message signal = NM_REQUEST_SU_PROVIDE;
     darts_send_message(&signal);
+    printf("NM_REQUEST_SU_PROVIDE signal sent\n");
     while(darts_receive_message(&signal) != SU_MAILBOX_ACCEPT);
 /*
     for(int i=0; i<16; i++) { //wait for all cores to have darts_rt_alive = 0

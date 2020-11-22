@@ -113,9 +113,10 @@ void su_scheduler_round_robin() {
 	                                  // 1 is added before access so will be [1, 15] (hardcoded for SU at 0)
         } //if codelet popped success
 	message signal;
-	if (darts_receive_signal(&signal) == NM_REQUEST_SU_PROVIDE) {
+	if (e_darts_receive_signal(&signal) == NM_REQUEST_SU_PROVIDE) {
+            e_darts_print("NM_REQUEST_SU_PROVIDE received at SU\n");
 	    signal = SU_MAILBOX_ACCEPT;
-	    darts_send_signal(&signal);
+	    e_darts_send_signal(&signal);
 	}
     } //while
 }

@@ -124,7 +124,7 @@ int darts_set_ack(bool ack)
 }
 
 //array of counts of args in following order: int, unsigned, char, float
-short darts_args_encoding(unsigned *type_array)
+unsigned short darts_args_encoding(unsigned short *type_array)
 {
     // max is 15 for each
     unsigned num_int = type_array[0];
