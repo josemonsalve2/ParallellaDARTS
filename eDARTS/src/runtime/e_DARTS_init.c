@@ -114,6 +114,13 @@ int main(void)
 			 CU, CU, CU, CU};
     e_darts_rt(CAM, CU_ROUND_ROBIN, SU_ROUND_ROBIN);
     if (e_group_config.core_row == 0 && e_group_config.core_col == 0) {
+        unsigned short type_array[4] = {1, 0, 5, 2};
+	unsigned short coded = e_darts_args_encoding(type_array);
+	e_darts_print("encoded: %x\n", coded);
+	//type_array = {0, 0, 0, 0};
+	unsigned short new_array[4];
+	e_darts_args_decoding(coded, new_array);
+	e_darts_print("decoded: %b %b %b %b \n", new_array[0], new_array[1], new_array[2], new_array[3]);
         INVOKE(simple_tp,0);
     }
     e_darts_run();

@@ -71,7 +71,10 @@ int darts_send_message(message *signal)
 {
     bool ack;
     e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
-    if (ack) return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + SIGNAL_OFFSET, (message *) signal, sizeof(message)));
+    if (ack) {
+        sigWithAck_t pack = {false, *(signal)};
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
+    }
     else return(-1);
 }
 
@@ -83,8 +86,12 @@ int darts_send_data(mailbox_t* data_loc)
     int response;
     bool ack;
     e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
-    //subtract size of unsigned so as to not overwrite the mutex on the epiphany side
-    if (ack) return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+    //subtract size of unsigned so as to not overwrite the mutex nor ack on the epiphany side
+    if (ack) {
+        //make sure ack isn't true on arrival, should be sent as false
+        data_loc->ack = false;
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+    }
     else return(-1);
 }
 
@@ -114,4 +121,19 @@ int darts_set_ack(bool ack)
 {
     bool ack_val = ack;
     e_write(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET + ACK_OFFSET, &ack_val, sizeof(bool));
+}
+
+//array of counts of args in following order: int, unsigned, char, float
+short darts_args_encoding(unsigned *type_array)
+{
+    // max is 15 for each
+    unsigned num_int = type_array[0];
+    unsigned num_uns = type_array[1];
+    unsigned num_char = type_array[2];
+    unsigned num_float = type_array[3];
+    short code = (short)(num_int & 0x0000000f);
+    code = code << 4 + (short)(num_uns & 0x0000000f);
+    code = code << 4 + (short)(num_char & 0x0000000f);
+    code = code << 4 + (short)(num_float & 0x0000000f);
+    return(code);
 }

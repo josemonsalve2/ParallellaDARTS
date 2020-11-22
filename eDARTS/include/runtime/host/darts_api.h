@@ -3,14 +3,15 @@
 #include <stdbool.h>
 
 #define E_DARTS_OK 0
-#define MAX_PAYLOAD_SIZE 0x7f //127 -- so alignment is sustained with the bool
+#define MAX_PAYLOAD_SIZE 0x7f //127 for alignment
 #define MAILBOX_ADDRESS 0x8e000138 //based on print statement
 #define SU_TO_NM_OFFSET 0x0
 #define HEADER_OFFSET 0x0
 #define PAYLOAD_OFFSET 0xc
 #define ACK_OFFSET (PAYLOAD_OFFSET + MAX_PAYLOAD_SIZE)
 #define SIGNAL_OFFSET (ACK_OFFSET + 0x1)
-#define NM_TO_SU_OFFSET (SIGNAL_OFFSET + 0x4)
+#define LOCK_OFFSET (SIGNAL_OFFSET + 0x4)
+#define NM_TO_SU_OFFSET (LOCK_OFFSET + 0x4)
 
 typedef enum message_select {
     blank = 0,
@@ -41,7 +42,7 @@ typedef struct __attribute__ ((__packed__)) header_s {
 // 12 + MAX_PAYLOAD_SIZE + 1 + 4 + 4 = 21 + MAX_PAYLOAD_SIZE per mailbox
 typedef struct __attribute__ ((__packed__)) mailbox_s {
     header_t msg_header;
-    char data[MAX_PAYLOAD_SIZE]; //this is not defined yet
+    char data[MAX_PAYLOAD_SIZE];
     bool ack;
     message signal;
     unsigned lock; //no e_darts_mutex in arm so use this to fill the space
@@ -52,6 +53,11 @@ typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
     mailbox_t SUtoNM;
     mailbox_t NMtoSU;
 } nodeMailbox_t;
+
+typedef struct __attribute__ ((__packed__)) sigWithAck_s {
+    bool ack;
+    message signal;
+} sigWithAck_t;
 
 e_platform_t platform;
 e_epiphany_t dev;
@@ -81,3 +87,6 @@ message darts_receive_message(message *signal);
 message darts_receive_data(mailbox_t* mailbox);
 
 int darts_set_ack(bool ack);
+
+//array of counts of args in following order: int, unsigned, char, float
+int darts_args_encoding(int *type_array);

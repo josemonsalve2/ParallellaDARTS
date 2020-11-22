@@ -2,6 +2,7 @@
 #define E_DARTS_MAILBOX_H
 #endif
 
+#include <stdbool.h>
 #include "tpClosure.h"
 #include "e_darts_mutex.h"
 #include "darts_rt_params.h"
@@ -41,6 +42,7 @@ typedef struct __attribute__ ((__packed__)) header_s {
 typedef struct __attribute__ ((__packed__)) mailbox_s {
     header_t msg_header;
     char data[_DARTS_MAILBOX_MSG_SIZE]; //this is not defined yet
+    bool ack;
     message signal;
     darts_mutex_t lock;
 } mailbox_t;
@@ -52,4 +54,16 @@ typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
 
 extern nodeMailbox_t _dartsLocalMailbox;
 
+message e_darts_receive_signal();
 
+message e_darts_receive_data(mailbox_t *loc);
+
+int e_darts_send_signal(message *signal);
+
+int e_darts_send_data(mailbox_t *loc);
+
+void e_darts_set_ack(bool ack);
+
+unsigned short e_darts_args_encoding(unsigned short *type_array);
+
+void e_darts_args_decoding(unsigned short code, unsigned short *type_array);
