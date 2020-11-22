@@ -61,8 +61,8 @@ unsigned short e_darts_args_encoding(unsigned short *type_array)
 void e_darts_args_decoding(unsigned short code, unsigned short *type_array)
 {
     type_array[3] = (unsigned short)(code & 0x000f);
-    type_array[2] = (unsigned short)(code & 0x00f0);
-    type_array[1] = (unsigned short)(code & 0x0f00);
-    type_array[0] = (unsigned short)(code & 0xf000);
+    type_array[2] = (unsigned short)((code & 0x00f0)>>4);
+    type_array[1] = (unsigned short)((code & 0x0f00)>>8);
+    type_array[0] = (unsigned short)((code & 0xf000)>>12);
 }
 

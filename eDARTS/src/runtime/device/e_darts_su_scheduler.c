@@ -1,5 +1,6 @@
 #include "e_darts_su_scheduler.h"
 #include "e_darts_print.h"
+#include "e_darts_mailbox.h"
 
 //tp_heap_space_t _dartsTpHeap __attribute__ ((section(".dartsTpHeap")));
 extern tp_heap_space_t _dartsTpHeap;
@@ -111,6 +112,11 @@ void su_scheduler_round_robin() {
             cuIndex = (cuIndex + 1) % 15; //index for which codelet queue to push to. stays in [0, 14]. 
 	                                  // 1 is added before access so will be [1, 15] (hardcoded for SU at 0)
         } //if codelet popped success
+	message signal;
+	if (darts_receive_signal(&signal) == NM_REQUEST_SU_PROVIDE) {
+	    signal = SU_MAILBOX_ACCEPT;
+	    darts_send_signal(&signal);
+	}
     } //while
 }
 

@@ -100,7 +100,7 @@ void read()
     e_darts_print("\tRESULT: %d\n", new_z);
     memDRAM->z = new_z;
     syncSlot_t *next = GET_SYNC_SLOT(*actualTP, 2);
-    DEC_DEP(next);
+    //DEC_DEP(next);
 }
 
 int main(void)
@@ -119,7 +119,7 @@ int main(void)
 	e_darts_print("encoded: %x\n", coded);
 	//type_array = {0, 0, 0, 0};
 	unsigned short new_array[4];
-	e_darts_args_decoding(coded, new_array);
+	e_darts_args_decoding(coded, &new_array[0]);
 	e_darts_print("decoded: %b %b %b %b \n", new_array[0], new_array[1], new_array[2], new_array[3]);
         INVOKE(simple_tp,0);
     }

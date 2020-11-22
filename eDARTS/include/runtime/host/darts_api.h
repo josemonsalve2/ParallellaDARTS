@@ -3,8 +3,10 @@
 #include <stdbool.h>
 
 #define E_DARTS_OK 0
+#define DARTS_RT_ALIVE 0x6c
 #define MAX_PAYLOAD_SIZE 0x7f //127 for alignment
 #define MAILBOX_ADDRESS 0x8e000138 //based on print statement
+#define BASE_OFFSET 0x0
 #define SU_TO_NM_OFFSET 0x0
 #define HEADER_OFFSET 0x0
 #define PAYLOAD_OFFSET 0xc
@@ -89,4 +91,6 @@ message darts_receive_data(mailbox_t* mailbox);
 int darts_set_ack(bool ack);
 
 //array of counts of args in following order: int, unsigned, char, float
-int darts_args_encoding(int *type_array);
+unsigned short darts_args_encoding(unsigned short *type_array);
+
+void darts_args_decoding(unsigned short code, unsigned short *type_array);
