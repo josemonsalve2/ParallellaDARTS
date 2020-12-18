@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <e-hal.h>
+#include "e-hal.h"
+#include "e-loader.h"
 #include "darts_print_server.h"
 #include "darts_api.h"
 
@@ -35,9 +36,9 @@ int darts_init()
 
 // non blocking; should change this later to allow the elf file to be independently selected
 // add error checking
-void darts_run()
+void darts_run(char* elf_file_name)
 {
-    e_load_group("e_darts_rt_init.elf", &dev, 0, 0, 4, 4, E_FALSE);
+    e_load_group(elf_file_name, &dev, 0, 0, 4, 4, E_FALSE);
     printf("Group loaded \n");
     e_start_group(&dev);
     usleep(1e6);
@@ -96,6 +97,7 @@ int darts_send_data(mailbox_t* data_loc)
 }
 
 // need to add generic tp closure to header definition and such
+// make sure to push to TP queue with correct arguments, epiphany will probably have to repackage it to the proper struct
 int darts_invoke_TP(void* closure)
 {
 

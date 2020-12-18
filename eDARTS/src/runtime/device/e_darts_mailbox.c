@@ -4,6 +4,11 @@
 //Address of mailbox: 8e000138
 nodeMailbox_t _dartsNodeMailbox __attribute__ ((section(".nodeMailbox")));
 
+void e_darts_node_mailbox_init()
+{
+    
+}
+
 message e_darts_receive_signal()
 {
     return _dartsNodeMailbox.NMtoSU.signal;

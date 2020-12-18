@@ -77,7 +77,7 @@ add_custom_target( darts_rt_test
                    COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/darts_rt_test.out ${CMAKE_CURRENT_BINARY_DIR}/darts_rt_test
                     DEPENDS darts_rt_test.out e_darts_rt/main.c)
 
-# For e_darts_print_test.elf
+# For e_darts_rt_test.elf
 add_executable(e_darts_rt_test.elf e_darts_rt/e_darts_rt_test.c)
 target_link_libraries(e_darts_rt_test.elf edarts_runtime_device edarts_codeletModel edarts_assets edarts_multithreading ${EPIPHANY_LIBS})
 

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <e-hal.h>
+#include "e-hal.h"
+#include "e-loader.h"
 
 #define SAFE_SUM_RESULT 0x2228
 #define UNSAFE_SUM_RESULT 0x222C

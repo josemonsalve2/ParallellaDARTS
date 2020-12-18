@@ -36,9 +36,11 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${ELDF_EDARTS_CACHEMAN}
 # Given that I am not able to use two compilers with cmake. I will
 # use custom command and custom target to manually build this
 if(DEBUG)
-set(EXTERNAL_FLAGS -g -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB})
+set(EXTERNAL_FLAGS -g -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB} ${E_LOADER_LIB})
+set(EXTERNAL_FLAGS_API -g -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host)
 else()
-set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB})
+set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB} ${E_LOADER_LIB})
+set(EXTERNAL_FLAGS_API -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host)
 endif()
 
 # For the host we need to compile manually without cmake
@@ -57,7 +59,7 @@ add_custom_target( darts_print_server
 
 add_custom_command(
    OUTPUT darts_api.o
-   COMMAND gcc -c ${CMAKE_CURRENT_SOURCE_DIR}/darts_api.c ${EXTERNAL_FLAGS} -o darts_api.o
+   COMMAND gcc -c ${CMAKE_CURRENT_SOURCE_DIR}/darts_api.c ${EXTERNAL_FLAGS_API} -o darts_api.o
    DEPENDS darts_api.c
    COMMENT "CROSS-COMPILING HOST FILE darts_api"
    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

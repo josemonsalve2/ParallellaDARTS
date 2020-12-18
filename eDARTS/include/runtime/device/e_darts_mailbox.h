@@ -52,7 +52,7 @@ typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
     mailbox_t NMtoSU;
 } nodeMailbox_t;
 
-extern nodeMailbox_t _dartsLocalMailbox;
+extern nodeMailbox_t _dartsNodeMailbox;
 
 message e_darts_receive_signal();
 

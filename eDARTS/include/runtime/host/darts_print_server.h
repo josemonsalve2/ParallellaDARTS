@@ -12,7 +12,7 @@
  * flag to 0 after printing the buffer
  */
 
-#include <e-hal.h>
+#include "e-hal.h"
 #include <stdio.h>
 #include <string.h>
 

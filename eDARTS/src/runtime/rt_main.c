@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <e-hal.h>
+#include "e-hal.h"
+#include "e-loader.h"
 #include "darts_print_server.h"
 #include "darts_api.h"
 
@@ -30,21 +31,16 @@ int main(int argc, char *argv[]){
 
     usleep(1e6);
 
-    message signal = NM_REQUEST_SU_PROVIDE;
-    darts_send_message(&signal);
-    printf("NM_REQUEST_SU_PROVIDE signal sent\n");
-    while(darts_receive_message(&signal) != SU_MAILBOX_ACCEPT);
-/*
+//    message signal = NM_REQUEST_SU_PROVIDE;
+//    darts_send_message(&signal);
+//    printf("NM_REQUEST_SU_PROVIDE signal sent\n");
+//    while(darts_receive_message(&signal) != SU_MAILBOX_ACCEPT);
     for(int i=0; i<16; i++) { //wait for all cores to have darts_rt_alive = 0
         number = 1;
         while(number != 0) {
             e_read(&dev, i/4, i%4, DARTS_RT_ALIVE, &number, sizeof(number));
         }
     }
-    //while(number != 0) {
-    //    e_read(&dev, 0, 0, DARTS_RT_ALIVE, &number, sizeof(number));
-    //}
-*/
     usleep(1e5);
     stop_printing_server();
 

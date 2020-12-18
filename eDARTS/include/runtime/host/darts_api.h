@@ -15,6 +15,8 @@
 #define LOCK_OFFSET (SIGNAL_OFFSET + 0x4)
 #define NM_TO_SU_OFFSET (LOCK_OFFSET + 0x4)
 
+// doxygen?
+
 typedef enum message_select {
     blank = 0,
     SU_MAILBOX_REJECT = 1,      //SU rejects incoming data
@@ -24,7 +26,9 @@ typedef enum message_select {
     NM_REQUEST_SU_RECEIVE = 5,  //NM requests SU receive some data, ex: invoke new closure from NM
     NM_REQUEST_SU_PROVIDE = 6,  //NM requests SU provide some data
     SU_REQUEST_NM_RECEIVE = 7,  //SU requests NM receive some data
-    SU_REQUEST_NM_PROVIDE = 8   //SU requests NM provide some data
+    SU_REQUEST_NM_PROVIDE = 8,   //SU requests NM provide some data
+    NM_REQUEST_STATUS = 9,
+    SU_PROVIDE_STATUS = 10
     //reset?
 } message;
 
@@ -70,7 +74,7 @@ int darts_init();
 
 // non blocking; should change this later to allow the elf file to be independently selected
 // add error checking
-void darts_run();
+void darts_run(char* elf_file_name);
 
 // wait for the runtime to close out
 void darts_wait();

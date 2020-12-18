@@ -1,6 +1,7 @@
 #include "threadedProcedure.h"
 #include "tpClosure.h"
 #include "e_darts_print.h"
+#include "e_darts_global.h"
 #include "codelet.h"
 #include "e_darts_barrier.h"
 #include "syncSlot.h"
