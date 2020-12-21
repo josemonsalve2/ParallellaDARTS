@@ -6,7 +6,10 @@ nodeMailbox_t _dartsNodeMailbox __attribute__ ((section(".nodeMailbox")));
 
 void e_darts_node_mailbox_init()
 {
-    
+    _dartsNodeMailbox.SUtoNM.signal = blank;
+    _dartsNodeMailbox.NMtoSU.signal = blank;
+    _dartsNodeMailbox.SUtoNM.ack = true;
+    _dartsNodeMailbox.NMtoSU.ack = true;
 }
 
 message e_darts_receive_signal()
@@ -31,7 +34,8 @@ int e_darts_send_signal(message *signal)
     if (_dartsNodeMailbox.SUtoNM.ack) {
         _dartsNodeMailbox.SUtoNM.signal = *(signal);
 	_dartsNodeMailbox.SUtoNM.ack = 0;
-    } else return -1; //not acked
+	return(0);
+    } else return(-1); //not acked
 }
 
 int e_darts_send_data(mailbox_t *loc)
@@ -39,7 +43,7 @@ int e_darts_send_data(mailbox_t *loc)
     if (_dartsNodeMailbox.SUtoNM.ack) {
         loc->ack = false; //make sure ack is sent as false
         _dartsNodeMailbox.SUtoNM = *(loc);
-    } else return -1; //not acked
+    } else return(-1); //not acked
 
 }
 

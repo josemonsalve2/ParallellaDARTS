@@ -7,19 +7,6 @@
 #include "darts_print_server.h"
 #include "darts_api.h"
 
-/*
- * from darts_api.h for convenience
-E_DARTS_OK 0
-BASE_OFFSET 0x00000000
-MAX_PAYLOAD_SIZE 0x7f //127, so alignment works with the bool
-MAILBOX_ADDRESS 0x8e000138 //based on print statement
-SU_TO_NM_OFFSET 0x0
-HEADER_OFFSET 0x0
-PAYLOAD_OFFSET 0xc
-ACK_OFFSET (PAYLOAD_OFFSET + MAX_PAYLOAD_SIZE)
-SIGNAL_OFFSET (ACK_OFFSET + 0x1)
-NM_TO_SU_OFFSET (SIGNAL_OFFSET + 0x4)
-*/
 
 nodeMailbox_t localMailbox;
 e_mem_t nodeMailbox;
@@ -31,7 +18,8 @@ int darts_init()
     e_get_platform_info(&platform);
     e_open(&dev, 0, 0, 4, 4);
     start_printing_server();
-    e_alloc(&nodeMailbox, BASE_OFFSET, sizeof(nodeMailbox_t));
+    e_alloc(&nodeMailbox, 0x00000134, sizeof(nodeMailbox_t));
+    // 0x00000134 is the offset to the mailbox from beginning of DRAM 0x8e
 }
 
 // non blocking; should change this later to allow the elf file to be independently selected
@@ -77,6 +65,23 @@ int darts_send_message(message *signal)
         return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
     }
     else return(-1);
+}
+
+int darts_send_message_wait(message *signal)
+{
+    bool ack;
+    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    if (ack) {
+        sigWithAck_t pack = {false, *(signal)};
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
+    }
+    else {
+        while (!ack) {
+            e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+        }
+        sigWithAck_t pack = {false, *(signal)};
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
+    }
 }
 
 //add checking as above

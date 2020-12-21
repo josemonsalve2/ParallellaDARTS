@@ -103,7 +103,7 @@ void su_scheduler_round_robin() {
 		    e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
                     cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
                 }
-		e_darts_print("Codelet pushed to queue %d\n", (cuIndex+i)%15+1);
+		e_darts_print("Codelet %d  pushed to queue %d\n", toFire.codeletID, (cuIndex+i)%15+1);
 	        if(i == 15) { //if for loop failed to push to one of the CU queues
 		    e_darts_print("SU firing codelet\n");
                     toFire.fire();
@@ -112,12 +112,6 @@ void su_scheduler_round_robin() {
             cuIndex = (cuIndex + 1) % 15; //index for which codelet queue to push to. stays in [0, 14]. 
 	                                  // 1 is added before access so will be [1, 15] (hardcoded for SU at 0)
         } //if codelet popped success
-	message signal;
-	if (e_darts_receive_signal(&signal) == NM_REQUEST_SU_PROVIDE) {
-            e_darts_print("NM_REQUEST_SU_PROVIDE received at SU\n");
-	    signal = SU_MAILBOX_ACCEPT;
-	    e_darts_send_signal(&signal);
-	}
     } //while
 }
 

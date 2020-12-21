@@ -16,15 +16,26 @@ int main(int argc, char *argv[]){
     //load elf file and execute on Epiphany
     darts_run("e_darts_mailbox_test.elf");
 
+    usleep(1000);
     //send an arbitrary signal to the SU
     message signal = NM_REQUEST_SU_PROVIDE;
-    //int bytes;
-    if (darts_send_message(&signal) == -1) {
-        printf("signal send failed; ack not set\n");
-    } 
-    printf("NM_REQUEST_SU_PROVIDE signal sent\n");
+    //while (darts_send_message(&signal) == -1);
+    printf("ack address from host: %x\n", MAILBOX_ADDRESS + NM_TO_SU_OFFSET + ACK_OFFSET);
+    darts_send_message_wait(&signal);
+    //if (darts_send_message(&signal) == -1) {
+    //    printf("signal send failed; ack not set\n");
+    //} 
+    //printf("NM_REQUEST_SU_PROVIDE signal sent\n");
     //wait to receive an arbitrary signal in response
-    while(darts_receive_message(&signal) != SU_MAILBOX_ACCEPT);
+    message received;
+    darts_receive_message(&received);
+    while(received != SU_MAILBOX_ACCEPT) {
+        printf("host received message: %d\n", received); 
+        unsigned x = 0;
+        while (x<100000000) x++;	
+	darts_receive_message(&received);
+    }
+    printf("SU_MAILBOX_ACCEPT received by host\n");
 
     //wait for runtime to shut itself down
     darts_wait();
