@@ -23,6 +23,12 @@ typedef enum {
     SU_ROUND_ROBIN
 } su_scheduler_selector;
 
+void su_scheduler_round_robin();
+void pushFinalCodelets(codeletsQueue_t *cuCodeletQueue, codelet_t *toFire);
+void deployCodelet(codeletsQueue_t *cuCodeletQueue, unsigned cuIndex, codelet_t *toFire);
+void su_decDepAndPush(syncSlot_t * toDecDep);
+void su_addCodeletSelfQueue(codelet_t * toAdd);
+void su_invokeSelfQueue(genericTpClosure_t * tpClosure);
 void darts_set_su_scheduler(scheduler_t* su_scheduler, su_scheduler_selector su_scheduler_policy);
 
 #endif /* _E_DARTS_SU_SCHEDULER_H_ */
