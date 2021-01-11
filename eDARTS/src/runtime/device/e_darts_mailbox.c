@@ -52,6 +52,31 @@ void e_darts_set_ack(bool ack)
     _dartsNodeMailbox.NMtoSU.ack = ack;
 }
 
+bool e_darts_get_ack()
+{
+    return(_dartsNodeMailbox.NMtoSU.ack);
+}
+
+void e_darts_int_convert_to_data(int input, char *data)
+{
+    int_converter int_to_data;
+    int_to_data.processed = input;
+    data[0] = int_to_data.raw[0];
+    data[1] = int_to_data.raw[1];
+    data[2] = int_to_data.raw[2];
+    data[3] = int_to_data.raw[3];
+}
+
+void e_darts_unsigned_convert_to_data(unsigned input, char *data)
+{
+    unsigned_converter uns_to_data;
+    uns_to_data.processed = input;
+    data[0] = uns_to_data.raw[0];
+    data[1] = uns_to_data.raw[1];
+    data[2] = uns_to_data.raw[2];
+    data[3] = uns_to_data.raw[3];
+}
+
 //array of counts of args in following order: int, unsigned, char, float
 unsigned short e_darts_args_encoding(unsigned short *type_array)
 {

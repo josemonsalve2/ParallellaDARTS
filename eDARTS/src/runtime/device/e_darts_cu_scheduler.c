@@ -41,12 +41,25 @@ void cu_decDepAndPush(syncSlot_t * toDecDep){
             for (i = 0; i < toDecDep->numCodelets; i++) {
                 unsigned thisCoreID;
                 DARTS_GETCOREID(thisCoreID);
-                codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.darts_rt_codeletsQueue));
+                //codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsCUElements.darts_rt_codeletsQueue));
+		//SU hardcoded below
+	        codeletsQueue_t * suCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(0x808,&(_dartsCUElements.mySUElements->darts_rt_codeletsQueue));
                 toDecDep->codeletTemplate.codeletID = i;
-                while (pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
-            }
-        }
-    }
+                //while (pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
+		//int result = pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate));
+		int result = pushCodeletQueue(suCodeletQueue, &(toDecDep->codeletTemplate));
+                while(result != CODELET_QUEUE_SUCCESS_OP) {
+                    if (result == CODELET_QUEUE_NOT_ENOUGH_SPACE) {
+                        e_darts_print("SU codelet queue full\n");
+                        //wait for a sec
+                        int j = 0;
+                        while(j<1000000*i) j++;
+                    } //if result
+                    result = pushCodeletQueue(suCodeletQueue, &(toDecDep->codeletTemplate));
+                } //while
+            } //for codelet ID
+        } //else (normal codelet)
+    } //if decDep 0
 }
 
 // addCodelet Policies
