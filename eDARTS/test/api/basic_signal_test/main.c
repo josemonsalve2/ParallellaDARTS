@@ -29,9 +29,12 @@ int main(int argc, char *argv[]){
     //wait to receive an arbitrary signal in response
     mailbox_t nmMailbox;
     printf("host: waiting for receive\n");
-    while(!darts_get_ack());
+    //while(!darts_get_ack());
+    while(darts_get_ack());
     darts_receive_data(&nmMailbox);
     int int_data = darts_data_convert_to_int(nmMailbox.data);
+    printf("NM received raw data: %x%x%x%x\n", nmMailbox.data[0], nmMailbox.data[1], nmMailbox.data[2], nmMailbox.data[3]);
+    printf("NM received signal: %d\n", nmMailbox.signal);
     printf("NM received int value: %d\n", int_data); 
 //    while (nmMailbox
     //need to add protection to receive: if receive already has ack set, return error, no new info

@@ -1,6 +1,5 @@
 #ifndef E_DARTS_MAILBOX_H
 #define E_DARTS_MAILBOX_H
-#endif
 
 #include <stdbool.h>
 #include "tpClosure.h"
@@ -69,6 +68,8 @@ typedef union unsigned_data_u {
 
 extern nodeMailbox_t _dartsNodeMailbox;
 
+void e_darts_node_mailbox_init();
+
 message e_darts_receive_signal();
 
 message e_darts_receive_data(mailbox_t *loc);
@@ -88,3 +89,5 @@ void e_darts_unsigned_convert_to_data(unsigned input, char *data);
 unsigned short e_darts_args_encoding(unsigned short *type_array);
 
 void e_darts_args_decoding(unsigned short code, unsigned short *type_array);
+
+#endif /* E_DARTS_MAILBOX_H */

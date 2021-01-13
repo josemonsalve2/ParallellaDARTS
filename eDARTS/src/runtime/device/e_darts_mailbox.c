@@ -41,8 +41,15 @@ int e_darts_send_signal(message *signal)
 int e_darts_send_data(mailbox_t *loc)
 {
     if (_dartsNodeMailbox.SUtoNM.ack) {
-        loc->ack = false; //make sure ack is sent as false
-        _dartsNodeMailbox.SUtoNM = *(loc);
+        //_dartsNodeMailbox.SUtoNM = *(loc);
+	_dartsNodeMailbox.SUtoNM.msg_header = loc->msg_header;
+        unsigned size = loc->msg_header.size;
+	for(int i=0; i<size; i++) {
+            _dartsNodeMailbox.SUtoNM.data[i] = loc->data[i];
+	}
+        _dartsNodeMailbox.SUtoNM.signal = loc->signal;
+	_dartsNodeMailbox.SUtoNM.ack = false;
+	return((int)size);
     } else return(-1); //not acked
 
 }

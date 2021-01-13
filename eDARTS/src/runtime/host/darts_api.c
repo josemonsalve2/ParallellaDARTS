@@ -119,7 +119,7 @@ message darts_receive_message(message *signal)
 message darts_receive_data(mailbox_t* mailbox)
 {
     //subtract size of unsigned so that darts_mutex value is pulled, dont need it just saves space
-    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t)-sizeof(unsigned));
+    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t)); //probably don't have to transfer lock
     darts_set_ack(true);
     return(localMailbox.SUtoNM.signal);
 }
@@ -133,7 +133,7 @@ int darts_set_ack(bool ack)
 bool darts_get_ack()
 {
     bool ack;
-    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
     return(ack);
 }
 
