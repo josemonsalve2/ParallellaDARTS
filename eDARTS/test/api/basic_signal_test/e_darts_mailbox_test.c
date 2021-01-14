@@ -29,19 +29,20 @@ void read_message();
 			      //DIST
 		              ) 
 
-    DEFINE_THREADED_PROCEDURE(simple_tp,8, {
+    DEFINE_THREADED_PROCEDURE(simple_tp,7, {
 			      memDRAM->return_message = return_message;
-			      ASSIGN_SYNC_SLOT_CODELET(*this,0,empty1,1,1,9);
-			      ASSIGN_SYNC_SLOT_CODELET(*this,1,empty2,9,1,8);
-			      ASSIGN_SYNC_SLOT_CODELET(*this,2,empty3,8,1,7);
-			      ASSIGN_SYNC_SLOT_CODELET(*this,3,empty4,7,1,6);
-			      ASSIGN_SYNC_SLOT_CODELET(*this,4,empty5,6,1,5);
-			      ASSIGN_SYNC_SLOT_CODELET(*this,5,empty6,5,1,6);
-			      ASSIGN_SYNC_SLOT_CODELET(*this,6,read_message,3,1,1);
-			      syncSlot_t* finalSyncSlot = GET_SYNC_SLOT(*this,7);
-			      initSyncSlot(finalSyncSlot, 7, 1, 1, _dartsFinalCodelet, 1);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,0,empty1,1,1,8);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,1,empty2,8,1,19);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,2,empty3,19,1,18);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,3,empty4,18,1,17);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,4,empty5,17,1,17);
+			      ASSIGN_SYNC_SLOT_CODELET(*this,5,empty6,17,1,17);
+			      //ASSIGN_SYNC_SLOT_CODELET(*this,6,read_message,3,1,1);
+			      syncSlot_t* finalSyncSlot = GET_SYNC_SLOT(*this,6);
+			      initSyncSlot(finalSyncSlot, 6, 1, 17, _dartsFinalCodelet, 1);
 			      e_darts_print("final codelet ID: %x\n", finalSyncSlot->codeletTemplate.codeletID);
 			      syncSlot_t *first_slot = GET_SYNC_SLOT(*this, 0);
+			      e_darts_print("initializing TP\n");
 			      DEC_DEP(first_slot);
 		              }
 			      , int return_message)

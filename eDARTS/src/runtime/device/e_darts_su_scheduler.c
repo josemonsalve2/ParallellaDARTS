@@ -22,6 +22,8 @@ void su_scheduler_round_robin() {
     genericTpClosure_t * tpClosureToBuild;
     unsigned cuIndex = 0;
     unsigned numCreatedTps = 0;
+    mailbox_t suMailbox;
+    mailbox_t nmMailbox;
     while(darts_rt_alive != 0) {
         // Do the ThreadedProcedures
         // with this program flow, the SU will always go to initialize TPs from the queue if possible before
@@ -71,6 +73,9 @@ void su_scheduler_round_robin() {
 	// or reorganize the CUElements array in SUElements
 	// Seems like all codelets get pushed to the codelet queue of whichever core executes the decDep,
 	// but SU should be only doing TPs if possible, so push from SU codelet queue to a CU codelet queue
+	//int pop_result = popCodeletQueue(thisCodeletQueue, &toFire);
+	//e_darts_print("SU's codelet pop returns %d\n", pop_result);
+	//if (pop_result == CODELET_QUEUE_SUCCESS_OP) {
         if (popCodeletQueue(thisCodeletQueue, &toFire) == CODELET_QUEUE_SUCCESS_OP ) {
             codeletsQueue_t *cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[cuIndex+1]->darts_rt_codeletsQueue);
 	    int i;
@@ -99,7 +104,7 @@ void su_scheduler_round_robin() {
 		    e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
                     cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
                 }
-		e_darts_print("Codelet %d  pushed to queue %d\n", toFire.codeletID, (cuIndex+i)%15+1);
+		//e_darts_print("Codelet %d  pushed to queue %d\n", toFire.codeletID, (cuIndex+i)%15+1);
 	        if(i == 15) { //if for loop failed to push to one of the CU queues
 		    e_darts_print("SU firing codelet\n");
                     toFire.fire();
@@ -110,6 +115,21 @@ void su_scheduler_round_robin() {
             cuIndex = (cuIndex + 1) % 15; //index for which codelet queue to push to. stays in [0, 14]. 
 	                                  // 1 is added before access so will be [1, 15] (hardcoded for SU at 0)
         } //if codelet popped success
+	/*
+	if (!e_darts_get_ack()) { //if message isn't acked i.e. SU hasn't seen it yet
+            e_darts_receive_data(&suMailbox); //intrinsically acks the message and data
+	    //respond to the message here: for now a print
+	    e_darts_print("SU received message %d\n", suMailbox.signal);
+	    nmMailbox.msg_header.msg_type = DATA;
+	    nmMailbox.msg_header.size = (unsigned) sizeof(unsigned);
+	    //don't have to make msg pointer valid for now because we don't use it in the api
+	    e_darts_unsigned_convert_to_data(3U, nmMailbox.data); //converts unsigned 3 to 4 char bytes and places in data array
+	    nmMailbox.signal = SU_MAILBOX_ACCEPT;
+	    e_darts_send_data(&nmMailbox);
+	    //e_darts_send_signal(SU_MAILBOX_ACCEPT); //always respond accept for now for testing
+        }
+	*/
+	suMailboxCheck(&suMailbox, &nmMailbox);
     } //while
 }
 
@@ -134,12 +154,29 @@ inline void deployCodelet(codeletsQueue_t *cuCodeletQueue, unsigned cuIndex, cod
         e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
         cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
     }
-    e_darts_print("Codelet %d  pushed to queue %d\n", toFire->codeletID, (cuIndex+i)%15+1);
+    // debug e_darts_print("Codelet %d  pushed to queue %d\n", toFire->codeletID, (cuIndex+i)%15+1);
     if(i == 15) { //if for loop failed to push to one of the CU queues
         e_darts_print("SU firing codelet\n");
         toFire->fire();
     }
 }	
+
+inline void suMailboxCheck(mailbox_t *suMailbox, mailbox_t *nmMailbox)
+{
+    if (!e_darts_get_ack()) { //if message isn't acked i.e. SU hasn't seen it yet
+        e_darts_receive_data(suMailbox); //intrinsically acks the message and data
+        //respond to the message here: for now a print
+        e_darts_print("SU received message %d\n", suMailbox->signal);
+        nmMailbox->msg_header.msg_type = DATA;
+        nmMailbox->msg_header.size = (unsigned) sizeof(unsigned);
+        //don't have to make msg pointer valid for now because we don't use it in the api
+        e_darts_unsigned_convert_to_data(3U, nmMailbox->data); //converts unsigned 3 to 4 char bytes and places in data array
+	e_darts_print("SU sending raw data %x%x%x%x\n", nmMailbox->data[0], nmMailbox->data[1], nmMailbox->data[2], nmMailbox->data[3]);
+        nmMailbox->signal = SU_MAILBOX_ACCEPT;
+        e_darts_send_data(nmMailbox);
+        //e_darts_send_signal(SU_MAILBOX_ACCEPT); //always respond accept for now for testing
+    }
+}
 
 // decDep Policies
 void su_decDepAndPush(syncSlot_t * toDecDep){
@@ -152,7 +189,17 @@ void su_decDepAndPush(syncSlot_t * toDecDep){
             DARTS_GETCOREID(thisCoreID);
             codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsSUElements.darts_rt_codeletsQueue));
             toDecDep->codeletTemplate.codeletID = i;
-            while(pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
+            //while(pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
+	    int result = pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate));
+	    while(result != CODELET_QUEUE_SUCCESS_OP) {
+	        if (result == CODELET_QUEUE_NOT_ENOUGH_SPACE) {
+	            e_darts_print("SU codelet queue full (from SU decDep)\n");
+                    //wait for a sec
+		    int j = 0;
+		    while(j<1000000*i) j++;
+		}	
+                result = pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate));
+	    }
 	    //int x = pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate));
 	    //while(x != CODELET_QUEUE_SUCCESS_OP) {
                 //x = pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate));

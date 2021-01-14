@@ -1,6 +1,5 @@
 #ifndef E_DARTS_MAILBOX_H
 #define E_DARTS_MAILBOX_H
-#endif
 
 #include <stdbool.h>
 #include "tpClosure.h"
@@ -57,7 +56,19 @@ typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
     mailbox_t NMtoSU;
 } nodeMailbox_t;
 
+typedef union int_data_u {
+    char raw[4];
+    int processed;
+} int_converter;
+
+typedef union unsigned_data_u {
+    char raw[4];
+    unsigned processed;
+} unsigned_converter;
+
 extern nodeMailbox_t _dartsNodeMailbox;
+
+void e_darts_node_mailbox_init();
 
 message e_darts_receive_signal();
 
@@ -69,6 +80,14 @@ int e_darts_send_data(mailbox_t *loc);
 
 void e_darts_set_ack(bool ack);
 
+bool e_darts_get_ack();
+
+void e_darts_int_convert_to_data(int input, char *data);
+
+void e_darts_unsigned_convert_to_data(unsigned input, char *data);
+
 unsigned short e_darts_args_encoding(unsigned short *type_array);
 
 void e_darts_args_decoding(unsigned short code, unsigned short *type_array);
+
+#endif /* E_DARTS_MAILBOX_H */

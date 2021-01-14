@@ -65,6 +65,16 @@ typedef struct __attribute__ ((__packed__)) sigWithAck_s {
     message signal;
 } sigWithAck_t;
 
+typedef union int_data_u {
+    char raw[4];
+    int processed;
+} int_converter;
+
+typedef union unsigned_data_u {
+    char raw[4];
+    unsigned processed;
+} unsigned_converter;
+
 e_platform_t platform;
 e_epiphany_t dev;
 
@@ -95,6 +105,12 @@ message darts_receive_message(message *signal);
 message darts_receive_data(mailbox_t* mailbox);
 
 int darts_set_ack(bool ack);
+
+bool darts_get_ack();
+
+int darts_data_convert_to_int(char *data);
+
+unsigned darts_data_convert_to_unsigned(char *data);
 
 //array of counts of args in following order: int, unsigned, char, float
 unsigned short darts_args_encoding(unsigned short *type_array);

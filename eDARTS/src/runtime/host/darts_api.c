@@ -119,7 +119,7 @@ message darts_receive_message(message *signal)
 message darts_receive_data(mailbox_t* mailbox)
 {
     //subtract size of unsigned so that darts_mutex value is pulled, dont need it just saves space
-    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t)-sizeof(unsigned));
+    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t)); //probably don't have to transfer lock
     darts_set_ack(true);
     return(localMailbox.SUtoNM.signal);
 }
@@ -127,7 +127,34 @@ message darts_receive_data(mailbox_t* mailbox)
 int darts_set_ack(bool ack)
 {
     bool ack_val = ack;
-    e_write(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET + ACK_OFFSET, &ack_val, sizeof(bool));
+    return(e_write(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET + ACK_OFFSET, &ack_val, sizeof(bool)));
+}
+
+bool darts_get_ack()
+{
+    bool ack;
+    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    return(ack);
+}
+
+int darts_data_convert_to_int(char *data)
+{
+    int_converter char_to_int;
+    char_to_int.raw[0] = data[0];
+    char_to_int.raw[1] = data[1];
+    char_to_int.raw[2] = data[2];
+    char_to_int.raw[3] = data[3];
+    return(char_to_int.processed);
+}
+
+unsigned darts_data_convert_to_unsigned(char *data)
+{
+    unsigned_converter char_to_uns;
+    char_to_uns.raw[0] = data[0];
+    char_to_uns.raw[1] = data[1];
+    char_to_uns.raw[2] = data[2];
+    char_to_uns.raw[3] = data[3];
+    return(char_to_uns.processed);
 }
 
 //array of counts of args in following order: int, unsigned, char, float
