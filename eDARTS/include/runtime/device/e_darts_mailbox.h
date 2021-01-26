@@ -76,6 +76,8 @@ message e_darts_receive_data(mailbox_t *loc);
 
 int e_darts_send_signal(message *signal);
 
+void e_darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal);
+
 int e_darts_send_data(mailbox_t *loc);
 
 void e_darts_set_ack(bool ack);
@@ -85,6 +87,10 @@ bool e_darts_get_ack();
 void e_darts_int_convert_to_data(int input, char *data);
 
 void e_darts_unsigned_convert_to_data(unsigned input, char *data);
+
+int e_darts_data_convert_to_int(char *data);
+
+unsigned e_darts_data_convert_to_unsigned(char *data);
 
 unsigned short e_darts_args_encoding(unsigned short *type_array);
 

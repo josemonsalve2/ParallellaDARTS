@@ -80,18 +80,6 @@ void su_scheduler_round_robin() {
             codeletsQueue_t *cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[cuIndex+1]->darts_rt_codeletsQueue);
 	    int i;
 	    if (toFire.codeletID == 0xFFFFFFFF) { //if final codelet
-		/*
-                for(i=1; i<16; i++) { // push to all CU's codelet queues
-                    cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[i]->darts_rt_codeletsQueue);
-		    unsigned response = 5;
-		    while(response != CODELET_QUEUE_SUCCESS_OP) {
-                        response = pushCodeletQueue(cuCodeletQueue, &toFire);
-			e_darts_print("pushed final codelet to CU %d with response %d\n", i, response);
-                    }
-		    while(pushCodeletQueue(cuCodeletQueue, &toFire) != CODELET_QUEUE_SUCCESS_OP);
-                }
-                toFire.fire(); //then fire
-		*/
                 pushFinalCodelets(cuCodeletQueue, &toFire);
             }
 	    else {
@@ -99,36 +87,11 @@ void su_scheduler_round_robin() {
                 // to the first CU until its full. This way if all pushes are sucessful it will push to CU 0, then 1, then 2,
                 // etc. but if it fails it tries to push to the next one. Basically, distributes evenly where possible,
                 // always distributes if possible, SU fires the codelet itself otherwise
-		/*
-	        for(i=1; pushCodeletQueue(cuCodeletQueue, &toFire) != CODELET_QUEUE_SUCCESS_OP && i<15; i++) {
-		    e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
-                    cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
-                }
-		//e_darts_print("Codelet %d  pushed to queue %d\n", toFire.codeletID, (cuIndex+i)%15+1);
-	        if(i == 15) { //if for loop failed to push to one of the CU queues
-		    e_darts_print("SU firing codelet\n");
-                    toFire.fire();
-                }
-		*/
 		deployCodelet(cuCodeletQueue, cuIndex, &toFire);
             } //else
             cuIndex = (cuIndex + 1) % 15; //index for which codelet queue to push to. stays in [0, 14]. 
 	                                  // 1 is added before access so will be [1, 15] (hardcoded for SU at 0)
         } //if codelet popped success
-	/*
-	if (!e_darts_get_ack()) { //if message isn't acked i.e. SU hasn't seen it yet
-            e_darts_receive_data(&suMailbox); //intrinsically acks the message and data
-	    //respond to the message here: for now a print
-	    e_darts_print("SU received message %d\n", suMailbox.signal);
-	    nmMailbox.msg_header.msg_type = DATA;
-	    nmMailbox.msg_header.size = (unsigned) sizeof(unsigned);
-	    //don't have to make msg pointer valid for now because we don't use it in the api
-	    e_darts_unsigned_convert_to_data(3U, nmMailbox.data); //converts unsigned 3 to 4 char bytes and places in data array
-	    nmMailbox.signal = SU_MAILBOX_ACCEPT;
-	    e_darts_send_data(&nmMailbox);
-	    //e_darts_send_signal(SU_MAILBOX_ACCEPT); //always respond accept for now for testing
-        }
-	*/
 	suMailboxCheck(&suMailbox, &nmMailbox);
     } //while
 }
@@ -167,12 +130,16 @@ inline void suMailboxCheck(mailbox_t *suMailbox, mailbox_t *nmMailbox)
         e_darts_receive_data(suMailbox); //intrinsically acks the message and data
         //respond to the message here: for now a print
         e_darts_print("SU received message %d\n", suMailbox->signal);
-        nmMailbox->msg_header.msg_type = DATA;
-        nmMailbox->msg_header.size = (unsigned) sizeof(unsigned);
+	e_darts_print("SU received unsigned %u and int %d\n", e_darts_data_convert_to_unsigned(suMailbox->data), e_darts_data_convert_to_int(&(suMailbox->data[4])));
+        //nmMailbox->msg_header.msg_type = DATA;
+        //nmMailbox->msg_header.size = (unsigned) sizeof(unsigned);
+        //nmMailbox->signal = SU_MAILBOX_ACCEPT;
+	e_darts_fill_mailbox(nmMailbox, DATA, sizeof(int) + sizeof(unsigned), SU_MAILBOX_ACCEPT);
         //don't have to make msg pointer valid for now because we don't use it in the api
-        e_darts_unsigned_convert_to_data(3U, nmMailbox->data); //converts unsigned 3 to 4 char bytes and places in data array
-	e_darts_print("SU sending raw data %x%x%x%x\n", nmMailbox->data[0], nmMailbox->data[1], nmMailbox->data[2], nmMailbox->data[3]);
-        nmMailbox->signal = SU_MAILBOX_ACCEPT;
+	e_darts_int_convert_to_data(-1, nmMailbox->data);
+        e_darts_unsigned_convert_to_data(11U, &(nmMailbox->data[4])); //converts unsigned 3 to 4 char bytes and places in data array
+        e_darts_print("SU sending -1 and 11U\n");
+	e_darts_print("SU sending raw data %x%x%x%x %x %x %x %x\n", nmMailbox->data[0], nmMailbox->data[1], nmMailbox->data[2], nmMailbox->data[3], nmMailbox->data[4], nmMailbox->data[5], nmMailbox->data[6], nmMailbox->data[7]);
         e_darts_send_data(nmMailbox);
         //e_darts_send_signal(SU_MAILBOX_ACCEPT); //always respond accept for now for testing
     }

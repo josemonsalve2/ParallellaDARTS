@@ -101,6 +101,25 @@ int darts_send_data(mailbox_t* data_loc)
     else return(-1);
 }
 
+int darts_send_data_wait(mailbox_t *data_loc)
+{
+    int response;
+    bool ack;
+    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    //subtract size of unsigned so as to not overwrite the mutex nor ack on the epiphany side
+    if (ack) {
+        //make sure ack isn't true on arrival, should be sent as false
+        data_loc->ack = false;
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+    }
+    else {
+        while (!ack) {
+            e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+        }
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+    }
+}
+
 // need to add generic tp closure to header definition and such
 // make sure to push to TP queue with correct arguments, epiphany will probably have to repackage it to the proper struct
 int darts_invoke_TP(void* closure)
@@ -116,12 +135,20 @@ message darts_receive_message(message *signal)
 }
 
 //sets ack byte intrinsically
-message darts_receive_data(mailbox_t* mailbox)
+message darts_receive_data(mailbox_t *mailbox)
 {
     //subtract size of unsigned so that darts_mutex value is pulled, dont need it just saves space
     e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t)); //probably don't have to transfer lock
     darts_set_ack(true);
     return(localMailbox.SUtoNM.signal);
+}
+
+//helper function to fill mailbox stuff without having to know the names of the fields
+void darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal)
+{
+    mailbox->msg_header.msg_type = type;
+    mailbox->msg_header.size = size;
+    mailbox->signal = signal;
 }
 
 int darts_set_ack(bool ack)
@@ -155,6 +182,26 @@ unsigned darts_data_convert_to_unsigned(char *data)
     char_to_uns.raw[2] = data[2];
     char_to_uns.raw[3] = data[3];
     return(char_to_uns.processed);
+}
+
+void darts_int_convert_to_data(int input, char *data)
+{
+    int_converter int_to_char;
+    int_to_char.processed = input;
+    data[0] = int_to_char.raw[0];
+    data[1] = int_to_char.raw[1];
+    data[2] = int_to_char.raw[2];
+    data[3] = int_to_char.raw[3];
+}
+
+void darts_unsigned_convert_to_data(unsigned input, char *data)
+{
+    unsigned_converter uns_to_char;
+    uns_to_char.processed = input;
+    data[0] = uns_to_char.raw[0];
+    data[1] = uns_to_char.raw[1];
+    data[2] = uns_to_char.raw[2];
+    data[3] = uns_to_char.raw[3];
 }
 
 //array of counts of args in following order: int, unsigned, char, float

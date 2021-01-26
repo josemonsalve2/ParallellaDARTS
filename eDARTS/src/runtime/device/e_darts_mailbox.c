@@ -38,6 +38,13 @@ int e_darts_send_signal(message *signal)
     } else return(-1); //not acked
 }
 
+void e_darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal)
+{
+    mailbox->msg_header.msg_type = type;
+    mailbox->msg_header.size = size;
+    mailbox->signal = signal;
+}
+
 int e_darts_send_data(mailbox_t *loc)
 {
     if (_dartsNodeMailbox.SUtoNM.ack) {
@@ -82,6 +89,26 @@ void e_darts_unsigned_convert_to_data(unsigned input, char *data)
     data[1] = uns_to_data.raw[1];
     data[2] = uns_to_data.raw[2];
     data[3] = uns_to_data.raw[3];
+}
+
+int e_darts_data_convert_to_int(char *data)
+{
+    int_converter data_to_int;
+    data_to_int.raw[0] = data[0];
+    data_to_int.raw[1] = data[1];
+    data_to_int.raw[2] = data[2];
+    data_to_int.raw[3] = data[3];
+    return(data_to_int.processed);
+}
+
+unsigned e_darts_data_convert_to_unsigned(char *data)
+{
+    unsigned_converter data_to_uns;
+    data_to_uns.raw[0] = data[0];
+    data_to_uns.raw[1] = data[1];
+    data_to_uns.raw[2] = data[2];
+    data_to_uns.raw[3] = data[3];
+    return(data_to_uns.processed);
 }
 
 //array of counts of args in following order: int, unsigned, char, float

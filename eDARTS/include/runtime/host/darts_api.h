@@ -95,7 +95,9 @@ int darts_send_message(message *signal);
 
 int darts_send_message_wait(message *signal);
 
-int darts_send_data(mailbox_t* data_loc);
+int darts_send_data(mailbox_t *data_loc);
+
+int darts_send_data_wait(mailbox_t *data_loc);
 
 // need to add generic tp closure to header definition and such
 int darts_invoke_TP(void* closure);
@@ -104,6 +106,9 @@ message darts_receive_message(message *signal);
 
 message darts_receive_data(mailbox_t* mailbox);
 
+//helper function to fill mailbox data easier
+void darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal);
+
 int darts_set_ack(bool ack);
 
 bool darts_get_ack();
@@ -111,6 +116,10 @@ bool darts_get_ack();
 int darts_data_convert_to_int(char *data);
 
 unsigned darts_data_convert_to_unsigned(char *data);
+
+void darts_int_convert_to_data(int input, char *data);
+
+void darts_unsigned_convert_to_data(unsigned input, char *data);
 
 //array of counts of args in following order: int, unsigned, char, float
 unsigned short darts_args_encoding(unsigned short *type_array);
