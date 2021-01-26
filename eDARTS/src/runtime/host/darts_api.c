@@ -96,7 +96,7 @@ int darts_send_data(mailbox_t* data_loc)
     if (ack) {
         //make sure ack isn't true on arrival, should be sent as false
         data_loc->ack = false;
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
     }
     else return(-1);
 }
@@ -110,13 +110,13 @@ int darts_send_data_wait(mailbox_t *data_loc)
     if (ack) {
         //make sure ack isn't true on arrival, should be sent as false
         data_loc->ack = false;
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
     }
     else {
         while (!ack) {
             e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
         }
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
     }
 }
 
@@ -138,7 +138,7 @@ message darts_receive_message(message *signal)
 message darts_receive_data(mailbox_t *mailbox)
 {
     //subtract size of unsigned so that darts_mutex value is pulled, dont need it just saves space
-    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t)); //probably don't have to transfer lock
+    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t));
     darts_set_ack(true);
     return(localMailbox.SUtoNM.signal);
 }

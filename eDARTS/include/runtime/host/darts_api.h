@@ -9,11 +9,10 @@
 #define BASE_OFFSET 0x00000000
 #define SU_TO_NM_OFFSET 0x00000000
 #define HEADER_OFFSET 0x00000000
-#define PAYLOAD_OFFSET 0x0000000c
+#define PAYLOAD_OFFSET 0x00000008
 #define ACK_OFFSET (PAYLOAD_OFFSET + MAX_PAYLOAD_SIZE)
 #define SIGNAL_OFFSET (ACK_OFFSET + 0x00000001)
-#define LOCK_OFFSET (SIGNAL_OFFSET + 0x00000004)
-#define NM_TO_SU_OFFSET (LOCK_OFFSET + 0x00000004)
+#define NM_TO_SU_OFFSET (SIGNAL_OFFSET + 0x00000004)
 
 // doxygen?
 
@@ -38,23 +37,21 @@ typedef enum message_type {
     STATUS = 3
 } messageType;
 
-// 4 + 4 + 4 = 12 bytes of header
+// 4 + 4 = 8 bytes of header
 typedef struct __attribute__ ((__packed__)) header_s {
     messageType msg_type;
     unsigned size;
-    void *msg;
 } header_t; //on receive allocate memory for struct + size, load payload into void pointer
 
-// 12 + MAX_PAYLOAD_SIZE + 1 + 4 + 4 = 21 + MAX_PAYLOAD_SIZE per mailbox
+// 12 + MAX_PAYLOAD_SIZE + 1 + 4  = 17 + MAX_PAYLOAD_SIZE per mailbox
 typedef struct __attribute__ ((__packed__)) mailbox_s {
     header_t msg_header;
     char data[MAX_PAYLOAD_SIZE];
     bool ack;
     message signal;
-    unsigned lock; //no e_darts_mutex in arm so use this to fill the space
 } mailbox_t;
 
-// 42 + 2 * MAX_PAYLOAD_SIZE overall
+// 34 + 2 * MAX_PAYLOAD_SIZE overall
 typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
     mailbox_t SUtoNM;
     mailbox_t NMtoSU;
