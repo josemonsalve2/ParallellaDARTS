@@ -54,7 +54,7 @@ void darts_close()
 }
 
 //add checking to make sure its not overwriting a message that the SU hasn't received yet
-//returns bytes written if successful, -1 if not acked, E_ERR otherwise
+//returns bytes written if successful, -3 if not acked, E_ERR otherwise
 //watch out for conflicts between bytes written and e_return_stat_t enum
 int darts_send_message(message *signal)
 {
@@ -64,7 +64,7 @@ int darts_send_message(message *signal)
         sigWithAck_t pack = {false, *(signal)};
         return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
     }
-    else return(-1);
+    else return(-3);
 }
 
 int darts_send_message_wait(message *signal)
@@ -85,7 +85,7 @@ int darts_send_message_wait(message *signal)
 }
 
 //add checking as above
-//returns bytes written if successful, -1 if not acked, E_ERR otherwise
+//returns bytes written if successful, -3 if not acked, E_ERR otherwise
 //watch out for conflicts between bytes written and e_return_stat_t enum
 int darts_send_data(mailbox_t* data_loc)
 {
@@ -96,9 +96,23 @@ int darts_send_data(mailbox_t* data_loc)
     if (ack) {
         //make sure ack isn't true on arrival, should be sent as false
         data_loc->ack = false;
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
+	unsigned size = data_loc->msg_header.size;
+	int result_1 = e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t) - sizeof(sigWithAck_t) - (MAX_PAYLOAD_SIZE - size));
+	// data transfer size is mailbox, without ack and without empty data, so only sends header through valid data first
+	if (result_1 < 0) {
+            return(result_1);
+        }
+	else {
+            sigWithAck_t pack = {false, data_loc->signal};
+	    int result_2 = e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t));
+	    if (result_2 < 0) {
+                return(result_2);
+            }
+	    else return(result_1+result_2);
+	}
+        //return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
     }
-    else return(-1);
+    else return(-3); //-3 to avoid overlap with E_OK, E_ERR, E_WARN (0, -1, -2) which e_write might return
 }
 
 int darts_send_data_wait(mailbox_t *data_loc)
