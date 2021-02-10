@@ -72,9 +72,18 @@ void cu_addCodeletSelfQueue(codelet_t * toAdd) {
 
 // invoke Policies
 void cu_invokeSelfQueue(genericTpClosure_t * tpClosure) {
-    unsigned suCodeID = ((0xFFF00000) & ((unsigned)_dartsCUElements.mySUElements));
-    tpClosuresQueue_t * suTPCQueue = (tpClosuresQueue_t *) DARTS_APPEND_COREID(suCodeID,&(_dartsCUElements.mySUElements->darts_rt_tpclosuresQueue));
-    while(pushTpClosureQueue(suTPCQueue, tpClosure) != TPC_QUEUE_SUCCESS_OP);
+    e_darts_print("inside cu invoke\n");
+    //unsigned suCodeID = ((0xFFF00000) & ((unsigned)_dartsCUElements.mySUElements));
+    //tpClosuresQueue_t * suTPCQueue = (tpClosuresQueue_t *) DARTS_APPEND_COREID(suCodeID,&(_dartsCUElements.mySUElements->darts_rt_tpclosuresQueue));
+    // SU hardcoded here
+    tpClosuresQueue_t *suTPCQueue = (tpClosuresQueue_t *) DARTS_APPEND_COREID(0x808, &(_dartsCUElements.mySUElements->darts_rt_tpclosuresQueue));
+    //while(pushTpClosureQueue(suTPCQueue, tpClosure) != TPC_QUEUE_SUCCESS_OP);
+    int result = pushTpClosureQueue(suTPCQueue, tpClosure);
+    while(result != TPC_QUEUE_SUCCESS_OP) {
+        result = pushTpClosureQueue(suTPCQueue, tpClosure);
+	e_darts_print("CU push to TPClosure queue returned %d\n", result);
+    }
+    e_darts_print("cu finished invoke\n");
 }
 
 void darts_set_cu_scheduler(scheduler_t* cu_scheduler, cu_scheduler_selector cu_scheduler_policy) {

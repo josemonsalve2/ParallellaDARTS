@@ -22,6 +22,8 @@ void su_scheduler_round_robin() {
     genericTpClosure_t * tpClosureToBuild;
     unsigned cuIndex = 0;
     unsigned numCreatedTps = 0;
+    void *myLocalMemHeap = (void *) &(_tpDataHeap);
+    void *myDRAMMemHeap = (void *) EXTERNAL_MEM_LOCATION;
     mailbox_t suMailbox;
     mailbox_t nmMailbox;
     while(darts_rt_alive != 0) {
@@ -43,13 +45,11 @@ void su_scheduler_round_robin() {
                 // Memory allocation for Local
                 if (actualTP->sizeLocal != 0) {
                     //heap is anchored here for now
-                    void *myLocalMemHeap = (void *) &(_tpDataHeap);
                     actualTP->memLocal = myLocalMemHeap;
                     myLocalMemHeap = (void *) (base0_0Address + (unsigned)myLocalMemHeap + actualTP->sizeLocal);
                 }
                 // Memory allocation for DRAM
                 if (actualTP->sizeDRAM != 0) {
-                    void *myDRAMMemHeap = (void *) EXTERNAL_MEM_LOCATION;
 		    //need to change this to tpHeap structure
                     actualTP->memDRAM = myDRAMMemHeap;
                     myDRAMMemHeap = (void *) ((unsigned)myDRAMMemHeap + actualTP->sizeDRAM);
