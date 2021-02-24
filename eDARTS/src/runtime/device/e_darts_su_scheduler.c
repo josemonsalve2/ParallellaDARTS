@@ -2,9 +2,9 @@
 #include "e_darts_print.h"
 #include "e_darts_mailbox.h"
 
-//tp_heap_space_t _dartsTpHeap __attribute__ ((section(".dartsTpHeap")));
 extern tp_heap_space_t _dartsTpHeap;
-extern tp_heap_space_t _tpDataHeap;
+extern tp_data_heap_space_t _tpDataHeap;
+extern tp_data_heap_DRAM_space_t _tpDataHeapDRAM;
 //extern unsigned base0_0Address;
 
 #define LOCAL_MEM_LOCATION 0x7000
@@ -23,7 +23,8 @@ void su_scheduler_round_robin() {
     unsigned cuIndex = 0;
     unsigned numCreatedTps = 0;
     void *myLocalMemHeap = (void *) &(_tpDataHeap);
-    void *myDRAMMemHeap = (void *) EXTERNAL_MEM_LOCATION;
+    //void *myDRAMMemHeap = (void *) EXTERNAL_MEM_LOCATION;
+    void *myDRAMMemHeap = (void *) &(_tpDataHeapDRAM);
     mailbox_t suMailbox;
     mailbox_t nmMailbox;
     while(darts_rt_alive != 0) {

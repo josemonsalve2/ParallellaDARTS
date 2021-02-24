@@ -198,6 +198,9 @@ SECTIONS
         /* Reserved section for mailboxes*/
         .nodeMailbox . : {*(.nodeMailbox)} > EXTERNAL_DRAM_0
 
+        /* Reserved section for TP DRAM data*/
+        .tpDataHeapDRAM . : {*(.tpDataHeapDRAM)} > EXTERNAL_DRAM_0
+
 	NEW_LIB_RO           . : {lib_a-*.o(.text  .rodata)  *.o(libgloss_epiphany) } > EXTERNAL_DRAM_0
 	NEW_LIB_WR           . : {lib_a-*.o(.data)                                  } > EXTERNAL_DRAM_0
 	GNU_C_BUILTIN_LIB_RO . :
