@@ -19,7 +19,7 @@
 // Changing this should also be changed on the device side
 #define MAX_NUM_CHARACTERS 200
 #define MAX_NUM_ARGUMENTS 20
-#define ARGUMENTS_SIZE 100
+#define ARGUMENTS_SIZE 96
 
 #define TRANSFORM_PARAMETER(letter,tempBuffer,argument)            \
          {                                                              \

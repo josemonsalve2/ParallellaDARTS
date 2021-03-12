@@ -21,7 +21,7 @@
 // Changing this should also be changed on the host side
 #define MAX_NUM_CHARACTERS 200
 #define MAX_NUM_ARGUMENTS 20
-#define ARGUMENTS_SIZE 100
+#define ARGUMENTS_SIZE 96
 #define TYPE_SELECTOR(letter)                               \
         ((letter == 'd' || letter == 'i' ||                  \
          letter == 'o' || letter == 'u' ||                  \

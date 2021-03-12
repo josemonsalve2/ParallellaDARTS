@@ -11,7 +11,7 @@
 #include "e_DARTS.h"
 
 // VECTOR_LENGTH should be divisible by CODELET_NUM for this example
-#define VECTOR_LENGTH 16 
+#define VECTOR_LENGTH 4 
 #define CODELET_NUM 8
 
 extern codelet_t _dartsFinalCodelet;
@@ -153,6 +153,7 @@ double_vectors_t global_double_vectors;
 			      e_darts_print("x[3] at %x\n", &(memDRAM->internal_data.x[3]));
 			      e_darts_print("x[4] at %x\n", &(memDRAM->internal_data.x[4]));
 			      */
+			      /*
 			      e_darts_print("vector x: [ ");
 			      for (int i=0; i<VECTOR_LENGTH; i++) {
                                   e_darts_print("%f ", memDRAM->internal_data.x[i]);
@@ -163,6 +164,9 @@ double_vectors_t global_double_vectors;
                                   e_darts_print("%f ", memDRAM->internal_data.y[i]);
 			      }
 			      e_darts_print("]\n");
+			      */
+			      e_darts_print("vector x: [ %f %f %f %f ]\n", memDRAM->internal_data.x[0], memDRAM->internal_data.x[1], memDRAM->internal_data.x[2], memDRAM->internal_data.x[3]);
+			      e_darts_print("vector y: [ %f %f %f %f ]\n", memDRAM->internal_data.y[0], memDRAM->internal_data.y[1], memDRAM->internal_data.y[2], memDRAM->internal_data.y[3]);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,0,floatVectorAdd,1,1,CODELET_NUM);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,1,floatReportResult,CODELET_NUM,1,1);
 			      syncSlot_t *first_slot = GET_SYNC_SLOT(*this, 0);

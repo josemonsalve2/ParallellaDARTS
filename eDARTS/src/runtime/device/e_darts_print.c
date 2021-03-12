@@ -3,6 +3,14 @@
 darts_mutex_t __printingMutex __attribute__ ((section("printingMutex"))) = DARTS_MUTEX_NULL; // Located in a particular location in core 0,0 in linker script
 printBuffer_t __printBuffer __attribute__ ((section(".printBuffer"))) = {0, &__printingMutex, ""};
 
+/* debugging float issue -- function wrapper
+void e_darts_print(const char * message, ...) {
+    va_list args_list;
+    va_start(args_list, message);
+    e_darts_print_in(message, args_list);
+}
+*/
+
 void e_darts_print(const char * message, ...){
 
     darts_mutex_lock(__printBuffer.mutex);
@@ -41,7 +49,7 @@ void e_darts_print(const char * message, ...){
     for (; argCount >= 0 && charCount < ARGUMENTS_SIZE; argCount--) {
     	// TODO Fix %s. It seems like the characters are not sent in the argument args_list
     	if (argTypes[argCount] == 's' || argTypes[argCount] == 'S') {
-    		__printBuffer.arguments[charCount++] = 0;
+    		//__printBuffer.arguments[charCount++] = 0;
     		//while (argStart[charCount] != 0x0 && charCount < ARGUMENTS_SIZE) {
     		//    __printBuffer.arguments[charCount] = argStart[charCount];
     		//    charCount++;
