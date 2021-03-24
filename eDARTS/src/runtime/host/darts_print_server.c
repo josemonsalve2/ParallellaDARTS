@@ -52,20 +52,13 @@ void* printing_server(void *tid)
             while (myBuffer.printingBufferHead[charCount] != 0x0 && charCount < MAX_NUM_CHARACTERS) {
                 if (myBuffer.printingBufferHead[charCount] == '%') {
 		    /*
-                    if (floatError == 0x0 && myBuffer.printingBufferHead[charCount+1] == 'f') {                         
-                        //printf("***** float print protection triggered *****\n");
-                        // check if this is the first argument and its a float
-			argPointer = (char *) argPointer + 4;
-			// increase by 4 to avoid strange float representation issues with added 4 bytes
-                    }
-                    floatError = 0xff;
-		    */
                     int it = 0;
                     while (it < 64) {
                         printf("%x%x%x%x ", argPointer[it], argPointer[it+1], argPointer[it+2], argPointer[it+3]);
             	        it+=4;
 	            }
                     printf("DONE ARG DUMP\n");
+		    */
                     TRANSFORM_PARAMETER(myBuffer.printingBufferHead[charCount + 1],
                                         tempBuffer,
                                         argPointer);

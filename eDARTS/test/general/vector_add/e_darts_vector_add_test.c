@@ -165,8 +165,8 @@ double_vectors_t global_double_vectors;
 			      }
 			      e_darts_print("]\n");
 			      */
-			      e_darts_print("vector x: [ %f %f %f %f ]\n", memDRAM->internal_data.x[0], memDRAM->internal_data.x[1], memDRAM->internal_data.x[2], memDRAM->internal_data.x[3]);
-			      e_darts_print("vector y: [ %f %f %f %f ]\n", memDRAM->internal_data.y[0], memDRAM->internal_data.y[1], memDRAM->internal_data.y[2], memDRAM->internal_data.y[3]);
+			      e_darts_print_dumb("vector x: [ %f %f %f %f ]\n", 0, memDRAM->internal_data.x[0], memDRAM->internal_data.x[1], memDRAM->internal_data.x[2], memDRAM->internal_data.x[3]);
+			      e_darts_print_dumb("vector y: [ %f %f %f %f ]\n", 0, memDRAM->internal_data.y[0], memDRAM->internal_data.y[1], memDRAM->internal_data.y[2], memDRAM->internal_data.y[3]);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,0,floatVectorAdd,1,1,CODELET_NUM);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,1,floatReportResult,CODELET_NUM,1,1);
 			      syncSlot_t *first_slot = GET_SYNC_SLOT(*this, 0);
@@ -238,7 +238,7 @@ void floatReportResult()
     float *result_DRAM = (float *) &(memDRAM->internal_data.result);
     e_darts_print("result: [ ");
     for (int i=0; i<VECTOR_LENGTH; i++) {
-        e_darts_print("%f ", result_DRAM[i]); 
+        e_darts_print_dumb("%f ", 0, result_DRAM[i]); 
     }
     e_darts_print(" ]\n");
     syncSlot_t *finalSyncSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP,2);

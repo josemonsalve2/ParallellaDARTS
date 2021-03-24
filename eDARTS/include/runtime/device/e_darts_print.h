@@ -42,6 +42,13 @@ typedef struct __attribute__ ((__packed__)) printBuffer_s
     char arguments[ARGUMENTS_SIZE];
 } printBuffer_t;
 
+typedef union {
+    double fArg;
+    int iArg;
+    unsigned uArg;
+    char cArg;
+} arg_receive_t;
+
 /**
  * @brief printing function
  * @todo allow printing variables
