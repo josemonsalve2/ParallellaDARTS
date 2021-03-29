@@ -11,8 +11,8 @@
 #include "e_DARTS.h"
 
 // VECTOR_LENGTH should be divisible by CODELET_NUM for this example
-#define VECTOR_LENGTH 4 
-#define CODELET_NUM 8
+#define VECTOR_LENGTH 32 
+#define CODELET_NUM 4
 
 extern codelet_t _dartsFinalCodelet;
 extern nodeMailbox_t _dartsNodeMailbox;
@@ -57,11 +57,7 @@ double_vectors_t global_double_vectors;
 
     DEFINE_THREADED_PROCEDURE(int_vector_add_tp,3, {
 		              memDRAM->internal_data = internal_data;
-			      e_darts_print("internal_data at %x\n", &(memDRAM->internal_data));
-			      e_darts_print("x at %x\n", &(memDRAM->internal_data.x));
-			      e_darts_print("x[1] at %x\n", &(memDRAM->internal_data.x[1]));
-			      e_darts_print("y at %x\n", memDRAM->internal_data.y);
-			      e_darts_print("result at %x\n", memDRAM->internal_data.result);
+			      /*
 			      e_darts_print("int vector x: [ ");
 			      for (int i=0; i<VECTOR_LENGTH; i++) {
                                   e_darts_print("%d ", memDRAM->internal_data.x[i]);
@@ -72,6 +68,7 @@ double_vectors_t global_double_vectors;
                                   e_darts_print("%d ", memDRAM->internal_data.y[i]);
 			      }
 			      e_darts_print("]\n");
+			      */
 			      //fillArray(memDRAM->internal_data.x, 8.0);
 			      //fillArray(memDRAM->internal_data.y, 1.4);
 			      e_darts_print("filling arrays \n");
@@ -81,21 +78,6 @@ double_vectors_t global_double_vectors;
                                   //memDRAM->internal_data.y[i] = (float) (i * 1.4 - i);
                                   memDRAM->internal_data.y[i] = i%2;
 			      }
-			      e_darts_print("x at %x\n", &(memDRAM->internal_data.x));
-			      e_darts_print("x[1] at %x\n", &(memDRAM->internal_data.x[1]));
-			      e_darts_print("x[2] at %x\n", &(memDRAM->internal_data.x[2]));
-			      e_darts_print("x[3] at %x\n", &(memDRAM->internal_data.x[3]));
-			      e_darts_print("x[4] at %x\n", &(memDRAM->internal_data.x[4]));
-			      e_darts_print("vector x: [ ");
-			      for (int i=0; i<VECTOR_LENGTH; i++) {
-                                  e_darts_print("%d ", memDRAM->internal_data.x[i]);
-			      }
-			      e_darts_print("]\n");
-			      e_darts_print("vector y: [ ");
-			      for (int i=0; i<VECTOR_LENGTH; i++) {
-                                  e_darts_print("%d ", memDRAM->internal_data.y[i]);
-			      }
-			      e_darts_print("]\n");
 			      ASSIGN_SYNC_SLOT_CODELET(*this,0,intVectorAdd,1,1,CODELET_NUM);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,1,intReportResult,CODELET_NUM,1,1);
 			      syncSlot_t *first_slot = GET_SYNC_SLOT(*this, 0);
@@ -146,27 +128,8 @@ double_vectors_t global_double_vectors;
                                   //memDRAM->internal_data.y[i] = (float) (i * 1.4 - i);
                                   memDRAM->internal_data.y[i] = (float) 0.0;
 			      }
-			      /*
-			      e_darts_print("x at %x\n", &(memDRAM->internal_data.x));
-			      e_darts_print("x[1] at %x\n", &(memDRAM->internal_data.x[1]));
-			      e_darts_print("x[2] at %x\n", &(memDRAM->internal_data.x[2]));
-			      e_darts_print("x[3] at %x\n", &(memDRAM->internal_data.x[3]));
-			      e_darts_print("x[4] at %x\n", &(memDRAM->internal_data.x[4]));
-			      */
-			      /*
-			      e_darts_print("vector x: [ ");
-			      for (int i=0; i<VECTOR_LENGTH; i++) {
-                                  e_darts_print("%f ", memDRAM->internal_data.x[i]);
-			      }
-			      e_darts_print("]\n");
-			      e_darts_print("vector y: [ ");
-			      for (int i=0; i<VECTOR_LENGTH; i++) {
-                                  e_darts_print("%f ", memDRAM->internal_data.y[i]);
-			      }
-			      e_darts_print("]\n");
-			      */
-			      e_darts_print_dumb("vector x: [ %f %f %f %f ]\n", 0, memDRAM->internal_data.x[0], memDRAM->internal_data.x[1], memDRAM->internal_data.x[2], memDRAM->internal_data.x[3]);
-			      e_darts_print_dumb("vector y: [ %f %f %f %f ]\n", 0, memDRAM->internal_data.y[0], memDRAM->internal_data.y[1], memDRAM->internal_data.y[2], memDRAM->internal_data.y[3]);
+			      //e_darts_print("vector x: [ %f %f %f %f ]\n", 0, memDRAM->internal_data.x[0], memDRAM->internal_data.x[1], memDRAM->internal_data.x[2], memDRAM->internal_data.x[3]);
+			      //e_darts_print("vector y: [ %f %f %f %f ]\n", 0, memDRAM->internal_data.y[0], memDRAM->internal_data.y[1], memDRAM->internal_data.y[2], memDRAM->internal_data.y[3]);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,0,floatVectorAdd,1,1,CODELET_NUM);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,1,floatReportResult,CODELET_NUM,1,1);
 			      syncSlot_t *first_slot = GET_SYNC_SLOT(*this, 0);
@@ -191,7 +154,7 @@ void intVectorAdd()
     int *result_DRAM = (int *) &(memDRAM->internal_data.result);
     // chunk by codelet ID
     for (int i=VECTOR_LENGTH/CODELET_NUM*codeletID; i<VECTOR_LENGTH/CODELET_NUM*(codeletID+1); i++) {
-        result_DRAM[i] = x_DRAM[i] + y_DRAM[i];
+        memDRAM->internal_data.result[i] = memDRAM->internal_data.x[i] + memDRAM->internal_data.y[i];
     }
     syncSlot_t *reportSyncSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP, 1);
     DEC_DEP(reportSyncSlot);
@@ -202,9 +165,20 @@ void intReportResult()
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
     int_vector_add_tp_memDRAM_t *memDRAM = (int_vector_add_tp_memDRAM_t *) actualTP->memDRAM;
     int *result_DRAM = (int *) &(memDRAM->internal_data.result);
+    e_darts_print("intReportResult:\n");
+    e_darts_print("vector x: [ ");
+    for (int i=0; i<VECTOR_LENGTH; i++) {
+        e_darts_print("%d ", memDRAM->internal_data.x[i]);
+    }
+    e_darts_print("]\n");
+    e_darts_print("vector y: [ ");
+    for (int i=0; i<VECTOR_LENGTH; i++) {
+        e_darts_print("%d ", memDRAM->internal_data.y[i]);
+    }
+    e_darts_print("]\n");
     e_darts_print("result: [ ");
     for (int i=0; i<VECTOR_LENGTH; i++) {
-        e_darts_print("%d ", result_DRAM[i]); 
+        e_darts_print("%d ", memDRAM->internal_data.result[i]); 
     }
     e_darts_print(" ]\n");
     /*
@@ -235,10 +209,20 @@ void floatReportResult()
 {
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
     float_vector_add_tp_memDRAM_t *memDRAM = (float_vector_add_tp_memDRAM_t *) actualTP->memDRAM;
+    e_darts_print("vector x: [ ");
+    for (int i=0; i<VECTOR_LENGTH; i++) {
+        e_darts_print("%f ", memDRAM->internal_data.x[i]);
+    }
+    e_darts_print("]\n");
+    e_darts_print("vector y: [ ");
+    for (int i=0; i<VECTOR_LENGTH; i++) {
+        e_darts_print("%f ", memDRAM->internal_data.y[i]);
+    }
+    e_darts_print("]\n");
     float *result_DRAM = (float *) &(memDRAM->internal_data.result);
     e_darts_print("result: [ ");
     for (int i=0; i<VECTOR_LENGTH; i++) {
-        e_darts_print_dumb("%f ", 0, result_DRAM[i]); 
+        e_darts_print("%f ", 0, result_DRAM[i]); 
     }
     e_darts_print(" ]\n");
     syncSlot_t *finalSyncSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP,2);
