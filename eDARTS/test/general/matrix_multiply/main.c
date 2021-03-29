@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
     //initialize platform
     darts_init();
     //load elf file and execute on Epiphany
-    darts_run("e_darts_fib_test.elf");
+    darts_run("e_darts_matrix_multiply_test.elf");
 
     usleep(1000);
     /*

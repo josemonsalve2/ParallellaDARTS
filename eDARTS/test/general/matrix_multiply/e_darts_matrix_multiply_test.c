@@ -16,10 +16,15 @@
 extern codelet_t _dartsFinalCodelet;
 extern nodeMailbox_t _dartsNodeMailbox;
 void computeElement();
+void printResult();
 
 typedef struct int_matrix_s {
     int data[N*N];
 } int_matrix_t;
+
+int_matrix_t x_in;
+int_matrix_t y_in;
+int_matrix_t mat_out;
 
     DEFINE_TP_MEM_REGIONS(mat_mult_tp,
 		              //DRAM
@@ -36,9 +41,19 @@ typedef struct int_matrix_s {
 			      memDRAM->x = x;
 			      memDRAM->y = y;
 			      memDRAM->out = out;
+			      e_darts_print("x:\n");
+                              for (int i=0; i<N; i++) {
+                                  e_darts_print("%d\t%d\t%d\t%d\n", memDRAM->x.data[i*N],memDRAM->x.data[i*N+1],memDRAM->x.data[i*N+2],memDRAM->x.data[i*N+3]);
+                              }
+			      e_darts_print("y:\n");
+                              for (int i=0; i<N; i++) {
+                                  e_darts_print("%d\t%d\t%d\t%d\n", memDRAM->y.data[i*N],memDRAM->y.data[i*N+1],memDRAM->y.data[i*N+2],memDRAM->y.data[i*N+3]);
+                              }
 			      //start with one codelet per element in result matrix
 			      ASSIGN_SYNC_SLOT_CODELET(*this,0,computeElement,1,1,N*N);
 			      ASSIGN_SYNC_SLOT_CODELET(*this,1,printResult,N*N,N*N,1);
+			      syncSlot_t* finalSyncSlot = GET_SYNC_SLOT(*this,2);
+                              initSyncSlot(finalSyncSlot, 2, 1, 1, _dartsFinalCodelet, 1);
 			      syncSlot_t *first_slot = GET_SYNC_SLOT(*this, 0);
 			      e_darts_print("initializing TP\n");
 			      DEC_DEP(first_slot);
@@ -57,8 +72,17 @@ void computeElement()
     e_darts_print("computeElement running\n");
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
     mat_mult_tp_memDRAM_t *memDRAM = (mat_mult_tp_memDRAM_t *) actualTP->memDRAM;
-    syncSlot_t *printSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP, 1);
+    codelet_t *thisCodelet = (codelet_t *) _dartsCUElements.currentCodelet;
+    int codeletID = (int) thisCodelet->codeletID;
+    int row = codeletID / N;
+    int col = codeletID % N;
+    int acc = 0;
     //perform multiplication
+    for (int i=0; i<N; i++) {
+        acc += memDRAM->x.data[row*N+i] * memDRAM->y.data[i*N+col];
+    }
+    memDRAM->out.data[row*N+col] = acc;
+    syncSlot_t *printSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP, 1);
     DEC_DEP(printSlot);
 }
 
@@ -68,11 +92,12 @@ void printResult()
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
     mat_mult_tp_memDRAM_t *memDRAM = (mat_mult_tp_memDRAM_t *) actualTP->memDRAM;
     int *result = (int *) memDRAM->out.data;
+    e_darts_print("Result: \n");
     for (int i=0; i<N; i++) {
-        for (int j=0; j<N; j++) {
-            //print element
-        }
+        e_darts_print("%d\t%d\t%d\t%d\n", memDRAM->out.data[i*N],memDRAM->out.data[i*N+1],memDRAM->out.data[i*N+2],memDRAM->out.data[i*N+3]);
     }
+    syncSlot_t *finalSyncSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP, 2);
+    DEC_DEP(finalSyncSlot);
 }
 
 int main(void)
@@ -97,8 +122,10 @@ int main(void)
 	syncSlot_t *finalSyncSlot = (syncSlot_t *) &localSlot;
         initSyncSlot(finalSyncSlot, 0, 1, 1, _dartsFinalCodelet, 1);
         e_darts_print("final codelet ID: %x, final syncSlot address: %x\n", finalSyncSlot->codeletTemplate.codeletID, finalSyncSlot);
-        //INVOKE(fib_tp,2,0,0,(int *)DARTS_APPEND_COREID(0x808,&localInt),(syncSlot_t *)DARTS_APPEND_COREID(0x808,finalSyncSlot));
-        INVOKE(fib_tp,9,0,0,(int *)DARTS_APPEND_COREID(0x808,&localInt),(syncSlot_t *) NULL);
+	for (int i=0; i<N*N; i++) {
+            x_in.data[i] = i;
+	}
+        INVOKE(mat_mult_tp,x_in,x_in,mat_out);
     }
     e_darts_run();
     return 0;
