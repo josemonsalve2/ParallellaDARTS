@@ -15,6 +15,7 @@ void cu_scheduler_round_robin() {
             //e_darts_print("codelet popped in CU codelet queue\n");
 	    //SU hardcoded here
             myCUElements->currentThreadedProcedure = (_tp_metadata_t *) DARTS_APPEND_COREID(0x808,toFire.syncSlot->tpFrame); //is this too much dereferencing?
+	    myCUElements->currentCodelet = (codelet_t *) DARTS_APPEND_COREID(thisCoreID,&toFire); // set currentCodelet to toFire
 	    //e_darts_print("codelet's syncSlot located at %x\n", (unsigned)toFire.syncSlot);
 	    //e_darts_print("codelet's syncSlot tpFrame -> %x\n", toFire.syncSlot->tpFrame);
 	    //e_darts_print("codelet's syncSlot tpFrame pointer address -> %x\n", &(toFire.syncSlot->tpFrame));
