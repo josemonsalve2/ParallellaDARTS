@@ -115,7 +115,7 @@ int main(void)
         initSyncSlot(finalSyncSlot, 0, 1, 1, _dartsFinalCodelet, 1);
         e_darts_print("final codelet ID: %x, final syncSlot address: %x\n", finalSyncSlot->codeletTemplate.codeletID, finalSyncSlot);
         //INVOKE(fib_tp,2,0,0,(int *)DARTS_APPEND_COREID(0x808,&localInt),(syncSlot_t *)DARTS_APPEND_COREID(0x808,finalSyncSlot));
-        INVOKE(fib_tp,8,0,0,(int *)DARTS_APPEND_COREID(0x808,&localInt),(syncSlot_t *) NULL);
+        INVOKE(fib_tp,7,0,0,(int *)DARTS_APPEND_COREID(0x808,&localInt),(syncSlot_t *) NULL);
     }
     e_darts_run();
     return 0;

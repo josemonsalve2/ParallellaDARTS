@@ -27,8 +27,7 @@ add_custom_target( darts_fib_test
 # For e_darts_fib_test.elf
 add_executable(e_darts_fib_test.elf fib/e_darts_fib_test.c)
 target_link_libraries(e_darts_fib_test.elf edarts_runtime_device edarts_codeletModel edarts_assets edarts_multithreading ${EPIPHANY_LIBS})
-
-add_dependencies(e_darts_fib_test.elf darts_fib_test darts_api edarts_cachemanager)
+add_dependencies(e_darts_fib_test.elf edarts_runtime_device darts_api edarts_cachemanager)
 
 
 add_custom_command(
@@ -40,11 +39,29 @@ add_custom_command(
    VERBATIM
 )
 
+add_custom_command(
+   OUTPUT darts_matrix_multiply_test.out
+   COMMAND gcc matrix_multiply/main.c ${EXTERNAL_FLAGS} -o darts_matrix_multiply_test.out
+   DEPENDS matrix_multiply/main.c
+   COMMENT "CROSS-COMPILING HOST FILE darts_multiply_test.out"
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+   VERBATIM
+)
+
 add_custom_target( darts_vector_add_test
 	           COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/darts_vector_add_test.out ${CMAKE_CURRENT_BINARY_DIR}/darts_vector_add_test
 		   DEPENDS darts_vector_add_test.out darts_api vector_add/main.c)
 
 add_executable(e_darts_vector_add_test.elf vector_add/e_darts_vector_add_test.c)
 target_link_libraries(e_darts_vector_add_test.elf edarts_runtime_device edarts_codeletModel edarts_assets edarts_multithreading ${EPIPHANY_LIBS})
-
 add_dependencies(e_darts_vector_add_test.elf darts_vector_add_test darts_api edarts_cachemanager)
+
+
+add_custom_target( darts_matrix_multiply_test
+                   COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/darts_matrix_multiply_test.out ${CMAKE_CURRENT_BINARY_DIR}/darts_matrix_multiply_test
+                    DEPENDS darts_matrix_multiply_test.out darts_api matrix_multiply/main.c)
+
+# For e_darts_mailbox_test.elf
+add_executable(e_darts_matrix_multiply_test.elf matrix_multiply/e_darts_matrix_multiply_test.c)
+target_link_libraries(e_darts_matrix_multiply_test.elf edarts_runtime_device edarts_codeletModel edarts_assets edarts_multithreading ${EPIPHANY_LIBS})
+add_dependencies(e_darts_matrix_multiply_test.elf edarts_runtime_device darts_api edarts_cachemanager)
