@@ -63,16 +63,10 @@ int_matrix_t mat_out;
 
     DEFINE_TP_CLOSURE(mat_mult_tp,int_matrix_t,int_matrix_t,int_matrix_t);
 
-void pushFinalCodelet() {
-    codeletsQueue_t * suCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(0x808,&(_dartsCUElements.mySUElements->darts_rt_codeletsQueue));
-    while (pushCodeletQueue(suCodeletQueue, &(_dartsFinalCodelet)) != CODELET_QUEUE_SUCCESS_OP);
-}
-
 void computeElement()
 {
-    e_darts_print("computeElement running\n");
+    //e_darts_print("computeElement running\n");
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
-    e_darts_print("metadata at %x\n", actualTP);
     mat_mult_tp_memDRAM_t *memDRAM = (mat_mult_tp_memDRAM_t *) actualTP->memDRAM;
     codelet_t *thisCodelet = (codelet_t *) _dartsCUElements.currentCodelet;
     int codeletID = (int) thisCodelet->codeletID;
@@ -84,8 +78,24 @@ void computeElement()
         acc += memDRAM->x.data[row*N+i] * memDRAM->y.data[i*N+col];
     }
     memDRAM->out.data[row*N+col] = acc;
-    //e_darts_print("memDRAM->out.data is at %x, from core: (%d, %d) with acc %d, codelet ID %d\n", memDRAM->out.data, e_group_config.core_row, e_group_config.core_col, acc, codeletID);
-    //e_darts_print("currentCodelet located at %x\n", _dartsCUElements.currentCodelet);
+    syncSlot_t *printSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP, 1);
+    DEC_DEP(printSlot);
+}
+
+void computeElementTiled()
+{
+    _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
+    mat_mult_tp_memDRAM_t *memDRAM = (mat_mult_tp_memDRAM_t *) actualTP->memDRAM;
+    codelet_t *thisCodelet = (codelet_t *) _dartsCUElements.currentCodelet;
+    int codeletID = (int) thisCodelet->codeletID;
+    int row = (int) codeletID / N;
+    int col = (int) codeletID % N;
+    int acc = 0;
+    //perform multiplication
+    for (int i=0; i<N; i++) {
+        acc += memDRAM->x.data[row*N+i] * memDRAM->y.data[i*N+col];
+    }
+    memDRAM->out.data[row*N+col] = acc;
     syncSlot_t *printSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP, 1);
     DEC_DEP(printSlot);
 }
@@ -95,12 +105,12 @@ void printResult()
     e_darts_print("printResult running\n");
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
     mat_mult_tp_memDRAM_t *memDRAM = (mat_mult_tp_memDRAM_t *) actualTP->memDRAM;
-    e_darts_print("memDRAM: %x\n", memDRAM);
-    e_darts_print("memDRAM->x.data: %x\n", memDRAM->x.data);
+    //e_darts_print("memDRAM: %x\n", memDRAM);
+    //e_darts_print("memDRAM->x.data: %x\n", memDRAM->x.data);
     int *data_pointer = memDRAM->x.data;
-    e_darts_print("data pointer: %x\n", data_pointer);
+    //e_darts_print("data pointer: %x\n", data_pointer);
     int *result = (int *) memDRAM->out.data;
-    e_darts_print("Result: \n");
+    //e_darts_print("Result: \n");
     for (int i=0; i<N; i++) {
         e_darts_print("%d\t%d\t%d\t%d\n", memDRAM->out.data[i*N],memDRAM->out.data[i*N+1],memDRAM->out.data[i*N+2],memDRAM->out.data[i*N+3]);
     }
@@ -110,6 +120,8 @@ void printResult()
 
 int main(void)
 {
+    e_ctimer_set(E_CTIMER_0, E_CTIMER_MAX); //sets timer zero to max value since its going to count downwards
+    e_ctimer_start(E_CTIMER_0, E_CTIMER_CLK); //start timer zero to record clock cycles (decrements on event)
     unsigned base0_0Address = (unsigned) e_get_global_address(0, 0, 0x0000);
 
     e_darts_cam_t CAM = {SU, CU, CU ,CU,\
@@ -118,18 +130,6 @@ int main(void)
 			 CU, CU, CU, CU};
     e_darts_rt(CAM, CU_ROUND_ROBIN, SU_ROUND_ROBIN);
     if (e_group_config.core_row == 0 && e_group_config.core_col == 0) {
-        e_darts_node_mailbox_init();
-        e_darts_print("Address of mailbox: %x\n", &(_dartsNodeMailbox));
-	e_darts_print("Address of SUtoNM's data: %x\n", &(_dartsNodeMailbox.SUtoNM.data));
-	e_darts_print("Address of SUtoNM's ack: %x\n", &(_dartsNodeMailbox.SUtoNM.ack));
-	e_darts_print("Address of NMtoSU: %x\n", &(_dartsNodeMailbox.NMtoSU));
-	e_darts_print("Address of NMtoSU's ack: %x\n", &(_dartsNodeMailbox.NMtoSU.ack));
-        e_darts_print("message at start: %d\n", _dartsNodeMailbox.NMtoSU.signal);
-	int localInt;
-	syncSlot_t localSlot;
-	syncSlot_t *finalSyncSlot = (syncSlot_t *) &localSlot;
-        initSyncSlot(finalSyncSlot, 0, 1, 1, _dartsFinalCodelet, 1);
-        e_darts_print("final codelet ID: %x, final syncSlot address: %x\n", finalSyncSlot->codeletTemplate.codeletID, finalSyncSlot);
 	for (int i=0; i<N*N; i++) {
             x_in.data[i] = i;
 	    y_in.data[i] = (i * 3) % 5;
@@ -137,5 +137,9 @@ int main(void)
         INVOKE(mat_mult_tp,x_in,y_in,mat_out);
     }
     e_darts_run();
+    unsigned clock_cycles = E_CTIMER_MAX - e_ctimer_stop(E_CTIMER_0);
+    int row = e_group_config.core_row;
+    int col = e_group_config.core_col;
+    e_darts_print("core (%d,%d) reports %d cycles\n", row, col, clock_cycles);
     return 0;
 }
