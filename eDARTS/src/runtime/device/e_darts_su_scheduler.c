@@ -78,39 +78,13 @@ void su_scheduler_round_robin() {
 	//e_darts_print("SU's codelet pop returns %d\n", pop_result);
 	//if (pop_result == CODELET_QUEUE_SUCCESS_OP) {
         if (popCodeletQueue(thisCodeletQueue, &toFire) == CODELET_QUEUE_SUCCESS_OP ) {
+	    e_darts_print("SU popped codelet to deploy\n");
             codeletsQueue_t *cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[cuIndex+1]->darts_rt_codeletsQueue);
 	    int i;
 	    if (toFire.codeletID == 0xFFFFFFFF) { //if final codelet
-		/*
-                for(i=1; i<16; i++) { // push to all CU's codelet queues
-                    cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[i]->darts_rt_codeletsQueue);
-		    unsigned response = 5;
-		    while(response != CODELET_QUEUE_SUCCESS_OP) {
-                        response = pushCodeletQueue(cuCodeletQueue, &toFire);
-			e_darts_print("pushed final codelet to CU %d with response %d\n", i, response);
-                    }
-		    while(pushCodeletQueue(cuCodeletQueue, &toFire) != CODELET_QUEUE_SUCCESS_OP);
-                }
-                toFire.fire(); //then fire
-		*/
                 pushFinalCodelets(cuCodeletQueue, &toFire);
             }
 	    else {
-	        // for loop tries to push to the queue of each CU. starts at cuIndex so that it won't keep trying to push
-                // to the first CU until its full. This way if all pushes are sucessful it will push to CU 0, then 1, then 2,
-                // etc. but if it fails it tries to push to the next one. Basically, distributes evenly where possible,
-                // always distributes if possible, SU fires the codelet itself otherwise
-		/*
-	        for(i=1; pushCodeletQueue(cuCodeletQueue, &toFire) != CODELET_QUEUE_SUCCESS_OP && i<15; i++) {
-		    e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
-                    cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
-                }
-		//e_darts_print("Codelet %d  pushed to queue %d\n", toFire.codeletID, (cuIndex+i)%15+1);
-	        if(i == 15) { //if for loop failed to push to one of the CU queues
-		    e_darts_print("SU firing codelet\n");
-                    toFire.fire();
-                }
-		*/
 		deployCodelet(cuCodeletQueue, cuIndex, &toFire);
             } //else
             cuIndex = (cuIndex + 1) % 15; //index for which codelet queue to push to. stays in [0, 14]. 
@@ -130,7 +104,7 @@ void su_scheduler_round_robin() {
 	    //e_darts_send_signal(SU_MAILBOX_ACCEPT); //always respond accept for now for testing
         }
 	*/
-	suMailboxCheck(&suMailbox, &nmMailbox);
+	//suMailboxCheck(&suMailbox, &nmMailbox);
     } //while
 }
 
@@ -155,10 +129,12 @@ inline void deployCodelet(codeletsQueue_t *cuCodeletQueue, unsigned cuIndex, cod
         e_darts_print("Failed to push codelet to queue %d\n", (cuIndex+i-1)%15+1);
         cuCodeletQueue = (codeletsQueue_t *) &(_dartsSUElements.myCUElements[(cuIndex+i)%15 + 1]->darts_rt_codeletsQueue);
     }
-    // debug e_darts_print("Codelet %d  pushed to queue %d\n", toFire->codeletID, (cuIndex+i)%15+1);
     if(i == 15) { //if for loop failed to push to one of the CU queues
         e_darts_print("SU firing codelet\n");
         toFire->fire();
+    }
+    else {
+    	e_darts_print("Codelet %d  pushed to queue %d\n", toFire->codeletID, (cuIndex+i)%15+1);
     }
 }	
 
@@ -189,9 +165,12 @@ void su_decDepAndPush(syncSlot_t * toDecDep){
             unsigned thisCoreID;
             DARTS_GETCOREID(thisCoreID);
             codeletsQueue_t * thisCodeletQueue = (codeletsQueue_t *) DARTS_APPEND_COREID(thisCoreID,&(_dartsSUElements.darts_rt_codeletsQueue));
+	    e_darts_print("pushing to queue at %x\n", thisCodeletQueue);
+	    e_darts_print("queue head: %x, queue tail: %x\n", _dartsSUElements.darts_rt_codeletsQueue.headAddress, _dartsSUElements.darts_rt_codeletsQueue.tailAddress);
             toDecDep->codeletTemplate.codeletID = i;
             //while(pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate)) != CODELET_QUEUE_SUCCESS_OP);
 	    int result = pushCodeletQueue(thisCodeletQueue, &(toDecDep->codeletTemplate));
+	    e_darts_print("SU tried to push codelet to queue with result %d\n", result);
 	    while(result != CODELET_QUEUE_SUCCESS_OP) {
 	        if (result == CODELET_QUEUE_NOT_ENOUGH_SPACE) {
 	            e_darts_print("SU codelet queue full (from SU decDep)\n");

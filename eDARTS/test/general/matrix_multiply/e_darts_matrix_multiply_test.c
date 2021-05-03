@@ -11,7 +11,7 @@
 #include "e_DARTS.h"
 
 
-#define N 4
+#define N 6
 
 extern codelet_t _dartsFinalCodelet;
 extern nodeMailbox_t _dartsNodeMailbox;
@@ -44,11 +44,11 @@ int_matrix_t mat_out;
 			      memDRAM->out = out;
 			      e_darts_print("x:\n");
                               for (int i=0; i<N; i++) {
-                                  e_darts_print("%d\t%d\t%d\t%d\n", memDRAM->x.data[i*N],memDRAM->x.data[i*N+1],memDRAM->x.data[i*N+2],memDRAM->x.data[i*N+3]);
+                                  e_darts_print("%d\t%d\t%d\t%d\t%d\t%d\n", memDRAM->x.data[i*N],memDRAM->x.data[i*N+1],memDRAM->x.data[i*N+2],memDRAM->x.data[i*N+3], memDRAM->x.data[i*N+4], memDRAM->x.data[i*N+5]);
                               }
 			      e_darts_print("y:\n");
                               for (int i=0; i<N; i++) {
-                                  e_darts_print("%d\t%d\t%d\t%d\n", memDRAM->y.data[i*N],memDRAM->y.data[i*N+1],memDRAM->y.data[i*N+2],memDRAM->y.data[i*N+3]);
+                                  e_darts_print("%d\t%d\t%d\t%d\t%d\t%d\n", memDRAM->y.data[i*N],memDRAM->y.data[i*N+1],memDRAM->y.data[i*N+2],memDRAM->y.data[i*N+3], memDRAM->y.data[i*N+4], memDRAM->y.data[i*N+5]);
                               }
 			      //start with one codelet per element in result matrix
 			      ASSIGN_SYNC_SLOT_CODELET(*this,0,computeElement,1,1,N*N);
@@ -58,6 +58,7 @@ int_matrix_t mat_out;
 			      syncSlot_t *first_slot = GET_SYNC_SLOT(*this, 0);
 			      e_darts_print("initializing TP\n");
 			      DEC_DEP(first_slot);
+			      e_darts_print("first syncSlot has ID %d, currentDep %d, tpFrame at %x, and %d codelets\n", first_slot->slotID, first_slot->currentDep, first_slot->tpFrame, first_slot->numCodelets);
 		              }
 			      , int_matrix_t x, int_matrix_t y, int_matrix_t out)
 
@@ -65,7 +66,7 @@ int_matrix_t mat_out;
 
 void computeElement()
 {
-    //e_darts_print("computeElement running\n");
+    e_darts_print("computeElement running\n");
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
     mat_mult_tp_memDRAM_t *memDRAM = (mat_mult_tp_memDRAM_t *) actualTP->memDRAM;
     codelet_t *thisCodelet = (codelet_t *) _dartsCUElements.currentCodelet;
@@ -112,7 +113,7 @@ void printResult()
     int *result = (int *) memDRAM->out.data;
     //e_darts_print("Result: \n");
     for (int i=0; i<N; i++) {
-        e_darts_print("%d\t%d\t%d\t%d\n", memDRAM->out.data[i*N],memDRAM->out.data[i*N+1],memDRAM->out.data[i*N+2],memDRAM->out.data[i*N+3]);
+        e_darts_print("%d\t%d\t%d\t%d\t%d\t%d\n", memDRAM->out.data[i*N],memDRAM->out.data[i*N+1],memDRAM->out.data[i*N+2],memDRAM->out.data[i*N+3], memDRAM->out.data[i*N+4], memDRAM->out.data[i*N+5]);
     }
     syncSlot_t *finalSyncSlot = (syncSlot_t *) GET_SYNC_SLOT(*actualTP, 2);
     DEC_DEP(finalSyncSlot);

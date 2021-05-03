@@ -3,6 +3,8 @@
 #define IS_ADDRESS_VALID(queue) ((((unsigned) queue) >> 20 == 0 )? false : true)
 // This is because we need the pointer with the coreID in the address
 #define GET_MUTEX_PTR(queue) ((darts_mutex_t *) (((unsigned)queue) + 2 * sizeof(void *) + sizeof(unsigned)));
+// get queue available space needs to be changed; has an error where if the queue padding size is a multiple of the size of codelets
+// then the tail address will end up the same as the head address on the last correct push and the macro reports then that the queue is empty
 #define GET_QUEUE_AVAILABLE_SPACE(queue) (  ((unsigned)queue->headAddress <= (unsigned)queue->tailAddress)?\
                                             (queue->size - (((unsigned)queue->tailAddress) - ((unsigned)queue->headAddress))):\
                                             ((((unsigned)queue->headAddress) - ((unsigned)queue->tailAddress))-1)  )
