@@ -32,14 +32,13 @@ typedef enum message_type {
 //move define statements for messages into an enum
 //messages: invokeTP, reset runtime
 
-// 12 bytes of header
+// 8 bytes of header
 typedef struct __attribute__ ((__packed__)) header_s {
     messageType msg_type;
     unsigned size;
-    void *msg;
 } header_t; //on receive allocate memory for struct + size, load payload into void pointer
 
-// 12 + _DARTS_MAILBOX_MSG_SIZE + 1 + 4 + 4 = 21 + _DARTS_MAILBOX_MSG_SIZE per mailbox
+// 12 + _DARTS_MAILBOX_MSG_SIZE + 1 + 4 = 17 + _DARTS_MAILBOX_MSG_SIZE per mailbox
 // note: for proper use _DARTS_MAILBOX_MSG_SIZE has to be the same as MAX_PAYLOAD_SIZE
 //       on the host side
 typedef struct __attribute__ ((__packed__)) mailbox_s {
@@ -47,10 +46,9 @@ typedef struct __attribute__ ((__packed__)) mailbox_s {
     char data[_DARTS_MAILBOX_MSG_SIZE]; //this is not defined yet
     bool ack;
     message signal;
-    darts_mutex_t lock;
 } mailbox_t;
 
-// 42 + 2 * MAX_PAYLOAD_SIZE overall
+// 34 + 2 * MAX_PAYLOAD_SIZE overall
 typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
     mailbox_t SUtoNM;
     mailbox_t NMtoSU;
@@ -76,6 +74,8 @@ message e_darts_receive_data(mailbox_t *loc);
 
 int e_darts_send_signal(message *signal);
 
+void e_darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal);
+
 int e_darts_send_data(mailbox_t *loc);
 
 void e_darts_set_ack(bool ack);
@@ -85,6 +85,10 @@ bool e_darts_get_ack();
 void e_darts_int_convert_to_data(int input, char *data);
 
 void e_darts_unsigned_convert_to_data(unsigned input, char *data);
+
+int e_darts_data_convert_to_int(char *data);
+
+unsigned e_darts_data_convert_to_unsigned(char *data);
 
 unsigned short e_darts_args_encoding(unsigned short *type_array);
 

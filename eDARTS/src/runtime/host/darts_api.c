@@ -54,7 +54,7 @@ void darts_close()
 }
 
 //add checking to make sure its not overwriting a message that the SU hasn't received yet
-//returns bytes written if successful, -1 if not acked, E_ERR otherwise
+//returns bytes written if successful, -3 if not acked, E_ERR otherwise
 //watch out for conflicts between bytes written and e_return_stat_t enum
 int darts_send_message(message *signal)
 {
@@ -64,7 +64,7 @@ int darts_send_message(message *signal)
         sigWithAck_t pack = {false, *(signal)};
         return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
     }
-    else return(-1);
+    else return(-3);
 }
 
 int darts_send_message_wait(message *signal)
@@ -85,7 +85,7 @@ int darts_send_message_wait(message *signal)
 }
 
 //add checking as above
-//returns bytes written if successful, -1 if not acked, E_ERR otherwise
+//returns bytes written if successful, -3 if not acked, E_ERR otherwise
 //watch out for conflicts between bytes written and e_return_stat_t enum
 int darts_send_data(mailbox_t* data_loc)
 {
@@ -96,9 +96,42 @@ int darts_send_data(mailbox_t* data_loc)
     if (ack) {
         //make sure ack isn't true on arrival, should be sent as false
         data_loc->ack = false;
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)-sizeof(unsigned)));
+	unsigned size = data_loc->msg_header.size;
+	int result_1 = e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t) - sizeof(sigWithAck_t) - (MAX_PAYLOAD_SIZE - size));
+	// data transfer size is mailbox, without ack and without empty data, so only sends header through valid data first
+	if (result_1 < 0) {
+            return(result_1);
+        }
+	else {
+            sigWithAck_t pack = {false, data_loc->signal};
+	    int result_2 = e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t));
+	    if (result_2 < 0) {
+                return(result_2);
+            }
+	    else return(result_1+result_2);
+	}
+        //return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
     }
-    else return(-1);
+    else return(-3); //-3 to avoid overlap with E_OK, E_ERR, E_WARN (0, -1, -2) which e_write might return
+}
+
+int darts_send_data_wait(mailbox_t *data_loc)
+{
+    int response;
+    bool ack;
+    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    //subtract size of unsigned so as to not overwrite the mutex nor ack on the epiphany side
+    if (ack) {
+        //make sure ack isn't true on arrival, should be sent as false
+        data_loc->ack = false;
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
+    }
+    else {
+        while (!ack) {
+            e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+        }
+        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
+    }
 }
 
 // need to add generic tp closure to header definition and such
@@ -116,12 +149,20 @@ message darts_receive_message(message *signal)
 }
 
 //sets ack byte intrinsically
-message darts_receive_data(mailbox_t* mailbox)
+message darts_receive_data(mailbox_t *mailbox)
 {
     //subtract size of unsigned so that darts_mutex value is pulled, dont need it just saves space
-    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t)); //probably don't have to transfer lock
+    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t));
     darts_set_ack(true);
     return(localMailbox.SUtoNM.signal);
+}
+
+//helper function to fill mailbox stuff without having to know the names of the fields
+void darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal)
+{
+    mailbox->msg_header.msg_type = type;
+    mailbox->msg_header.size = size;
+    mailbox->signal = signal;
 }
 
 int darts_set_ack(bool ack)
@@ -155,6 +196,26 @@ unsigned darts_data_convert_to_unsigned(char *data)
     char_to_uns.raw[2] = data[2];
     char_to_uns.raw[3] = data[3];
     return(char_to_uns.processed);
+}
+
+void darts_int_convert_to_data(int input, char *data)
+{
+    int_converter int_to_char;
+    int_to_char.processed = input;
+    data[0] = int_to_char.raw[0];
+    data[1] = int_to_char.raw[1];
+    data[2] = int_to_char.raw[2];
+    data[3] = int_to_char.raw[3];
+}
+
+void darts_unsigned_convert_to_data(unsigned input, char *data)
+{
+    unsigned_converter uns_to_char;
+    uns_to_char.processed = input;
+    data[0] = uns_to_char.raw[0];
+    data[1] = uns_to_char.raw[1];
+    data[2] = uns_to_char.raw[2];
+    data[3] = uns_to_char.raw[3];
 }
 
 //array of counts of args in following order: int, unsigned, char, float

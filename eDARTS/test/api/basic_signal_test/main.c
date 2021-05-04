@@ -18,38 +18,27 @@ int main(int argc, char *argv[]){
 
     usleep(1000);
     //send an arbitrary signal to the SU
-    message signal = NM_REQUEST_SU_PROVIDE;
-    //while (darts_send_message(&signal) == -1);
+    //message signal = NM_REQUEST_SU_PROVIDE;
     printf("ack address from host: %x\n", MAILBOX_ADDRESS + NM_TO_SU_OFFSET + ACK_OFFSET);
-    darts_send_message_wait(&signal);
-    //if (darts_send_message(&signal) == -1) {
-    //    printf("signal send failed; ack not set\n");
-    //} 
-    //printf("NM_REQUEST_SU_PROVIDE signal sent\n");
+    //darts_send_message_wait(&signal); // start with blocking, wait for mailbox to be initialized
+    mailbox_t suMailbox;
+    suMailbox.msg_header.msg_type = DATA;
+    suMailbox.msg_header.size = (unsigned) sizeof(unsigned) + sizeof(int);
+    darts_fill_mailbox(&suMailbox, DATA, sizeof(unsigned)+sizeof(int), NM_REQUEST_SU_PROVIDE);
+    darts_unsigned_convert_to_data(5U, suMailbox.data);
+    darts_int_convert_to_data(-5, &(suMailbox.data[4]));
+    printf("NM sending raw data: %x%x%x%x %x %x %x %x\n", suMailbox.data[0], suMailbox.data[1], suMailbox.data[2], suMailbox.data[3], suMailbox.data[4], suMailbox.data[5], suMailbox.data[6], suMailbox.data[7]);
+
+    darts_send_data_wait(&suMailbox);
     //wait to receive an arbitrary signal in response
     mailbox_t nmMailbox;
-    printf("host: waiting for receive\n");
-    //while(!darts_get_ack());
     while(darts_get_ack());
     darts_receive_data(&nmMailbox);
     int int_data = darts_data_convert_to_int(nmMailbox.data);
-    printf("NM received raw data: %x%x%x%x\n", nmMailbox.data[0], nmMailbox.data[1], nmMailbox.data[2], nmMailbox.data[3]);
+    unsigned uns_data = darts_data_convert_to_unsigned(&(nmMailbox.data[4]));
+    printf("NM received raw data: %x%x%x%x %x %x %x %x\n", nmMailbox.data[0], nmMailbox.data[1], nmMailbox.data[2], nmMailbox.data[3], nmMailbox.data[4], nmMailbox.data[5], nmMailbox.data[6], nmMailbox.data[7]);
     printf("NM received signal: %d\n", nmMailbox.signal);
-    printf("NM received int value: %d\n", int_data); 
-//    while (nmMailbox
-    //need to add protection to receive: if receive already has ack set, return error, no new info
-    //add get_ack function and do before receive, add new function receive_new_data that returns error
-    //if ack is already true. How does the memory distance for the api side affect this protocol?
-    //Is this an insufficient process because of memory latency?
-    /*
-    while( != SU_MAILBOX_ACCEPT) {
-        printf("host received message: %d\n", received); 
-        unsigned x = 0;
-        while (x<100000000) x++;	
-	darts_receive_message(&received);
-    }
-    */
-    //printf("SU_MAILBOX_ACCEPT received by host\n");
+    printf("NM received int value %d and uns value %u\n", int_data, uns_data); 
 
     //wait for runtime to shut itself down
     darts_wait();

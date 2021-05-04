@@ -90,21 +90,7 @@ void su_scheduler_round_robin() {
             cuIndex = (cuIndex + 1) % 15; //index for which codelet queue to push to. stays in [0, 14]. 
 	                                  // 1 is added before access so will be [1, 15] (hardcoded for SU at 0)
         } //if codelet popped success
-	/*
-	if (!e_darts_get_ack()) { //if message isn't acked i.e. SU hasn't seen it yet
-            e_darts_receive_data(&suMailbox); //intrinsically acks the message and data
-	    //respond to the message here: for now a print
-	    e_darts_print("SU received message %d\n", suMailbox.signal);
-	    nmMailbox.msg_header.msg_type = DATA;
-	    nmMailbox.msg_header.size = (unsigned) sizeof(unsigned);
-	    //don't have to make msg pointer valid for now because we don't use it in the api
-	    e_darts_unsigned_convert_to_data(3U, nmMailbox.data); //converts unsigned 3 to 4 char bytes and places in data array
-	    nmMailbox.signal = SU_MAILBOX_ACCEPT;
-	    e_darts_send_data(&nmMailbox);
-	    //e_darts_send_signal(SU_MAILBOX_ACCEPT); //always respond accept for now for testing
-        }
-	*/
-	//suMailboxCheck(&suMailbox, &nmMailbox);
+	suMailboxCheck(&suMailbox, &nmMailbox);
     } //while
 }
 
@@ -144,12 +130,16 @@ inline void suMailboxCheck(mailbox_t *suMailbox, mailbox_t *nmMailbox)
         e_darts_receive_data(suMailbox); //intrinsically acks the message and data
         //respond to the message here: for now a print
         e_darts_print("SU received message %d\n", suMailbox->signal);
-        nmMailbox->msg_header.msg_type = DATA;
-        nmMailbox->msg_header.size = (unsigned) sizeof(unsigned);
+	e_darts_print("SU received unsigned %u and int %d\n", e_darts_data_convert_to_unsigned(suMailbox->data), e_darts_data_convert_to_int(&(suMailbox->data[4])));
+        //nmMailbox->msg_header.msg_type = DATA;
+        //nmMailbox->msg_header.size = (unsigned) sizeof(unsigned);
+        //nmMailbox->signal = SU_MAILBOX_ACCEPT;
+	e_darts_fill_mailbox(nmMailbox, DATA, sizeof(int) + sizeof(unsigned), SU_MAILBOX_ACCEPT);
         //don't have to make msg pointer valid for now because we don't use it in the api
-        e_darts_unsigned_convert_to_data(3U, nmMailbox->data); //converts unsigned 3 to 4 char bytes and places in data array
-	e_darts_print("SU sending raw data %x%x%x%x\n", nmMailbox->data[0], nmMailbox->data[1], nmMailbox->data[2], nmMailbox->data[3]);
-        nmMailbox->signal = SU_MAILBOX_ACCEPT;
+	e_darts_int_convert_to_data(-1, nmMailbox->data);
+        e_darts_unsigned_convert_to_data(11U, &(nmMailbox->data[4])); //converts unsigned 3 to 4 char bytes and places in data array
+        e_darts_print("SU sending -1 and 11U\n");
+	e_darts_print("SU sending raw data %x%x%x%x %x %x %x %x\n", nmMailbox->data[0], nmMailbox->data[1], nmMailbox->data[2], nmMailbox->data[3], nmMailbox->data[4], nmMailbox->data[5], nmMailbox->data[6], nmMailbox->data[7]);
         e_darts_send_data(nmMailbox);
         //e_darts_send_signal(SU_MAILBOX_ACCEPT); //always respond accept for now for testing
     }
