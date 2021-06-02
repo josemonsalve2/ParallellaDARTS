@@ -71,6 +71,7 @@ typedef struct __attribute__ ((__packed__)) codeletsQueue_s {
     void * tailAddress;
     unsigned size;
     darts_mutex_t lockMutex; // e_mutex_t is an int.
+    unsigned fullFlag;
 } codeletsQueue_t;
 
 /**
