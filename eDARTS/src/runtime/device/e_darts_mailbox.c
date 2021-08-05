@@ -1,41 +1,117 @@
 #include <stdbool.h>
 #include "e_darts_mailbox.h"
+#include "e_darts_mutex.h"
 
 //Address of mailbox: 8e000138
-nodeMailbox_t _dartsNodeMailbox __attribute__ ((section(".nodeMailbox")));
+//nodeMailbox_t _dartsNodeMailbox __attribute__ ((section(".nodeMailbox")));
+commSpace_t _dartsCommSpace __attribute__ ((section(".commSpace")));
+darts_mutex_t __SUtoNM_mutex __attribute__ ((section("suMailMutex"))) = DARTS_MUTEX_NULL;
+darts_mutex_t __NMtoSU_mutex __attribute__ ((section("nmMailMutex"))) = DARTS_MUTEX_NULL;
+//darts_mutex_lock(*mutex)
+//darts_mutex_unlock(*mutex)
 
-void e_darts_node_mailbox_init()
+//for now have to acquire lock and for tail access, sender has to increment tail
+// key decision: when to decrement head? on first read? i think yes
+// also: at this point, we can do away with ack flags?
+
+//for debugging
+void e_darts_print_SU_queue()
 {
-    _dartsNodeMailbox.SUtoNM.signal = blank;
-    _dartsNodeMailbox.NMtoSU.signal = blank;
-    _dartsNodeMailbox.SUtoNM.ack = true;
-    _dartsNodeMailbox.NMtoSU.ack = true;
+    commQueue_t *queue = &(_dartsCommSpace.SUtoNM);
+    e_darts_print("SUtoNM:\n head: %d\n tail: %d\n %d %d %d %d %d %d %d %d\n", queue->head_index, queue->tail_index, \
+                queue->queue[0].signal, queue->queue[1].signal, queue->queue[2].signal, queue->queue[3].signal, \
+                queue->queue[4].signal, queue->queue[5].signal, queue->queue[6].signal, queue->queue[7].signal);
 }
 
+void e_darts_print_NM_queue()
+{
+    commQueue_t *queue = &(_dartsCommSpace.NMtoSU);
+    e_darts_print("NMtoSU:\n head: %d\n tail: %d\n %d %d %d %d %d %d %d %d\n", queue->head_index, queue->tail_index, \
+                queue->queue[0].signal, queue->queue[1].signal, queue->queue[2].signal, queue->queue[3].signal, \
+                queue->queue[4].signal, queue->queue[5].signal, queue->queue[6].signal, queue->queue[7].signal);
+}
+
+void e_darts_comm_init()
+{
+    // so:
+    // on incoming mailbox: when popping, increase head (modulus)
+    // 			    when new push from other end, increase tail
+    // 			    ** this is the problem. SU doesn't know when
+    // 			    NM adds to queue, so NM would have to do it.
+    // 			    This necessitates a lock for the head and tail indices
+    _dartsCommSpace.SUtoNM.head_index = 0;
+    _dartsCommSpace.SUtoNM.tail_index = 0; //index after final element, starts empty
+    _dartsCommSpace.SUtoNM.full_flag = 0;
+    _dartsCommSpace.SUtoNM.NM_op_done = 0;
+    _dartsCommSpace.NMtoSU.head_index = 0;
+    _dartsCommSpace.NMtoSU.tail_index = 0; //index after final element, starts empty
+    _dartsCommSpace.NMtoSU.full_flag = 0;
+    _dartsCommSpace.NMtoSU.NM_op_done = 0;
+    for (int i=0; i<_DARTS_COMM_QUEUE_LENGTH; i++) {
+        _dartsCommSpace.SUtoNM.queue[i].signal = blank;
+        _dartsCommSpace.NMtoSU.queue[i].signal = blank;
+    }
+    //debugging
+    e_darts_print("dartsCommSpace begins at %x, last signal at %x\n", &(_dartsCommSpace), &(_dartsCommSpace.NMtoSU.queue[_DARTS_COMM_QUEUE_LENGTH - 1].signal));
+    e_darts_print("NMtoSU base at %x\n", &(_dartsCommSpace.NMtoSU));
+    e_darts_print("First NMtoSU signal at %x\n", &(_dartsCommSpace.NMtoSU.queue[0].signal));
+    e_darts_print("NMtoSU tail at %x\n", &(_dartsCommSpace.NMtoSU.tail_index));
+}
+
+/* note that this does not edit head to mark the received signal as read (it's like a peek) */
 message e_darts_receive_signal()
 {
-    return _dartsNodeMailbox.NMtoSU.signal;
+    unsigned head = _dartsCommSpace.NMtoSU.head_index;
+    unsigned tail = _dartsCommSpace.NMtoSU.tail_index;
+    unsigned flag = _dartsCommSpace.NMtoSU.full_flag;
+    e_darts_print("e_darts_receive sees head %d, tail %d, flag %d (reads? %d)\n", head, tail, flag, ((head!=tail)||(head==tail&&flag)));
+    if ((head != tail) || (head == tail && flag)) { // if not empty
+        return (_dartsCommSpace.NMtoSU.queue[head].signal);
+    }
+    return(-1);
 }
 
+//receiving, so increment head
 message e_darts_receive_data(mailbox_t *loc)
 {
-    loc->msg_header = _dartsNodeMailbox.NMtoSU.msg_header;
+    unsigned head = _dartsCommSpace.NMtoSU.head_index;
+    unsigned tail = _dartsCommSpace.NMtoSU.tail_index;
+    unsigned flag = _dartsCommSpace.NMtoSU.full_flag;
+    if ((head == tail) && !flag) {
+        return(-1); //queue empty
+    }
+    loc->msg_header = _dartsCommSpace.NMtoSU.queue[head].msg_header;
     unsigned size = loc->msg_header.size;
     for(int i=0; i<size; i++) {
-        loc->data[i] = _dartsNodeMailbox.NMtoSU.data[i];
+        loc->data[i] = _dartsCommSpace.NMtoSU.queue[head].data[i];
     } 
-    loc->signal = _dartsNodeMailbox.NMtoSU.signal;
-    _dartsNodeMailbox.NMtoSU.ack = true;
+    loc->signal = _dartsCommSpace.NMtoSU.queue[head].signal;
+    _dartsCommSpace.NMtoSU.queue[head].ack = true;
+    _dartsCommSpace.NMtoSU.head_index = (head + 1) % _DARTS_COMM_QUEUE_LENGTH; //increment head circularly
+    // done reading, so its not full anymore (head is updated)
+    if(_dartsCommSpace.NMtoSU.full_flag) {
+        _dartsCommSpace.NMtoSU.full_flag = 0;
+    }
     return(loc->signal);
 }
 
+//going to need some size checking for send functions
 int e_darts_send_signal(message *signal)
 {
-    if (_dartsNodeMailbox.SUtoNM.ack) {
-        _dartsNodeMailbox.SUtoNM.signal = *(signal);
-	_dartsNodeMailbox.SUtoNM.ack = 0;
-	return(0);
-    } else return(-1); //not acked
+    if (_dartsCommSpace.SUtoNM.full_flag && _dartsCommSpace.SUtoNM.NM_op_done) {
+        // marked full, and op done - so NM has received, it's not actually full anymore
+        _dartsCommSpace.SUtoNM.full_flag = 0;
+        _dartsCommSpace.SUtoNM.NM_op_done = 0;
+    }
+    unsigned tail = _dartsCommSpace.SUtoNM.tail_index;
+    _dartsCommSpace.SUtoNM.queue[tail].signal = *(signal);
+    _dartsCommSpace.SUtoNM.tail_index = (tail + 1) % _DARTS_COMM_QUEUE_LENGTH;
+    if (_dartsCommSpace.SUtoNM.head_index == _dartsCommSpace.SUtoNM.tail_index) {
+        _dartsCommSpace.SUtoNM.full_flag = 1;
+    }
+    //_dartsCommSpace.SUtoNM.queue[tail].ack = 0;
+    //darts_mutex_unlock(__SUtoNM_mutex);
+    return(0);
 }
 
 void e_darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal)
@@ -45,30 +121,59 @@ void e_darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, m
     mailbox->signal = signal;
 }
 
+// nonblocking
 int e_darts_send_data(mailbox_t *loc)
 {
-    if (_dartsNodeMailbox.SUtoNM.ack) {
-        //_dartsNodeMailbox.SUtoNM = *(loc);
-	_dartsNodeMailbox.SUtoNM.msg_header = loc->msg_header;
-        unsigned size = loc->msg_header.size;
-	for(int i=0; i<size; i++) {
-            _dartsNodeMailbox.SUtoNM.data[i] = loc->data[i];
-	}
-        _dartsNodeMailbox.SUtoNM.signal = loc->signal;
-	_dartsNodeMailbox.SUtoNM.ack = false;
-	return((int)size);
-    } else return(-1); //not acked
+    //removed ack checking
+    darts_mutex_lock(&(__SUtoNM_mutex)); //acquire lock for SU to NM
+    unsigned tail = _dartsCommSpace.SUtoNM.tail_index;
+    unsigned head = _dartsCommSpace.SUtoNM.head_index;
+    //_DARTS_COMM_QUEUE_LENGTH
+    int space = e_darts_get_queue_space(&(_dartsCommSpace.SUtoNM));
+    if (!space) {
+        return(-1);
+    }
+    _dartsCommSpace.SUtoNM.queue[tail].msg_header = loc->msg_header;
+    unsigned size = loc->msg_header.size;
+    for(int i=0; i<size; i++) {
+        _dartsCommSpace.SUtoNM.queue[tail].data[i] = loc->data[i];
+    }
+    _dartsCommSpace.SUtoNM.queue[tail].signal = loc->signal;
+    //_dartsCommSpace.SUtoNM.queue[tail].ack = false;
+    darts_mutex_unlock(&(__SUtoNM_mutex)); //acquire lock for SU to NM
+    return((int)size);
 
+}
+
+int e_darts_get_queue_space(commQueue_t *queue)
+{
+    unsigned tail = queue->tail_index;
+    unsigned head = queue->head_index;
+    unsigned full_flag = queue->full_flag;
+    unsigned op_done = queue->NM_op_done;
+    if (full_flag && !op_done) {
+        return(0);
+    }
+    else if (tail > head) {
+        queue->NM_op_done = 0;
+        queue->full_flag = 0;
+        return (_DARTS_COMM_QUEUE_LENGTH - (tail-head));
+    }
+    else {
+        return (head-tail);
+    }
 }
 
 void e_darts_set_ack(bool ack)
 {
-    _dartsNodeMailbox.NMtoSU.ack = ack;
+    unsigned head = _dartsCommSpace.NMtoSU.head_index;
+    _dartsCommSpace.NMtoSU.queue[head].ack = ack;
 }
 
 bool e_darts_get_ack()
 {
-    return(_dartsNodeMailbox.NMtoSU.ack);
+    unsigned head = _dartsCommSpace.NMtoSU.head_index;
+    return(_dartsCommSpace.NMtoSU.queue[head].ack);
 }
 
 void e_darts_int_convert_to_data(int input, char *data)

@@ -8,3 +8,4 @@
 #define _DARTS_TP_DATA_HEAP_SIZE_BYTES 240       //TP data space in local
 #define _DARTS_TP_DATA_HEAP_DRAM_SIZE_BYTES 4000 //TP data space in DRAM
 #define _DARTS_MAILBOX_MSG_SIZE 0x7f             //127 for alignment: needs to match the MAX_PAYLOAD_SIZE on host side
+#define _DARTS_COMM_QUEUE_LENGTH 8		 // array length of mailboxes for comm queue
