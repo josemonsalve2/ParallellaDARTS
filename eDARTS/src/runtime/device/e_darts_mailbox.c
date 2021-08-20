@@ -29,6 +29,8 @@ void e_darts_print_NM_queue()
     e_darts_print("NMtoSU:\n head: %d\n tail: %d\n %d %d %d %d %d %d %d %d\n", queue->head_index, queue->tail_index, \
                 queue->queue[0].signal, queue->queue[1].signal, queue->queue[2].signal, queue->queue[3].signal, \
                 queue->queue[4].signal, queue->queue[5].signal, queue->queue[6].signal, queue->queue[7].signal);
+    //data scan of first two slots
+    //e_darts_print("NMtoSU: [1] - %x . . . %x\n", *(unsigned*)(&(queue->queue[0].data)), *(unsigned*)(&(queue->queue[0].data[124])));
 }
 
 void e_darts_comm_init()
@@ -64,7 +66,7 @@ message e_darts_receive_signal()
     unsigned head = _dartsCommSpace.NMtoSU.head_index;
     unsigned tail = _dartsCommSpace.NMtoSU.tail_index;
     unsigned flag = _dartsCommSpace.NMtoSU.full_flag;
-    e_darts_print("e_darts_receive sees head %d, tail %d, flag %d (reads? %d)\n", head, tail, flag, ((head!=tail)||(head==tail&&flag)));
+    //e_darts_print("e_darts_receive sees head %d, tail %d, flag %d (reads? %d)\n", head, tail, flag, ((head!=tail)||(head==tail&&flag)));
     if ((head != tail) || (head == tail && flag)) { // if not empty
         return (_dartsCommSpace.NMtoSU.queue[head].signal);
     }
@@ -77,7 +79,9 @@ message e_darts_receive_data(mailbox_t *loc)
     unsigned head = _dartsCommSpace.NMtoSU.head_index;
     unsigned tail = _dartsCommSpace.NMtoSU.tail_index;
     unsigned flag = _dartsCommSpace.NMtoSU.full_flag;
+    e_darts_print("e_darts_receive sees head %d, tail %d, flag %d (reads? %d)\n", head, tail, flag, ((head!=tail)||(head==tail&&flag)));
     if ((head == tail) && !flag) {
+        e_darts_print("e_darts_receive not reading (queue empty)\n");
         return(-1); //queue empty
     }
     loc->msg_header = _dartsCommSpace.NMtoSU.queue[head].msg_header;
@@ -92,6 +96,7 @@ message e_darts_receive_data(mailbox_t *loc)
     if(_dartsCommSpace.NMtoSU.full_flag) {
         _dartsCommSpace.NMtoSU.full_flag = 0;
     }
+    e_darts_print("e_darts_receive got signal %d\n", loc->signal);
     return(loc->signal);
 }
 
@@ -125,12 +130,13 @@ void e_darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, m
 int e_darts_send_data(mailbox_t *loc)
 {
     //removed ack checking
-    darts_mutex_lock(&(__SUtoNM_mutex)); //acquire lock for SU to NM
+    //darts_mutex_lock(&(__SUtoNM_mutex)); //acquire lock for SU to NM
     unsigned tail = _dartsCommSpace.SUtoNM.tail_index;
     unsigned head = _dartsCommSpace.SUtoNM.head_index;
     //_DARTS_COMM_QUEUE_LENGTH
-    int space = e_darts_get_queue_space(&(_dartsCommSpace.SUtoNM));
-    if (!space) {
+    //int space = e_darts_get_queue_space(&(_dartsCommSpace.SUtoNM));
+    //if (!space) {
+    if (tail != (head-1) && tail != (head+_DARTS_COMM_QUEUE_LENGTH-1)) { //trying one space open method of full
         return(-1);
     }
     _dartsCommSpace.SUtoNM.queue[tail].msg_header = loc->msg_header;
@@ -139,10 +145,13 @@ int e_darts_send_data(mailbox_t *loc)
         _dartsCommSpace.SUtoNM.queue[tail].data[i] = loc->data[i];
     }
     _dartsCommSpace.SUtoNM.queue[tail].signal = loc->signal;
+    _dartsCommSpace.SUtoNM.tail_index = (tail + 1) % _DARTS_COMM_QUEUE_LENGTH;
+    if (_dartsCommSpace.SUtoNM.head_index == _dartsCommSpace.SUtoNM.tail_index) {
+        _dartsCommSpace.SUtoNM.full_flag = 1;
+    }
     //_dartsCommSpace.SUtoNM.queue[tail].ack = false;
-    darts_mutex_unlock(&(__SUtoNM_mutex)); //acquire lock for SU to NM
+    //darts_mutex_unlock(&(__SUtoNM_mutex)); //acquire lock for SU to NM
     return((int)size);
-
 }
 
 int e_darts_get_queue_space(commQueue_t *queue)
@@ -153,6 +162,9 @@ int e_darts_get_queue_space(commQueue_t *queue)
     unsigned op_done = queue->NM_op_done;
     if (full_flag && !op_done) {
         return(0);
+    }
+    else if (tail == head && !full_flag) {
+        return (_DARTS_COMM_QUEUE_LENGTH);
     }
     else if (tail > head) {
         queue->NM_op_done = 0;

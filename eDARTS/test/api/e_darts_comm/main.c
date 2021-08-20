@@ -27,6 +27,25 @@ int test_message_receive(message exp) {
     return(0);
 }
 
+int test_data_send(unsigned num) {
+    mailbox_t tmp_data;
+    darts_fill_mailbox(&tmp_data, STATUS, sizeof(unsigned), NM_REQUEST_SU_PROVIDE);
+    darts_unsigned_convert_to_data(num, &(tmp_data.data));
+    return(darts_send_data(&tmp_data));
+}
+
+int test_data_receive() {
+    mailbox_t tmp_data;
+    int tmp_message = (int) darts_receive_data(&tmp_data);
+    while (tmp_message < 1) {
+        printf("delaying\n");
+        int i=0;
+        while(i<100000000) i++;
+        tmp_message = darts_receive_data(&tmp_data);
+    }
+    printf("received message %d and data %u\n", tmp_message, darts_data_convert_to_unsigned(&(tmp_data.data)));
+}
+
 int main(int argc, char *argv[]){
 
     //initialize platform
@@ -39,8 +58,14 @@ int main(int argc, char *argv[]){
     int i=0;
     while(i<100000000) i++;
 
-    test_message_send(1);
-    test_message_receive(2);
+    //test_message_send(1);
+    //test_message_receive(2);
+    for (int i=0; i<9; i++) {
+        int result = test_data_send(i);
+        printf("darts sent to SU with result %d\n", result);
+    }
+    test_data_receive();
+
 
     //wait for runtime to shut itself down
     //darts_wait();

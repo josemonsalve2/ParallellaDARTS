@@ -145,12 +145,14 @@ int darts_send_data(mailbox_t* data_loc)
     //e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
     //subtract size of unsigned so as to not overwrite the mutex nor ack on the epiphany side
     int result_1 = -5;
+    unsigned head = head_tail_flag.head;
+    unsigned tail = head_tail_flag.tail;
 	unsigned size = data_loc->msg_header.size;
-    if (!(head_tail_flag.full_flag)) {
+    if (!(head_tail_flag.full_flag) && tail != (head-1) && tail != (head+_DARTS_COMM_QUEUE_LENGTH-1)) { //trying one space open method
 	    // data transfer size is mailbox, without ack and without empty data, so only sends header through valid data first
         result_1 = e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + INDEX_OFFSET(head_tail_flag.tail), data_loc, sizeof(mailbox_t) - sizeof(sigWithAck_t) - (MAX_PAYLOAD_SIZE - size));
     }
-    else return(-3); //-3 to avoid overlap with E_OK, E_ERR, E_WARN (0, -1, -2) which e_write might return
+    else return(-3); //-3 (no space) to avoid overlap with E_OK, E_ERR, E_WARN (0, -1, -2) which e_write might return
 	if (result_1 < 0) {
             return(result_1);
         }
@@ -237,14 +239,28 @@ message darts_receive_message(message *signal)
 //sets ack byte intrinsically
 message darts_receive_data(mailbox_t *mailbox)
 {
-    unsigned head;
-    e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + HEAD_OFFSET, &head, sizeof(unsigned));
-    e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + INDEX_OFFSET(head), (mailbox_t *) mailbox, sizeof(mailbox_t));
-    head = (head + 1) % _DARTS_COMM_QUEUE_LENGTH;
-    e_write(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + HEAD_OFFSET, &head, sizeof(unsigned));
-    unsigned op_done = 1;
-    e_write(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + NM_OP_OFFSET, &op_done, sizeof(unsigned));
-    return(mailbox->signal);
+    struct {
+        unsigned head;
+        unsigned tail;
+        unsigned full_flag;
+    } head_tail_flag;
+    int response;
+    e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
+    unsigned head = head_tail_flag.head;
+    unsigned tail = head_tail_flag.tail;
+    unsigned flag = head_tail_flag.full_flag;
+    printf("darts_receive sees head %u tail %u and flag %u, reads %u\n", head, tail, flag, ((head != tail) || (head == tail && flag)));
+    if ((head != tail) || (head == tail && flag)) {
+        e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + INDEX_OFFSET(head), (mailbox_t *) mailbox, sizeof(mailbox_t));
+        head = (head + 1) % _DARTS_COMM_QUEUE_LENGTH;
+        e_write(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + HEAD_OFFSET, &head, sizeof(unsigned));
+        unsigned op_done = 1;
+        e_write(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + NM_OP_OFFSET, &op_done, sizeof(unsigned));
+        return(mailbox->signal);
+    }
+    else {
+        return(-1);
+    }
 }
 
 //helper function to fill mailbox stuff without having to know the names of the fields
