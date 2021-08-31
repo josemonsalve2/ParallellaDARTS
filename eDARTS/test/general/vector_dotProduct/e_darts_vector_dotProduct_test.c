@@ -43,7 +43,7 @@ DEFINE_THREADED_PROCEDURE_ARGS(int_vector_dotProduct_tp,
     3,
     //Initialization function
     {
-        //memLocal->test = 0;
+        memLocal->test = 0;
         //memDRAM->internal_data = internal_data;
         e_darts_print("Filling arrays \n");
         for (int i=0; i<VECTOR_LENGTH; i++) {
@@ -60,7 +60,7 @@ DEFINE_THREADED_PROCEDURE_ARGS(int_vector_dotProduct_tp,
         initSyncSlot(finalSyncSlot, 2, 1, 1, _dartsFinalCodelet, 1);
         e_darts_print("Initializing TP\n");
         DEC_DEP(first_slot);
-    },
+    }
     //Initialization function parameters
     //int_vectors_t internal_data
 )

@@ -172,8 +172,8 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
     void _##TPname##_userInitCtor(_tp_metadata_t * _tp, ##__VA_ARGS__) {\
         TPname##_threadedProcedure_t * this = (TPname##_threadedProcedure_t *) _tp;\
         TPname##_memDRAM_t *memDRAM = (TPname##_memDRAM_t *) _tp->memDRAM;\
-        TPname##_memDRAM_t *memLocal = (TPname##_memDRAM_t *) _tp->memLocal;\
-        TPname##_memDRAM_t *memDist = (TPname##_memDRAM_t *) _tp->memDist;\
+        TPname##_memLocal_t *memLocal = (TPname##_memLocal_t *) _tp->memLocal;\
+        TPname##_memDist_t *memDist = (TPname##_memDist_t *) _tp->memDist;\
         \
         initializationCode;\
         \
