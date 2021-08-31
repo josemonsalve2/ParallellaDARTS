@@ -81,7 +81,6 @@
  * Basic metadata all TP must have
  *
  */
-
 typedef struct __attribute__ ((__packed__)) _tp_metadata_s {
     unsigned _TPid;
     unsigned numSyncSlots;
@@ -108,15 +107,15 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
                     unsigned numSyncSlots, unsigned sizeDRAM,
                     unsigned sizeLocal, unsigned sizeDist);
 
-// Helper macros
+/* --------------- HELPER MACROS --------------- */
 /**
  * @brief This macro is to get a pointer to a syncSlot that is within the
  * TP memory region as explained above. All SyncSlots are placed together.
  * the user is responsible to assign which syncSlot corresponds to what codelet
  *
  */
-#define GET_SYNC_SLOT(_Tp,numSyncSlot) \
-		( (syncSlot_t *) (((unsigned)&(_Tp)) + sizeof(_tp_metadata_t) + sizeof(syncSlot_t)*numSyncSlot)) \
+#define GET_SYNC_SLOT(_Tp, numSyncSlot) \
+        ( (syncSlot_t *) (((unsigned)&(_Tp)) + sizeof(_tp_metadata_t) + sizeof(syncSlot_t)*numSyncSlot)) \
 /**
  * @brief Asign a codelet to a syncronization slot
  *
@@ -128,103 +127,61 @@ _tp_metadata_t _genericMetadataCtro(unsigned _TPid,
  */
 //note: added tpFrame assignment, and full syncSlot address w/ core ID - SU location is hardcoded currently
 #define ASSIGN_SYNC_SLOT_CODELET(_Tp, syncSlotNum, codeletFunction, numDep, resetDep, numExec) \
-		{\
-	        syncSlot_t* theSyncSlot = GET_SYNC_SLOT(_Tp,syncSlotNum);\
-			codelet_t newCodeletTemplate;\
-            theSyncSlot->tpFrame = (_tp_metadata_t *) DARTS_APPEND_COREID(0x808,this);\
-            syncSlot_t* syncSlot_full_address = (syncSlot_t*) DARTS_APPEND_COREID(0x808,theSyncSlot);\
-            initCodelet(&newCodeletTemplate,0 ,syncSlot_full_address, codeletFunction);\
-            initSyncSlot(theSyncSlot, syncSlotNum, resetDep, numDep, newCodeletTemplate, numExec);\
-        }\
+    {\
+        syncSlot_t* theSyncSlot = GET_SYNC_SLOT(_Tp,syncSlotNum);\
+        codelet_t newCodeletTemplate;\
+        theSyncSlot->tpFrame = (_tp_metadata_t *) DARTS_APPEND_COREID(0x808,this);\
+        syncSlot_t* syncSlot_full_address = (syncSlot_t*) DARTS_APPEND_COREID(0x808,theSyncSlot);\
+        initCodelet(&newCodeletTemplate,0 ,syncSlot_full_address, codeletFunction);\
+        initSyncSlot(theSyncSlot, syncSlotNum, resetDep, numDep, newCodeletTemplate, numExec);\
+    }\
 
 
-// Functions for creating Threded Procedures definitions
+/* --------------- TP DEFINITIONS --------------- */
+//Memory regions
+#define DEFINE_TP_MEM_REGIONS(TPname, memRegionDRAM, memRegionLocal, memRegionDist)\
+    typedef struct __attribute__((__packed__)) {\
+        memRegionDRAM\
+    } TPname##_memDRAM_t;\
+    typedef struct __attribute__((__packed__)) {\
+        memRegionLocal;\
+    } TPname##_memLocal_t;\
+    typedef struct __attribute__((__packed__)) {\
+        memRegionDist;\
+    } TPname##_memDist_t;\
 
-#define DEFINE_TP_MEM_REGIONS(_TPname,memRegionDRAM,memRegionLocal,memRegionDist)\
-		typedef struct __attribute__((__packed__)) _TPname##_memDRAM_s {\
-            memRegionDRAM\
-        } _TPname##_memDRAM_t;\
-        typedef struct __attribute__((__packed__)) _TPname##_memLocal_s {\
-            memRegionLocal;\
-        } _TPname##_memLocal_t;\
-        typedef struct __attribute__((__packed__)) _TPname##_memDist_s {\
-            memRegionDist;\
-        } _TPname##_memDist_t;\
-
+//Syncslots name
 #define DEFINE_TP_SYNCSLOTS_NAMES(TPname,...)\
-		// TODO
 
-// For macro overloading. This way it is possible to call the same macro with no arguments, or with
-// many arguments and still have the same name
-#define GET_MACRO_TP(TPname,_numSyncSlots,initializationCode,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,\
-                                                             _13,_14,_15,_16,_17,_18,_19,_20,_21,_22,\
-                                                             _23,_24,_25,NAME,...) NAME
-#define DEFINE_THREADED_PROCEDURE(...) GET_MACRO_TP(__VA_ARGS__,\
-        DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-        DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-		DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-		DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-		DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-		DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-		DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-		DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_ARGS,\
-		DEFINE_THREADED_PROCEDURE_ARGS,DEFINE_THREADED_PROCEDURE_NOARGS) (__VA_ARGS__)
+// Threaded procedure
+#define DEFINE_THREADED_PROCEDURE(...) DEFINE_THREADED_PROCEDURE_ARGS (__VA_ARGS__)
+#define DEFINE_THREADED_PROCEDURE_ARGS(TPname, _numSyncSlots, initializationCode, ...)\
+    typedef struct __attribute__((__packed__)) TPname##_threadedProcedure_s {\
+        _tp_metadata_t metadata;\
+    }TPname##_threadedProcedure_t;\
+    \
+    typedef TPname##_threadedProcedure_t TPname;\
+    \
+    _tp_metadata_t _##TPname##_metadataCtor(unsigned _TPid) {\
+        return _genericMetadataCtro(_TPid, _numSyncSlots, \
+                sizeof(TPname##_memDRAM_t), \
+                sizeof(TPname##_memLocal_t),\
+                sizeof(TPname##_memDist_t));\
+    }\
+    \
+    void _##TPname##_userInitCtor(_tp_metadata_t * _tp, ##__VA_ARGS__) {\
+        TPname##_threadedProcedure_t * this = (TPname##_threadedProcedure_t *) _tp;\
+        TPname##_memDRAM_t *memDRAM = (TPname##_memDRAM_t *) _tp->memDRAM;\
+        TPname##_memDRAM_t *memLocal = (TPname##_memDRAM_t *) _tp->memLocal;\
+        TPname##_memDRAM_t *memDist = (TPname##_memDRAM_t *) _tp->memDist;\
+        \
+        initializationCode;\
+        \
+    }\
+    \
 
-// NO TP ARGUMENTS
-#define DEFINE_THREADED_PROCEDURE_NOARGS(TPname,_numSyncSlots,initializationCode)   \
-        typedef struct __attribute__((__packed__)) TPname##_threadedProcedure_s {\
-            _tp_metadata_t metadata;\
-        }TPname##_threadedProcedure_t;\
-        \
-        typedef TPname##_threadedProcedure_t TPname;\
-        \
-		_tp_metadata_t _##TPname##_metadataCtor(unsigned _TPid) {\
-            return _genericMetadataCtro(_TPid, _numSyncSlots, \
-                    sizeof(TPname##_memDRAM_t), \
-                    sizeof(TPname##_memLocal_t),\
-                    sizeof(TPname##_memDist_t));\
-        }\
-        \
-        void _##TPname##_userInitCtor(_tp_metadata_t * _tp) {\
-            TPname##_threadedProcedure_t * this = (TPname##_threadedProcedure_t *) _tp;\
-            TPname##_memDRAM_t * memDRAM = (TPname##_memDRAM_t *) _tp->memDRAM;\
-            TPname##_memDRAM_t * memLocal = (TPname##_memDRAM_t *) _tp->memLocal;\
-            TPname##_memDRAM_t * memDist = (TPname##_memDRAM_t *) _tp->memDist;\
-            initializationCode;\
-            \
-        }\
-        \
-
-// WITH TP ARGUMENTS
-#define DEFINE_THREADED_PROCEDURE_ARGS(TPname,_numSyncSlots, initializationCode, ...)   \
-		typedef struct __attribute__((__packed__)) TPname##_threadedProcedure_s {\
-            _tp_metadata_t metadata;\
-        }TPname##_threadedProcedure_t;\
-        \
-        typedef TPname##_threadedProcedure_t TPname;\
-        \
-		_tp_metadata_t _##TPname##_metadataCtor(unsigned _TPid) {\
-        	return _genericMetadataCtro(_TPid, _numSyncSlots, \
-        	        sizeof(TPname##_memDRAM_t), \
-        	        sizeof(TPname##_memLocal_t),\
-        	        sizeof(TPname##_memDist_t));\
-        }\
-        \
-        void _##TPname##_userInitCtor(_tp_metadata_t * _tp, __VA_ARGS__) {\
-        	TPname##_threadedProcedure_t * this = (TPname##_threadedProcedure_t *) _tp;\
-        	TPname##_memDRAM_t * memDRAM = (TPname##_memDRAM_t *) _tp->memDRAM;\
-            TPname##_memDRAM_t * memLocal = (TPname##_memDRAM_t *) _tp->memLocal;\
-            TPname##_memDRAM_t * memDist = (TPname##_memDRAM_t *) _tp->memDist;\
-            \
-        	initializationCode;\
-        	\
-        }\
-        \
-
+//TP closure
 #define DEFINE_TP_CLOSURE(...) \
         DEFINE_TP_CLOSURE_ARGS(__VA_ARGS__)\
-
-
-
 
 #endif /* THREADED_PROCEDURE_H */

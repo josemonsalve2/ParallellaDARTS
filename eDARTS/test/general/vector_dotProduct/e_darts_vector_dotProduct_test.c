@@ -62,9 +62,10 @@ DEFINE_THREADED_PROCEDURE_ARGS(int_vector_dotProduct_tp,
         DEC_DEP(first_slot);
     },
     //Initialization function parameters
-    int_vectors_t internal_data
+    //int_vectors_t internal_data
 )
-DEFINE_TP_CLOSURE(int_vector_dotProduct_tp, int_vectors_t);
+//DEFINE_TP_CLOSURE(int_vector_dotProduct_tp, int_vectors_t);
+DEFINE_TP_CLOSURE(int_vector_dotProduct_tp);
 
 void intVectorDotProduct() {
     _tp_metadata_t *actualTP = (_tp_metadata_t *) _dartsCUElements.currentThreadedProcedure;
