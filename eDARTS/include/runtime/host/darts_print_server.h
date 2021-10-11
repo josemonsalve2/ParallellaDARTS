@@ -12,14 +12,14 @@
  * flag to 0 after printing the buffer
  */
 
-#include <e-hal.h>
+#include "e-hal.h"
 #include <stdio.h>
 #include <string.h>
 
 // Changing this should also be changed on the device side
 #define MAX_NUM_CHARACTERS 200
 #define MAX_NUM_ARGUMENTS 20
-#define ARGUMENTS_SIZE 100
+#define ARGUMENTS_SIZE 96
 
 #define TRANSFORM_PARAMETER(letter,tempBuffer,argument)            \
          {                                                              \

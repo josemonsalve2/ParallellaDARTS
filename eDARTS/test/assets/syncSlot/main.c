@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <e-hal.h>
+#include "e-hal.h"
+#include "e-loader.h"
 #include "darts_print_server.h"
 
 #define INIT_FLAG 0x2000

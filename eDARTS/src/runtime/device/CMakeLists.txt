@@ -41,6 +41,8 @@ set( edarts_runtime_device_src
      e_darts_su_scheduler.c
      e_darts_cu.c
      e_darts_cu_scheduler.c
+     e_darts_rt.c
+     e_darts_mailbox.c
      )
 set( edarts_runtime_device_inc
         ${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/device/e_darts_print.h
@@ -49,6 +51,7 @@ set( edarts_runtime_device_inc
         ${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/device/e_darts_cu_scheduler.h
         ${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/device/e_darts_su.h
         ${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/device/e_darts_su_scheduler.h
+	${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/device/e_darts_mailbox.h
         ${CMAKE_SOURCE_DIR}/eDARTS/include/multithreading/e_darts_mutex.h)
 
 add_library( edarts_runtime_device ${edarts_runtime_device_src} ${edarts_runtime_device_inc})

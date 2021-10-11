@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <e-hal.h>
+#include "e-hal.h"
+#include "e-loader.h"
 
 int main(int argc, char *argv[]){
     e_platform_t platform;

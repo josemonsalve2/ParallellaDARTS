@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <e-hal.h>
+#include "e-hal.h"
+#include "e-loader.h"
 #include "darts_print_server.h"
 
 #define FINAL_BARRIER 0x2008

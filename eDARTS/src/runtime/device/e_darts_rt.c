@@ -14,6 +14,14 @@ void e_darts_rt(e_darts_cam_t userCAM, cu_scheduler_selector cu_scheduler_policy
 
     // Iterate over all the cores and do this
     darts_rt_alive = 1;
+    if (e_group_config.core_row == 0 && e_group_config.core_col == 0)
+    {
+        _SU_rt(su_scheduler_policy);
+    }
+    else
+    {
+        _CU_rt(cu_scheduler_policy);
+    }
 }
 
 void e_darts_reset() {
@@ -23,9 +31,9 @@ void e_darts_reset() {
     darts_rt_alive = 1;
 }
 
-void e_darts_run(genericTpClosure_t initialTPClosure) {
+void e_darts_run() {
     // push to the queue and get stuck in the policy
-    dartsRtScheduler->policy();
+    dartsRtScheduler.policy();
 }
 
 void e_darts_finilize() {

@@ -21,7 +21,7 @@
 // Changing this should also be changed on the host side
 #define MAX_NUM_CHARACTERS 200
 #define MAX_NUM_ARGUMENTS 20
-#define ARGUMENTS_SIZE 100
+#define ARGUMENTS_SIZE 96
 #define TYPE_SELECTOR(letter)                               \
         ((letter == 'd' || letter == 'i' ||                  \
          letter == 'o' || letter == 'u' ||                  \
@@ -41,6 +41,13 @@ typedef struct __attribute__ ((__packed__)) printBuffer_s
     char printingBufferHead[MAX_NUM_CHARACTERS];
     char arguments[ARGUMENTS_SIZE];
 } printBuffer_t;
+
+typedef union {
+    double fArg;
+    int iArg;
+    unsigned uArg;
+    char cArg;
+} arg_receive_t;
 
 /**
  * @brief printing function

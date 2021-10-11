@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <e-hal.h>
+#include <unistd.h>
+#include "e-hal.h"
+#include "e-loader.h"
 #include "darts_print_server.h"
 
 #define INIT_SIGNAL 0x6004

@@ -1,4 +1,5 @@
 #include "syncSlot.h"
+#include "e_darts_print.h"
 
 void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID,
                    unsigned resetDep, unsigned initDep,
@@ -23,9 +24,15 @@ void initSyncSlot (syncSlot_t * newSyncSlot, unsigned newSlotID,
 
 int syncSlotDecDep( syncSlot_t * syncSlot )
 {
+    //e_darts_print("syncSlot address: %x\n", syncSlot);
+    //e_darts_print("trying to acquire lock at full address %x\n", syncSlot->lockMutexFullAddressPtr);
+    //e_darts_print("full address dereferenced: %x\n", *(syncSlot->lockMutexFullAddressPtr));
+    //e_darts_print("mutex variable set to %x\n", syncSlot->lockMutex);
+    //e_darts_print("mutex variable address %x\n", &(syncSlot->lockMutex));
     // decrementing dependency.
     darts_mutex_lock(syncSlot->lockMutexFullAddressPtr);
     syncSlot->currentDep--;
+    //e_darts_print("decreased dependencies to %d\n", syncSlot->currentDep);
     darts_mutex_unlock(syncSlot->lockMutexFullAddressPtr);
     return syncSlot->currentDep;
 }

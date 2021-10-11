@@ -35,7 +35,22 @@ typedef struct __attribute__ ((__packed__)) su_runtime_elements_s {
     cu_runtime_elements_t * myCUElements[_DARTS_NUM_CORES]; // SET THIS WITH FULL ADDRESS WITH COREID
 } su_runtime_elements_t;
 
+typedef struct __attribute__ ((__packed__)) tp_heap_space_s {
+    char tpHeapPadding[_DARTS_TP_HEAP_SIZE_BYTES];
+} tp_heap_space_t;
+
+typedef struct __attribute__ ((__packed__)) tp_data_heap_space_s {
+    char tpHeapPadding[_DARTS_TP_DATA_HEAP_SIZE_BYTES];
+} tp_data_heap_space_t;
+
+typedef struct __attribute__ ((__packed__)) tp_data_heap_DRAM_space_s {
+    char tpHeapPadding[_DARTS_TP_DATA_HEAP_DRAM_SIZE_BYTES];
+} tp_data_heap_DRAM_space_t;
+
 extern su_runtime_elements_t _dartsSUElements;
+extern tp_heap_space_t _dartsTpHeap; //for syncSlots & metadata - in SU
+extern tp_data_heap_space_t _tpDataHeap; //on SU, local data
+extern tp_data_heap_DRAM_space_t _tpDataHeapDRAM; // DRAM data
 
 /* @brief SU runtime function
  *
@@ -44,7 +59,7 @@ extern su_runtime_elements_t _dartsSUElements;
  * The scheduling policy must use the above definitions
  *
  */
-void darts_su_runtime();
+void _SU_rt();
 
 #endif /* _E_DARTS_SU_H_ */
 

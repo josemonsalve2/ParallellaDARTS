@@ -5,6 +5,7 @@
 #include "codelet.h"
 #include "e_darts_barrier.h"
 #include "syncSlot.h"
+#include "e_darts_global.h"
 
 // SOME VALUES SINCE THERE IS NO RUNTIME YET
 #define TP_QUEUE_LOCATION 0x6060
