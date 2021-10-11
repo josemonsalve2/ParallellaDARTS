@@ -6,10 +6,11 @@
 #include "e-loader.h"
 #include "darts_print_server.h"
 #include "darts_api.h"
+#include "darts_rt_params.h"
 
 
 nodeMailbox_t localMailbox;
-e_mem_t nodeMailbox;
+e_mem_t dartsCommSpace;
 
 int darts_init()
 {
@@ -18,7 +19,7 @@ int darts_init()
     e_get_platform_info(&platform);
     e_open(&dev, 0, 0, 4, 4);
     start_printing_server();
-    e_alloc(&nodeMailbox, 0x00000134, sizeof(nodeMailbox_t));
+    e_alloc(&dartsCommSpace, COMM_QUEUE_OFFSET, sizeof(commSpace_t));
     // 0x00000134 is the offset to the mailbox from beginning of DRAM 0x8e
 }
 
@@ -30,6 +31,7 @@ void darts_run(char* elf_file_name)
     printf("Group loaded \n");
     e_start_group(&dev);
     usleep(1e6);
+
 }
 
 // wait for the runtime to close out
@@ -54,33 +56,76 @@ void darts_close()
 }
 
 //add checking to make sure its not overwriting a message that the SU hasn't received yet
-//returns bytes written if successful, -3 if not acked, E_ERR otherwise
+//returns bytes written if successful, -3 if queue full, E_ERR otherwise
 //watch out for conflicts between bytes written and e_return_stat_t enum
 int darts_send_message(message *signal)
 {
-    bool ack;
-    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
-    if (ack) {
-        sigWithAck_t pack = {false, *(signal)};
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
+    //bool ack;
+    struct {
+        unsigned head;
+        unsigned tail;
+        unsigned full_flag;
+        unsigned op_done;
+    } head_tail_flag;
+    e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
+    printf("darts_send read head %d, tail %d, flag %d, op %d\n", head_tail_flag.head, head_tail_flag.tail, head_tail_flag.full_flag, head_tail_flag.op_done);
+    if (!(head_tail_flag.full_flag) && !((head_tail_flag.head == head_tail_flag.tail) && head_tail_flag.op_done)) {
+        int result = e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + INDEX_OFFSET(head_tail_flag.tail) + SIGNAL_OFFSET, signal, sizeof(message));
+        printf("wrote signal at offset %x\n", NM_TO_SU_OFFSET+INDEX_OFFSET(0)+SIGNAL_OFFSET);
+        if (result > 0) {
+            head_tail_flag.tail = (head_tail_flag.tail + 1) % _DARTS_COMM_QUEUE_LENGTH;
+            printf("darts_send sent signal with result %d, writing new tail %d at %x\n", result, head_tail_flag.tail, 0x8e000130+NM_TO_SU_OFFSET+TAIL_OFFSET);
+            unsigned tmp = 1;
+            e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + TAIL_OFFSET, &(head_tail_flag.tail), sizeof(unsigned));
+            e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + NM_OP_OFFSET, &tmp, sizeof(unsigned));
+            return(result);
+        }
+        //return(e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
     }
     else return(-3);
 }
 
 int darts_send_message_wait(message *signal)
 {
-    bool ack;
-    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
-    if (ack) {
-        sigWithAck_t pack = {false, *(signal)};
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
-    }
-    else {
-        while (!ack) {
-            e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    struct {
+        unsigned head;
+        unsigned tail;
+        unsigned full_flag;
+    } head_tail_flag;
+    //unsigned tail;
+    e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
+    //should add exponential backoff in future
+    //max delay
+    //delay
+    while (!(head_tail_flag.full_flag)) {
+        /*
+        usleep(delay);
+        if (delay < MAX_DELAY)
+        {
+            delay *= 2;
         }
-        sigWithAck_t pack = {false, *(signal)};
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t)));
+        */
+        for (int i=0; i<100; i++) {
+            __asm__ ("NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                    ); //nop for delays, not exponential but will work for now
+        }
+        e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
+    }
+        //sigWithAck_t pack = {false, *(signal)};
+    int result = e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + INDEX_OFFSET(head_tail_flag.tail) + SIGNAL_OFFSET, signal, sizeof(message));
+    if (result > 0) {
+        head_tail_flag.tail = (head_tail_flag.tail + 1) % _DARTS_COMM_QUEUE_LENGTH;
+        unsigned tmp = 1;
+        e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + TAIL_OFFSET, &(head_tail_flag.tail), sizeof(unsigned));
+        e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + NM_OP_OFFSET, &tmp, sizeof(unsigned));
+        return(result);
     }
 }
 
@@ -89,49 +134,90 @@ int darts_send_message_wait(message *signal)
 //watch out for conflicts between bytes written and e_return_stat_t enum
 int darts_send_data(mailbox_t* data_loc)
 {
+    struct {
+        unsigned head;
+        unsigned tail;
+        unsigned full_flag;
+    } head_tail_flag;
     int response;
-    bool ack;
-    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    //bool ack;
+    e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
+    //e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
     //subtract size of unsigned so as to not overwrite the mutex nor ack on the epiphany side
-    if (ack) {
-        //make sure ack isn't true on arrival, should be sent as false
-        data_loc->ack = false;
+    int result_1 = -5;
+    unsigned head = head_tail_flag.head;
+    unsigned tail = head_tail_flag.tail;
 	unsigned size = data_loc->msg_header.size;
-	int result_1 = e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t) - sizeof(sigWithAck_t) - (MAX_PAYLOAD_SIZE - size));
-	// data transfer size is mailbox, without ack and without empty data, so only sends header through valid data first
+    if (!(head_tail_flag.full_flag) && tail != (head-1) && tail != (head+_DARTS_COMM_QUEUE_LENGTH-1)) { //trying one space open method
+	    // data transfer size is mailbox, without ack and without empty data, so only sends header through valid data first
+        result_1 = e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + INDEX_OFFSET(head_tail_flag.tail), data_loc, sizeof(mailbox_t) - sizeof(sigWithAck_t) - (MAX_PAYLOAD_SIZE - size));
+    }
+    else return(-3); //-3 (no space) to avoid overlap with E_OK, E_ERR, E_WARN (0, -1, -2) which e_write might return
 	if (result_1 < 0) {
             return(result_1);
         }
 	else {
-            sigWithAck_t pack = {false, data_loc->signal};
-	    int result_2 = e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &pack, sizeof(sigWithAck_t));
+        int result_2 = e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + INDEX_OFFSET(head_tail_flag.tail) + SIGNAL_OFFSET, &(data_loc->signal), sizeof(message));
+        head_tail_flag.tail = (head_tail_flag.tail + 1) % _DARTS_COMM_QUEUE_LENGTH;
+        e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + TAIL_OFFSET, &(head_tail_flag.tail), sizeof(unsigned));
+        unsigned op_done = 1;
+        e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + NM_OP_OFFSET, &op_done, sizeof(unsigned));
 	    if (result_2 < 0) {
                 return(result_2);
-            }
+        }
 	    else return(result_1+result_2);
 	}
-        //return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
-    }
-    else return(-3); //-3 to avoid overlap with E_OK, E_ERR, E_WARN (0, -1, -2) which e_write might return
 }
 
 int darts_send_data_wait(mailbox_t *data_loc)
 {
+    struct {
+        unsigned head;
+        unsigned tail;
+        unsigned full_flag;
+    } head_tail_flag;
     int response;
-    bool ack;
-    e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
     //subtract size of unsigned so as to not overwrite the mutex nor ack on the epiphany side
-    if (ack) {
-        //make sure ack isn't true on arrival, should be sent as false
-        data_loc->ack = false;
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
-    }
-    else {
-        while (!ack) {
-            e_read(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
+    int result_1 = -5;
+	unsigned size = data_loc->msg_header.size;
+    while (!(head_tail_flag.full_flag)) {
+        /*
+        usleep(delay);
+        if (delay < MAX_DELAY)
+        {
+            delay *= 2;
         }
-        return(e_write(&nodeMailbox, 0, 0, NM_TO_SU_OFFSET, (mailbox_t *) data_loc, sizeof(mailbox_t)));
+        */
+        // I think I added this accidentally; should be epiphany side
+        for (int i=0; i<100; i++) {
+            __asm__ ("NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                     "NOP;"
+                    ); //nop for delays, not exponential but will work for now
+        }
+        e_read(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
     }
+    result_1 = e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + INDEX_OFFSET(head_tail_flag.tail), data_loc, sizeof(mailbox_t) - sizeof(sigWithAck_t) - (MAX_PAYLOAD_SIZE - size));
+	if (result_1 < 0) {
+            return(result_1);
+        }
+	else {
+        int result_2 = e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + INDEX_OFFSET(head_tail_flag.tail) + SIGNAL_OFFSET, &(data_loc->signal), sizeof(message));
+        head_tail_flag.tail = (head_tail_flag.tail + 1) % _DARTS_COMM_QUEUE_LENGTH;
+        e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + TAIL_OFFSET, &(head_tail_flag.tail), sizeof(unsigned));
+        unsigned op_done = 1;
+        e_write(&dartsCommSpace, 0, 0, NM_TO_SU_OFFSET + NM_OP_OFFSET, &op_done, sizeof(unsigned));
+	    if (result_2 < 0) {
+                return(result_2);
+        }
+	    else return(result_1+result_2);
+	}
 }
 
 // need to add generic tp closure to header definition and such
@@ -141,20 +227,40 @@ int darts_invoke_TP(void* closure)
 
 }
 
-// does not set ack byte
+// does not edit head / set op_done
 message darts_receive_message(message *signal)
 {
-    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET + SIGNAL_OFFSET, (message *) signal, sizeof(message));
-    return(localMailbox.SUtoNM.signal);
+    unsigned head;
+    e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + HEAD_OFFSET, &head, sizeof(unsigned));
+    e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + INDEX_OFFSET(head) + SIGNAL_OFFSET, (message *) signal, sizeof(message));
+    return(*(signal));
 }
 
 //sets ack byte intrinsically
 message darts_receive_data(mailbox_t *mailbox)
 {
-    //subtract size of unsigned so that darts_mutex value is pulled, dont need it just saves space
-    e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET, (mailbox_t *) mailbox, sizeof(mailbox_t));
-    darts_set_ack(true);
-    return(localMailbox.SUtoNM.signal);
+    struct {
+        unsigned head;
+        unsigned tail;
+        unsigned full_flag;
+    } head_tail_flag;
+    int response;
+    e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + HEAD_OFFSET, &head_tail_flag, sizeof(unsigned) + sizeof(unsigned) + sizeof(unsigned));
+    unsigned head = head_tail_flag.head;
+    unsigned tail = head_tail_flag.tail;
+    unsigned flag = head_tail_flag.full_flag;
+    printf("darts_receive sees head %u tail %u and flag %u, reads %u\n", head, tail, flag, ((head != tail) || (head == tail && flag)));
+    if ((head != tail) || (head == tail && flag)) {
+        e_read(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + INDEX_OFFSET(head), (mailbox_t *) mailbox, sizeof(mailbox_t));
+        head = (head + 1) % _DARTS_COMM_QUEUE_LENGTH;
+        e_write(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + HEAD_OFFSET, &head, sizeof(unsigned));
+        unsigned op_done = 1;
+        e_write(&dartsCommSpace, 0, 0, SU_TO_NM_OFFSET + NM_OP_OFFSET, &op_done, sizeof(unsigned));
+        return(mailbox->signal);
+    }
+    else {
+        return(-1);
+    }
 }
 
 //helper function to fill mailbox stuff without having to know the names of the fields
@@ -164,7 +270,7 @@ void darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, mes
     mailbox->msg_header.size = size;
     mailbox->signal = signal;
 }
-
+/*
 int darts_set_ack(bool ack)
 {
     bool ack_val = ack;
@@ -177,6 +283,7 @@ bool darts_get_ack()
     e_read(&nodeMailbox, 0, 0, SU_TO_NM_OFFSET + ACK_OFFSET, &ack, sizeof(bool));
     return(ack);
 }
+*/
 
 int darts_data_convert_to_int(char *data)
 {

@@ -43,6 +43,8 @@ else()
     set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host ${E_LOADER_LIB} -L${CMAKE_BINARY_DIR}/eDARTS/src/runtime/host -ldarts_print_server -ldarts_api -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB})
 endif()
 
+# if for block comment for now because not in use
+if(FALSE)
 # For the host we need to compile manually without cmake
 add_custom_command(
    OUTPUT rt_main.out
@@ -62,4 +64,5 @@ add_executable(e_darts_rt_init.elf e_DARTS_init.c)
 target_link_libraries(e_darts_rt_init.elf edarts_runtime_device edarts_codeletModel edarts_assets edarts_multithreading ${EPIPHANY_LIBS})
 
 add_dependencies(e_darts_rt_init.elf rt_main darts_print_server edarts_cachemanager)
+endif()
 

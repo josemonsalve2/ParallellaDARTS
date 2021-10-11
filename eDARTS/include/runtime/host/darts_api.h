@@ -1,18 +1,26 @@
 #include <e-hal.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include "darts_rt_params.h"
 
 #define E_DARTS_OK 0
 #define DARTS_RT_ALIVE 0x6c
 #define MAX_PAYLOAD_SIZE 0x7f //127 for alignment
-#define MAILBOX_ADDRESS 0x8e000134 //based on print statement
+#define COMM_QUEUE_ADDRESS 0x8e000130 //based on print statement
+#define COMM_QUEUE_OFFSET 0x00000130
 #define BASE_OFFSET 0x00000000
 #define SU_TO_NM_OFFSET 0x00000000
+#define HEAD_OFFSET 0x00000000
+#define TAIL_OFFSET 0x00000004
+#define FULL_FLAG_OFFSET 0x00000008
+#define NM_OP_OFFSET 0x0000000c
+#define QUEUE_START_OFFSET 0x00000010
+#define INDEX_OFFSET(index) (QUEUE_START_OFFSET + ((unsigned)index) * (17 + MAX_PAYLOAD_SIZE))
 #define HEADER_OFFSET 0x00000000
 #define PAYLOAD_OFFSET 0x00000008
 #define ACK_OFFSET (PAYLOAD_OFFSET + MAX_PAYLOAD_SIZE)
 #define SIGNAL_OFFSET (ACK_OFFSET + 0x00000001)
-#define NM_TO_SU_OFFSET (SIGNAL_OFFSET + 0x00000004)
+#define NM_TO_SU_OFFSET (16 + _DARTS_COMM_QUEUE_LENGTH * (13 + MAX_PAYLOAD_SIZE))
 
 // doxygen?
 
@@ -43,7 +51,9 @@ typedef struct __attribute__ ((__packed__)) header_s {
     unsigned size;
 } header_t; //on receive allocate memory for struct + size, load payload into void pointer
 
-// 12 + MAX_PAYLOAD_SIZE + 1 + 4  = 17 + MAX_PAYLOAD_SIZE per mailbox
+// 8 + MAX_PAYLOAD_SIZE + 1 + 4  = 13 + MAX_PAYLOAD_SIZE per mailbox
+// in future may be better to remove ack and move signal before data, so that only valid data can be sent
+// without requiring two e_writes
 typedef struct __attribute__ ((__packed__)) mailbox_s {
     header_t msg_header;
     char data[MAX_PAYLOAD_SIZE];
@@ -51,7 +61,22 @@ typedef struct __attribute__ ((__packed__)) mailbox_s {
     message signal;
 } mailbox_t;
 
-// 34 + 2 * MAX_PAYLOAD_SIZE overall
+// 4 + 4 + 4 + 4 + _DARTS_COMM_QUEUE_LENGTH * (13 + MAX_PAYLOAD_SIZE)
+typedef struct __attribute__ ((__packed__)) commQueue_s {
+    unsigned head_index;
+    unsigned tail_index;
+    unsigned full_flag;
+    unsigned NM_op_done;
+    //unsigned lock; //to mirror structure on Epiphany side
+    mailbox_t queue[_DARTS_COMM_QUEUE_LENGTH];
+} commQueue_t;
+
+typedef struct __attribute__ ((__packed__)) commSpace_s {
+    commQueue_t SUtoNM;
+    commQueue_t NMtoSU;
+} commSpace_t;
+
+// 34 + 2 * MAX_PAYLOAD_SIZE overall <- this is outdated
 typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
     mailbox_t SUtoNM;
     mailbox_t NMtoSU;

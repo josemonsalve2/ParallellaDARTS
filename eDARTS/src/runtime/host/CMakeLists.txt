@@ -37,10 +37,10 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${ELDF_EDARTS_CACHEMAN}
 # use custom command and custom target to manually build this
 if(DEBUG)
 set(EXTERNAL_FLAGS -g -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB} ${E_LOADER_LIB})
-set(EXTERNAL_FLAGS_API -g -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host)
+set(EXTERNAL_FLAGS_API -g -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host)
 else()
 set(EXTERNAL_FLAGS -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host -L${PTHREAD_LIB} -lpthread ${E_HAL_LIB} ${E_LOADER_LIB})
-set(EXTERNAL_FLAGS_API -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host)
+set(EXTERNAL_FLAGS_API -I${EPIPHANY_HOME}/tools/host/include -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime -I${CMAKE_SOURCE_DIR}/eDARTS/include/runtime/host)
 endif()
 
 # For the host we need to compile manually without cmake

@@ -48,11 +48,27 @@ typedef struct __attribute__ ((__packed__)) mailbox_s {
     message signal;
 } mailbox_t;
 
+typedef struct __attribute__ ((__packed__)) commQueue_s {
+    unsigned head_index;
+    unsigned tail_index;
+    unsigned full_flag;
+    unsigned NM_op_done;
+    //e_darts_mutex lock;
+    mailbox_t queue[_DARTS_COMM_QUEUE_LENGTH];
+} commQueue_t;
+
+typedef struct __attribute__ ((__packed__)) commSpace_s {
+    commQueue_t SUtoNM;
+    commQueue_t NMtoSU;
+} commSpace_t;
+
+/*
 // 34 + 2 * MAX_PAYLOAD_SIZE overall
 typedef struct __attribute__ ((__packed__)) nodeMailbox_s {
     mailbox_t SUtoNM;
     mailbox_t NMtoSU;
 } nodeMailbox_t;
+*/
 
 typedef union int_data_u {
     char raw[4];
@@ -64,9 +80,11 @@ typedef union unsigned_data_u {
     unsigned processed;
 } unsigned_converter;
 
-extern nodeMailbox_t _dartsNodeMailbox;
+//extern nodeMailbox_t _dartsNodeMailbox;
 
-void e_darts_node_mailbox_init();
+void e_darts_print_SU_queue();
+void e_darts_print_NM_queue();
+void e_darts_comm_init();
 
 message e_darts_receive_signal();
 
@@ -77,6 +95,8 @@ int e_darts_send_signal(message *signal);
 void e_darts_fill_mailbox(mailbox_t *mailbox, messageType type, unsigned size, message signal);
 
 int e_darts_send_data(mailbox_t *loc);
+
+int e_darts_get_queue_space(commQueue_t *queue);
 
 void e_darts_set_ack(bool ack);
 
